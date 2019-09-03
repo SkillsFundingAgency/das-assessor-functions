@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\SFA\das-assessor-functions\src" t="IncludeFlat">
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="SFA.DAS.Assessor.Functions.OpportunityFinder" t="IncludeRecursive">
+        <e p=".gitignore" t="Include" />
+        <e p="bin\Debug\netcoreapp2.1\bin" t="ExcludeRecursive" />
+        <e p="host.json" t="Include" />
+        <e p="local.settings.json" t="Include" />
+        <e p="obj" t="ExcludeRecursive">
+          <e p="Debug" t="Include">
+            <e p="netcoreapp2.1" t="Include">
+              <e p="SFA.DAS.Assessor.Functions.OpportunityFinder.AssemblyInfo.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="OpportunityFinderDataSync.cs" t="Include" />
+        <e p="SFA.DAS.Assessor.Functions.OpportunityFinder.csproj" t="IncludeRecursive" />
+      </e>
+      <e p="SFA.DAS.Assessor.Functions.sln" t="IncludeFlat" />
+    </e>
+    <e p="C:\Users\daveg\.Rider2019.1\config\scratches" t="IncludeRecursive" />
+    <e p="C:\Users\daveg\.Rider2019.1\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\daveg\.Rider2019.1\system\resharper-host\local\Transient\ReSharperHost\v191\SolutionCaches\_SFA.DAS.Assessor.Functions.489880763.00" t="ExcludeRecursive" />
+  </component>
+</project>
