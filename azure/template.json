@@ -20,12 +20,6 @@
                 "description": "Short name of the service. Used for the name of resources created"
             }
         },
-        "resourceGroup": {
-            "type": "string",
-            "metadata": {
-                "description": "Resource group of the app service plan"
-            }
-        },
         "sharedStorageConnectionString": {
             "type": "securestring",
             "metadata": {
@@ -44,9 +38,6 @@
         },
         "configurationStorageConnectionString": {
             "type": "securestring"
-        },
-        "configNames": {
-            "type": "string"
         },
         "appServicePlanSize": {
             "type": "string",
@@ -136,7 +127,7 @@
                         "value": "[variables('appServicePlanName')]"
                     },
                     "appServicePlanResourceGroup": {
-                        "value": "[parameters('resourceGroup')]"
+                        "value": "[resourceGroup().name]"
                     },
                     "ipSecurityRestrictions": {
                         "value": "[parameters('ipSecurityRestrictions')]"
@@ -170,10 +161,6 @@
                             {
                                 "name": "ConfigurationStorageConnectionString",
                                 "value": "[parameters('configurationStorageConnectionString')]"
-                            },
-                            {
-                                "name": "ConfigNames",
-                                "value": "[parameters('configNames')]"
                             }
                         ]
                     }
