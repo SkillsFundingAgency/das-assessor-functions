@@ -14,7 +14,7 @@
                 "description": "Short name of the service. Used for the name of resources created"
             }
         },
-        "sharedStorageConnectionString": {
+        "SharedStorageAccountConnectionString": {
             "type": "securestring",
             "metadata": {
                 "description": "Name of the connection string for shared storage account"
@@ -130,11 +130,11 @@
                         "value": [
                             {
                                 "name": "AzureWebJobsStorage",
-                                "value": "[parameters('sharedStorageConnectionString')]"
+                                "value": "[parameters('SharedStorageAccountConnectionString')]"
                             },
                             {
                                 "name": "AzureWebJobsDashboard",
-                                "value": "[parameters('sharedStorageConnectionString')]"
+                                "value": "[parameters('SharedStorageAccountConnectionString')]"
                             },
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
