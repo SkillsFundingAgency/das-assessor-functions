@@ -55,10 +55,16 @@
                 "2",
                 "3"
             ],
+            "metadata": {
+                "description": "The app service plan size"
+            },
             "defaultValue": "1"
         },
         "appServicePlanInstances": {
             "type": "int",
+            "metadata": {
+                "description": "Number of the app service plan instance"
+            },
             "defaultValue": 2
         }
     },
