@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "ResourceEnvironmentName": {
+        "resourceEnvironmentName": {
             "type": "string",
             "metadata": {
                 "description": "Short name of the environment. Used for the reference of the environment in table storage"
@@ -55,7 +55,7 @@
     },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
-        "resourceNamePrefix": "[toLower(concat('das-', parameters('ResourceEnvironmentName'),'-', parameters('serviceName')))]",
+        "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'),'-asp')]",
         "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]"
     },
@@ -145,8 +145,8 @@
                                 "value": "~2"
                             },
                             {
-                                "name": "ResourceEnvironmentName",
-                                "value": "[toUpper(parameters('ResourceEnvironmentName'))]"
+                                "name": "resourceEnvironmentName",
+                                "value": "[toUpper(parameters('resourceEnvironmentName'))]"
                             },
                             {
                                 "name": "LoggingRedisConnectionString",
