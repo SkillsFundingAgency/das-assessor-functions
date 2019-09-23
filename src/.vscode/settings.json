@@ -1,0 +1,8 @@
+{
+    "azureFunctions.projectSubpath": "SFA.DAS.Assessor.Functions",
+    "azureFunctions.deploySubpath": "SFA.DAS.Assessor.Functions/bin/Release/netcoreapp2.1/publish",
+    "azureFunctions.projectLanguage": "C#",
+    "azureFunctions.projectRuntime": "~2",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.preDeployTask": "publish"
+}
