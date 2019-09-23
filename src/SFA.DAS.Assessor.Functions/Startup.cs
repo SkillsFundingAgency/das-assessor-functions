@@ -34,9 +34,9 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 .AddConfiguration(configuration)
                 .AddAzureTableStorageConfiguration(
                     System.Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString", EnvironmentVariableTarget.Process),
-                    System.Environment.GetEnvironmentVariable("ConfigNames", EnvironmentVariableTarget.Process),
-                    System.Environment.GetEnvironmentVariable("Environment", EnvironmentVariableTarget.Process),
-                    System.Environment.GetEnvironmentVariable("Version", EnvironmentVariableTarget.Process)
+                    "SFA.DAS.Assessor.Functions",
+                    System.Environment.GetEnvironmentVariable("EnvironmentName", EnvironmentVariableTarget.Process),
+                    "1.0"
                 ).Build();
             
             builder.Services.AddOptions().Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
