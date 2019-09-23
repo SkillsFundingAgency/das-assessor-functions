@@ -2,29 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="db959f0d-8f2a-4ad1-a529-5e80e73ba667" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/projectSettingsUpdater.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/.vscode/extensions.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/.vscode/launch.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/.vscode/settings.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/.vscode/tasks.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/OpportunityFinderDataSync.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/SFA.DAS.Assessor.Functions.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Startup.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/host.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/nlog.config" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/AzureTableStorageConfigurationExtensions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/AzureTableStorageConfigurationProvider.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/AzureTableStorageConfigurationSource.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/ConfigurationItem.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/SqlConnectionStrings.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/.vscode/extensions.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/.vscode/launch.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/.vscode/settings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/.vscode/tasks.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/OpportunityFinderDataSync.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/SFA.DAS.Assessor.Functions.OpportunityFinder.csproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.OpportunityFinder/host.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.sln" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/SFA.DAS.Assessor.Functions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/SFA.DAS.Assessor.Functions.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Startup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Startup.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -99,7 +86,7 @@
       <updated>1567514364602</updated>
       <workItem from="1567514366169" duration="860000" />
       <workItem from="1569222054247" duration="499000" />
-      <workItem from="1569226003226" duration="1643000" />
+      <workItem from="1569226003226" duration="3527000" />
     </task>
     <servers />
   </component>

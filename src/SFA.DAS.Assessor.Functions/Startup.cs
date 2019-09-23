@@ -5,9 +5,11 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.WorkflowMigrator.Startup))]
 
@@ -24,9 +26,26 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            var sp = builder.Services.BuildServiceProvider();
+
+            var configuration = sp.GetService<IConfiguration>();
+
+            var config = new ConfigurationBuilder()
+                .AddConfiguration(configuration)
+                .AddAzureTableStorageConfiguration(
+                    System.Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString", EnvironmentVariableTarget.Process),
+                    System.Environment.GetEnvironmentVariable("ConfigNames", EnvironmentVariableTarget.Process),
+                    System.Environment.GetEnvironmentVariable("Environment", EnvironmentVariableTarget.Process),
+                    System.Environment.GetEnvironmentVariable("Version", EnvironmentVariableTarget.Process)
+                ).Build();
+            
+            builder.Services.AddOptions().Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
+
             builder.Services.AddLogging((loggingBuilder) => {
                 loggingBuilder.AddNLog();
             });
         }
     }
+
+    
 }
