@@ -46,7 +46,7 @@ steps:
   inputs:
     command: publish
     publishWebProjects: false
-    projects: 'src/SFA.DAS.Assessor.Functions.OpportunityFinder/SFA.DAS.Assessor.Functions.OpportunityFinder.csproj'
+    projects: 'src/SFA.DAS.Assessor.Functions/SFA.DAS.Assessor.Functions.csproj'
     arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory) --no-restore --no-build'
 
 - task: CopyFiles@2
