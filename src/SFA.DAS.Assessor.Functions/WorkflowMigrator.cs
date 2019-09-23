@@ -1,18 +1,35 @@
 using System;
+using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using Microsoft.Extensions.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 {
-    public static class WorkflowMigrator
+    public class WorkflowMigrator
     {
-        [FunctionName("WorkflowMigrator")]
-        public static void Run( [HttpTrigger(AuthorizationLevel.Function, "post", Route = "workflowMigrator")] HttpRequest req, ILogger log)
+        private readonly IConfiguration _configuration;
+        private readonly SqlConnectionStrings _connectionStrings;
+
+        public WorkflowMigrator(IConfiguration configuration, IOptions<SqlConnectionStrings> connectionStrings)
         {
-            log.LogInformation($"HTTP trigger function executed at: {DateTime.Now}");
+            _configuration = configuration;
+            _connectionStrings = connectionStrings.Value;
+        }
+
+        [FunctionName("WorkflowMigrator")]
+        public IActionResult Run( [HttpTrigger(AuthorizationLevel.Function, "post", Route = "workflowMigrator")] HttpRequest req, ILogger log)
+        {
+            log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
+
+            return (ActionResult) new OkObjectResult("Ok");
         }
     }
 }
