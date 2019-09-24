@@ -39,7 +39,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                     "1.0"
                 ).Build();
             
-            builder.Services.AddOptions().Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
+            //builder.Services.AddOptions().Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
 
             builder.Services.AddLogging((loggingBuilder) => {
                 loggingBuilder.AddNLog();
