@@ -26,9 +26,9 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddLogging((loggingBuilder) => {
-                loggingBuilder.AddNLog();
-            });
+            // builder.Services.AddLogging((loggingBuilder) => {
+            //     loggingBuilder.AddNLog();
+            // });
 
             // var sp = builder.Services.BuildServiceProvider();
 
