@@ -26,7 +26,14 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            builder.Services.AddLogging((loggingBuilder) => {
+                loggingBuilder.AddNLog();
+            });
+
             var sp = builder.Services.BuildServiceProvider();
+
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger>();
+            logger.LogInformation("WORKFLOWMIGRATE - GOT LOGGER");
 
             var configuration = sp.GetService<IConfiguration>();
 
@@ -39,11 +46,11 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                     "1.0"
                 ).Build();
             
+            logger.LogInformation("WORKFLOWMIGRATE - Built config");
+
             //builder.Services.AddOptions().Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
 
-            builder.Services.AddLogging((loggingBuilder) => {
-                loggingBuilder.AddNLog();
-            });
+            
         }
     }
 
