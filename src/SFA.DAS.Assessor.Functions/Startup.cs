@@ -30,23 +30,23 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 loggingBuilder.AddNLog();
             });
 
-            var sp = builder.Services.BuildServiceProvider();
+            // var sp = builder.Services.BuildServiceProvider();
 
-            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger>();
-            logger.LogInformation("WORKFLOWMIGRATE - GOT LOGGER");
+            // var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger>();
+            // logger.LogInformation("WORKFLOWMIGRATE - GOT LOGGER");
 
-            var configuration = sp.GetService<IConfiguration>();
+            // var configuration = sp.GetService<IConfiguration>();
 
-            var config = new ConfigurationBuilder()
-                .AddConfiguration(configuration)
-                .AddAzureTableStorageConfiguration(
-                    System.Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString", EnvironmentVariableTarget.Process),
-                    "SFA.DAS.Assessor.Functions",
-                    System.Environment.GetEnvironmentVariable("EnvironmentName", EnvironmentVariableTarget.Process),
-                    "1.0"
-                ).Build();
+            // var config = new ConfigurationBuilder()
+            //     .AddConfiguration(configuration)
+            //     .AddAzureTableStorageConfiguration(
+            //         System.Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString", EnvironmentVariableTarget.Process),
+            //         "SFA.DAS.Assessor.Functions",
+            //         System.Environment.GetEnvironmentVariable("EnvironmentName", EnvironmentVariableTarget.Process),
+            //         "1.0"
+            //     ).Build();
             
-            logger.LogInformation("WORKFLOWMIGRATE - Built config");
+            // logger.LogInformation("WORKFLOWMIGRATE - Built config");
 
             //builder.Services.AddOptions().Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
 
