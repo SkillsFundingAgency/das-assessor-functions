@@ -1,15 +1,10 @@
-using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.WorkflowMigrator.Startup))]
 
@@ -26,9 +21,9 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            // builder.Services.AddLogging((loggingBuilder) => {
-            //     loggingBuilder.AddNLog();
-            // });
+            builder.Services.AddLogging((loggingBuilder) => {
+                loggingBuilder.AddNLog();
+            });
 
             // var sp = builder.Services.BuildServiceProvider();
 
