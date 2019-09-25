@@ -1,7 +1,5 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;

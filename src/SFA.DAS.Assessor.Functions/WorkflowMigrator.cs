@@ -29,6 +29,8 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         {
             log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
 
+            log.LogInformation($"Base Address: {_configuration["AssessorApiAuthenticationApiBaseAddress"]}");
+
             return (ActionResult) new OkObjectResult("Ok");
         }
     }
