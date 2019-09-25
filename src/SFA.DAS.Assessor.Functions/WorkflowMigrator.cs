@@ -15,10 +15,10 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 {
     public class WorkflowMigrator
     {
-        private readonly AssessorApiAuthentication _configuration;
+        private readonly IOptions<AssessorApiAuthentication> _configuration;
         private readonly SqlConnectionStrings _connectionStrings;
 
-        public WorkflowMigrator(AssessorApiAuthentication configuration, IOptions<SqlConnectionStrings> connectionStrings)
+        public WorkflowMigrator(IOptions<AssessorApiAuthentication> configuration, IOptions<SqlConnectionStrings> connectionStrings)
         {
             _configuration = configuration;
             _connectionStrings = connectionStrings.Value;
@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         {
             log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
 
-            log.LogInformation($"Base Address: {_configuration.ApiBaseAddress}");
+            log.LogInformation($"Base Address: {_configuration.Value.ApiBaseAddress}");
 
             return (ActionResult) new OkObjectResult("Ok");
         }
