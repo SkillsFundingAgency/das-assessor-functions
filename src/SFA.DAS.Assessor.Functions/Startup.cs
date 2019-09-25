@@ -17,7 +17,6 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 options.SetMinimumLevel(LogLevel.Trace);
                 //options.AddNLog(new NLogProviderOptions{});
                 options.AddConsole();
-                options.AddDebug();
             });
         }
     }
