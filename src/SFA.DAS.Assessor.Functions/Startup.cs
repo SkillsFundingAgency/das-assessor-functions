@@ -4,6 +4,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using NLog.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.WorkflowMigrator.Startup))]
 
@@ -13,10 +14,23 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            var sp = builder.Services.BuildServiceProvider();
+
+            var configuration = sp.GetService<IConfiguration>();
+
+            var nLogConfiguration = new NLogConfiguration();
+
             builder.Services.AddLogging((options) => {
                 options.SetMinimumLevel(LogLevel.Trace);
-                //options.AddNLog(new NLogProviderOptions{});
+                options.SetMinimumLevel(LogLevel.Trace);
+                options.AddNLog(new NLogProviderOptions
+                {
+                    CaptureMessageTemplates = true,
+                    CaptureMessageProperties = true
+                });
                 options.AddConsole();
+
+                nLogConfiguration.ConfigureNLog(configuration);
             });
         }
     }
