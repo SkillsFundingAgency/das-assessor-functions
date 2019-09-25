@@ -30,6 +30,9 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
                 nLogConfiguration.ConfigureNLog(configuration);
             });
+
+            builder.Services.AddOptions();
+            builder.Services.Configure<AssessorApiAuthentication>(configuration.GetSection("AssessorApiAuthentication"));
         }
     }
 }
