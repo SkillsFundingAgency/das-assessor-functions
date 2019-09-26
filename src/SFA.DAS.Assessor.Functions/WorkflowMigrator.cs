@@ -18,13 +18,11 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
     public class WorkflowMigrator
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger _logger;
         private readonly SqlConnectionStrings _connectionStrings;
 
-        public WorkflowMigrator(IConfiguration configuration, IOptions<SqlConnectionStrings> connectionStrings, ILogger logger)
+        public WorkflowMigrator(IConfiguration configuration, IOptions<SqlConnectionStrings> connectionStrings)
         {
             _configuration = configuration;
-            _logger = logger;
             _connectionStrings = connectionStrings.Value;
         }
 
@@ -46,7 +44,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
             }
             catch(Exception ex){
-                LogException(ex);
+                LogException(ex, log);
             }
 
             log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
@@ -56,12 +54,12 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
             return (ActionResult) new OkObjectResult("Ok");
         }
 
-        private void LogException(Exception exception)
+        private void LogException(Exception exception, ILogger log)
         {
-            _logger.LogInformation($"Error: {exception.Message} Stack: {exception.StackTrace}");
+            log.LogInformation($"Error: {exception.Message} Stack: {exception.StackTrace}");
             if (exception.InnerException != null)
             {
-                LogException(exception.InnerException);
+                LogException(exception.InnerException, log);
             }
         }
     }
