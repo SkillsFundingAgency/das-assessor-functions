@@ -18,11 +18,13 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
     public class WorkflowMigrator
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger _logger;
         private readonly SqlConnectionStrings _connectionStrings;
 
-        public WorkflowMigrator(IConfiguration configuration, IOptions<SqlConnectionStrings> connectionStrings)
+        public WorkflowMigrator(IConfiguration configuration, IOptions<SqlConnectionStrings> connectionStrings, ILogger logger)
         {
             _configuration = configuration;
+            _logger = logger;
             _connectionStrings = connectionStrings.Value;
         }
 
@@ -31,22 +33,36 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         {
             // Get config json
 
-            var storageAccount = CloudStorageAccount.Parse(_configuration["ConfigurationStorageConnectionString"]);
-            var tableClient = storageAccount.CreateCloudTableClient().GetTableReference("Configuration");
-            var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration["EnvironmentName"], $"SFA.DAS.Assessor.Functions_1.0");
+            try{
 
-            var result = tableClient.Execute(operation).Result;
+                var storageAccount = CloudStorageAccount.Parse(_configuration["ConfigurationStorageConnectionString"]);
+                var tableClient = storageAccount.CreateCloudTableClient().GetTableReference("Configuration");
+                var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration["EnvironmentName"], $"SFA.DAS.Assessor.Functions_1.0");
 
-            var configItem = (ConfigurationItem)result;
+                var result = tableClient.Execute(operation).Result;
 
-            var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
+                var configItem = (ConfigurationItem)result;
 
+                var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
+            }
+            catch(Exception ex){
+                LogException(ex);
+            }
 
             log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
 
             //log.LogInformation($"Base Address: {_configuration.Value.ApiBaseAddress}");
 
             return (ActionResult) new OkObjectResult("Ok");
+        }
+
+        private void LogException(Exception exception)
+        {
+            _logger.LogInformation($"Error: {exception.Message} Stack: {exception.StackTrace}");
+            if (exception.InnerException != null)
+            {
+                LogException(exception.InnerException);
+            }
         }
     }
 }
