@@ -35,6 +35,18 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 nLogConfiguration.ConfigureNLog(configuration);
             });
 
+            var config = new ConfigurationBuilder()
+                .AddConfiguration(configuration)
+                .AddEnvironmentVariables()
+                .AddAzureTableStorageConfiguration(
+                    configuration["ConfigurationStorageConnectionString"],
+                    configuration["AppName"],
+                    configuration["EnvironmentName"],
+                    "1.0", "SFA.DAS.AssessorFunctions")
+                .Build();
+
+            builder.Services.AddOptions();
+            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
             
         }
     }

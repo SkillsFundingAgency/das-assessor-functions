@@ -19,11 +19,13 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
     {
         private readonly IConfiguration _configuration;
         private readonly SqlConnectionStrings _connectionStrings;
+        private readonly AssessorApiAuthentication _assessorApi;
 
-        public WorkflowMigrator(IConfiguration configuration, IOptions<SqlConnectionStrings> connectionStrings)
+        public WorkflowMigrator(IConfiguration configuration, IOptions<SqlConnectionStrings> connectionStrings, IOptions<AssessorApiAuthentication> assessorApiAuthenticationOptions)
         {
             _configuration = configuration;
             _connectionStrings = connectionStrings.Value;
+            _assessorApi = assessorApiAuthenticationOptions.Value;
         }
 
         [FunctionName("WorkflowMigrator")]
@@ -31,40 +33,40 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         {
             // Get config json
 
-            try{
+            // try{
 
-                log.LogInformation($"ConfigurationStorageConnectionString: {_configuration["ConfigurationStorageConnectionString"]}");
+            //     log.LogInformation($"ConfigurationStorageConnectionString: {_configuration["ConfigurationStorageConnectionString"]}");
 
-                log.LogInformation($"Before var storageAccount = CloudStorageAccount.Parse(_configuration[ConfigurationStorageConnectionString]);");
-                var storageAccount = CloudStorageAccount.Parse(_configuration["ConfigurationStorageConnectionString"]);
-                log.LogInformation($"After var storageAccount = CloudStorageAccount.Parse(_configuration[ConfigurationStorageConnectionString]);");
-                log.LogInformation($"Before var tableClient = storageAccount.CreateCloudTableClient().GetTableReference(\"Configuration\");");
-                var tableClient = storageAccount.CreateCloudTableClient().GetTableReference("Configuration");
-                log.LogInformation($"Before var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration[\"EnvironmentName\"], $\"SFA.DAS.Assessor.Functions_1.0\");");
-                var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration["EnvironmentName"], $"SFA.DAS.AssessorFunctions_1.0");
+            //     log.LogInformation($"Before var storageAccount = CloudStorageAccount.Parse(_configuration[ConfigurationStorageConnectionString]);");
+            //     var storageAccount = CloudStorageAccount.Parse(_configuration["ConfigurationStorageConnectionString"]);
+            //     log.LogInformation($"After var storageAccount = CloudStorageAccount.Parse(_configuration[ConfigurationStorageConnectionString]);");
+            //     log.LogInformation($"Before var tableClient = storageAccount.CreateCloudTableClient().GetTableReference(\"Configuration\");");
+            //     var tableClient = storageAccount.CreateCloudTableClient().GetTableReference("Configuration");
+            //     log.LogInformation($"Before var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration[\"EnvironmentName\"], $\"SFA.DAS.Assessor.Functions_1.0\");");
+            //     var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration["EnvironmentName"], $"SFA.DAS.AssessorFunctions_1.0");
                 
-                log.LogInformation($"Before var result = tableClient.Execute(operation).Result;");
-                var executeResult = tableClient.Execute(operation);
+            //     log.LogInformation($"Before var result = tableClient.Execute(operation).Result;");
+            //     var executeResult = tableClient.Execute(operation);
                 
-                var result = executeResult.Result;
+            //     var result = executeResult.Result;
 
-                log.LogInformation($"result StatusCode: {executeResult.HttpStatusCode}");
-                log.LogInformation($"result is: {result}");
+            //     log.LogInformation($"result StatusCode: {executeResult.HttpStatusCode}");
+            //     log.LogInformation($"result is: {result}");
 
-                log.LogInformation($"Before var configItem = (ConfigurationItem)result;");
-                var configItem = (ConfigurationItem)result;
-                log.LogInformation($"configItem is: {configItem}");
+            //     log.LogInformation($"Before var configItem = (ConfigurationItem)result;");
+            //     var configItem = (ConfigurationItem)result;
+            //     log.LogInformation($"configItem is: {configItem}");
 
-                log.LogInformation($"Before var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);");
-                var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
-            }
-            catch(Exception ex){
-                LogException(ex, log);
-            }
+            //     log.LogInformation($"Before var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);");
+            //     var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
+            // }
+            // catch(Exception ex){
+            //     LogException(ex, log);
+            // }
 
             log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
 
-            //log.LogInformation($"Base Address: {_configuration.Value.ApiBaseAddress}");
+            log.LogInformation($"Base Address: {_assessorApi.ApiBaseAddress}"); 
 
             return (ActionResult) new OkObjectResult("Ok");
         }

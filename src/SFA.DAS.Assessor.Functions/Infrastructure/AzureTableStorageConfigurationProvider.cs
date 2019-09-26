@@ -11,14 +11,15 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure
         private readonly string _environment;
         private readonly string _version;
         private readonly string _appName;
+        private readonly string _appStorageName;
 
-
-        public AzureTableStorageConfigurationProvider(string connection,string appName, string environment, string version)
+        public AzureTableStorageConfigurationProvider(string connection,string appName, string environment, string version, string appStorageName)
         {
             _connection = connection;
             _environment = environment;
             _version = version;
             _appName = appName;
+            _appStorageName = appStorageName;
         }
 
         public override void Load()
@@ -29,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure
             }
 
             var table = GetTable();
-            var operation = GetOperation(_appName, _environment, _version);
+            var operation = GetOperation(_appStorageName, _environment, _version);
             var result = table.ExecuteAsync(operation).Result;
 
             var configItem = (ConfigurationItem)result.Result;
