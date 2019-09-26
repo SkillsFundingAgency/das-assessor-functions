@@ -1,6 +1,12 @@
 namespace SFA.DAS.Assessor.Functions
 {
-    public class AssessorApiAuthentication 
+
+    public class FunctionsConfiguration
+    {
+        public AssessorApiAuthentication AssessorApiAuthentication { get; set; }
+    }
+
+    public class AssessorApiAuthentication
     {
         public string Instance { get; set; }
         public string TenantId { get; set; }
