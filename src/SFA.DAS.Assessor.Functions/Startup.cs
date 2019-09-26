@@ -35,17 +35,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 nLogConfiguration.ConfigureNLog(configuration);
             });
 
-            // Get config json
-
-            var storageAccount = CloudStorageAccount.Parse(configuration["ConfigurationStorageConnectionString"]);
-            var tableClient = storageAccount.CreateCloudTableClient().GetTableReference("Configuration");
-            var operation = TableOperation.Retrieve<ConfigurationItem>(configuration["EnvironmentName"], $"SFA.DAS.Assessor.Functions_1.0");
-
-            var result = tableClient.Execute(operation).Result;
-
-            var configItem = (ConfigurationItem)result;
-
-            var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
+            
         }
     }
 }
