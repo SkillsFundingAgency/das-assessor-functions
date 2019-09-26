@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.WorkflowMigrator.Startup))]
 
@@ -19,7 +18,8 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
             var nLogConfiguration = new NLogConfiguration();
 
-            builder.Services.AddLogging((options) => {
+            builder.Services.AddLogging((options) =>
+            {
                 options.SetMinimumLevel(LogLevel.Trace);
                 options.SetMinimumLevel(LogLevel.Trace);
                 options.AddNLog(new NLogProviderOptions
@@ -31,16 +31,6 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
                 nLogConfiguration.ConfigureNLog(configuration);
             });
-
-            var updatedConfig = new ConfigurationBuilder()
-                .AddConfiguration(configuration)
-                .AddAzureTableStorageConfiguration(configuration["ConfigurationStorageConnectionString"], "SFA.DAS.Assessor.Functions", configuration["EnvironmentName"], "1.0")
-                .Build();
-
-            builder.Services.Configure<IConfiguration>(updatedConfig);
-
-            builder.Services.AddOptions();
-            builder.Services.Configure<AssessorApiAuthentication>(updatedConfig.GetSection("AssessorApiAuthentication"));
         }
     }
 }
