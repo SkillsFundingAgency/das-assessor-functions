@@ -44,10 +44,16 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration["EnvironmentName"], $"SFA.DAS.Assessor.Functions_1.0");
                 
                 log.LogInformation($"Before var result = tableClient.Execute(operation).Result;");
-                var result = tableClient.Execute(operation).Result;
+                var executeResult = tableClient.Execute(operation);
+                
+                var result = executeResult.Result;
+
+                log.LogInformation($"result StatusCode: {executeResult.HttpStatusCode}");
+                log.LogInformation($"result is: {result}");
 
                 log.LogInformation($"Before var configItem = (ConfigurationItem)result;");
                 var configItem = (ConfigurationItem)result;
+                log.LogInformation($"configItem is: {configItem}");
 
                 log.LogInformation($"Before var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);");
                 var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
