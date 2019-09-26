@@ -3,13 +3,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Azure.Cosmos.Table;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using Newtonsoft.Json;
 
-[assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.WorkflowMigrator.Startup))]
+[assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
-namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
+namespace SFA.DAS.Assessor.Functions
 {
     public class Startup : FunctionsStartup
     {

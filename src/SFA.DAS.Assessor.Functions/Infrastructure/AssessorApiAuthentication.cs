@@ -1,11 +1,5 @@
-namespace SFA.DAS.Assessor.Functions
+namespace SFA.DAS.Assessor.Functions.Infrastructure
 {
-
-    // public class FunctionsConfiguration
-    // {
-    //     public AssessorApiAuthentication AssessorApiAuthentication { get; set; }
-    // }
-
     public class AssessorApiAuthentication
     {
         public string Instance { get; set; }
