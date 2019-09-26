@@ -42,11 +42,14 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 var tableClient = storageAccount.CreateCloudTableClient().GetTableReference("Configuration");
                 log.LogInformation($"Before var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration[\"EnvironmentName\"], $\"SFA.DAS.Assessor.Functions_1.0\");");
                 var operation = TableOperation.Retrieve<ConfigurationItem>(_configuration["EnvironmentName"], $"SFA.DAS.Assessor.Functions_1.0");
-
+                
+                log.LogInformation($"Before var result = tableClient.Execute(operation).Result;");
                 var result = tableClient.Execute(operation).Result;
 
+                log.LogInformation($"Before var configItem = (ConfigurationItem)result;");
                 var configItem = (ConfigurationItem)result;
 
+                log.LogInformation($"Before var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);");
                 var functionsConfig = JsonConvert.DeserializeObject<FunctionsConfiguration>(configItem.Data);
             }
             catch(Exception ex){
