@@ -5,9 +5,9 @@ using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 
-[assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.WorkflowMigrator.Startup))]
+[assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
-namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
+namespace SFA.DAS.Assessor.Functions
 {
     public class Startup : FunctionsStartup
     {
@@ -19,7 +19,8 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
             var nLogConfiguration = new NLogConfiguration();
 
-            builder.Services.AddLogging((options) => {
+            builder.Services.AddLogging((options) =>
+            {
                 options.SetMinimumLevel(LogLevel.Trace);
                 options.SetMinimumLevel(LogLevel.Trace);
                 options.AddNLog(new NLogProviderOptions
@@ -32,16 +33,21 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                 nLogConfiguration.ConfigureNLog(configuration);
             });
 
-            var updatedConfig = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .AddConfiguration(configuration)
-                .AddAzureTableStorageConfiguration(configuration["ConfigurationStorageConnectionString"], "SFA.DAS.Assessor.Functions", configuration["EnvironmentName"], "1.0")
+                .AddEnvironmentVariables()
+                .AddAzureTableStorageConfiguration(
+                    configuration["ConfigurationStorageConnectionString"],
+                    configuration["AppName"],
+                    configuration["EnvironmentName"],
+                    "1.0", "SFA.DAS.AssessorFunctions")
                 .Build();
 
-            builder.Services.Configure<IConfiguration>(updatedConfig);
-
             builder.Services.AddOptions();
-            builder.Services.Configure<AssessorApiAuthentication>(updatedConfig.GetSection("AssessorApiAuthentication"));
-            builder.Services.Configure<SqlConnectionStrings>(updatedConfig.GetSection("SqlConnectionStrings"));
+            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
+            
+            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
+            builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
         }
     }
 }

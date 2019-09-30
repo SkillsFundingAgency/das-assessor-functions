@@ -7,7 +7,9 @@ using NLog.Config;
 using NLog.Targets;
 using SFA.DAS.NLog.Targets.Redis.DotNetCore;
 
-public class NLogConfiguration
+namespace SFA.DAS.Assessor.Functions.Infrastructure
+{
+    public class NLogConfiguration
     {
         public void ConfigureNLog(IConfiguration configuration)
         {
@@ -58,3 +60,4 @@ public class NLogConfiguration
 
         private static LogLevel GetMinLogLevel() => LogLevel.FromString("Info");
     }
+}
