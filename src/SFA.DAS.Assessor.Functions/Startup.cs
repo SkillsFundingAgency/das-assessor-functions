@@ -41,6 +41,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
             builder.Services.AddOptions();
             builder.Services.Configure<AssessorApiAuthentication>(updatedConfig.GetSection("AssessorApiAuthentication"));
+            builder.Services.Configure<SqlConnectionStrings>(updatedConfig.GetSection("SqlConnectionStrings"));
         }
     }
 }
