@@ -7,14 +7,15 @@
         <e p="bin\Debug\netcoreapp2.1\bin" t="ExcludeRecursive" />
         <e p="host.json" t="Include" />
         <e p="Infrastructure" t="Include">
+          <e p="AssessorApiAuthentication.cs" t="Include" />
           <e p="AzureTableStorageConfigurationExtensions.cs" t="Include" />
           <e p="AzureTableStorageConfigurationProvider.cs" t="Include" />
           <e p="AzureTableStorageConfigurationSource.cs" t="Include" />
           <e p="ConfigurationItem.cs" t="Include" />
+          <e p="NLogConfiguration.cs" t="Include" />
           <e p="SqlConnectionStrings.cs" t="Include" />
         </e>
         <e p="local.settings.json" t="Include" />
-        <e p="nlog.config" t="Include" />
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">
             <e p="netcoreapp2.1" t="Include">
@@ -26,6 +27,36 @@
         <e p="SFA.DAS.Assessor.Functions.csproj" t="IncludeRecursive" />
         <e p="Startup.cs" t="Include" />
         <e p="WorkflowMigrator.cs" t="Include" />
+      </e>
+      <e p="SFA.DAS.Assessor.Functions.QnATypes" t="IncludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="Class1.cs" t="Include" />
+        <e p="obj" t="ExcludeRecursive">
+          <e p="Debug" t="Include">
+            <e p="netstandard2.0" t="Include">
+              <e p="SFA.DAS.Assessor.Functions.QnATypes.AssemblyInfo.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="SFA.DAS.Assessor.Functions.QnATypes.csproj" t="IncludeRecursive" />
+        <e p="Types" t="Include">
+          <e p="Answer.cs" t="Include" />
+          <e p="Condition.cs" t="Include" />
+          <e p="Feedback.cs" t="Include" />
+          <e p="FinancialApplicationGrade.cs" t="Include" />
+          <e p="Input.cs" t="Include" />
+          <e p="Next.cs" t="Include" />
+          <e p="NotRequiredCondition.cs" t="Include" />
+          <e p="Option.cs" t="Include" />
+          <e p="Page.cs" t="Include" />
+          <e p="PageDetails.cs" t="Include" />
+          <e p="PageOfAnswers.cs" t="Include" />
+          <e p="QnAData.cs" t="Include" />
+          <e p="Question.cs" t="Include" />
+          <e p="TabularData.cs" t="Include" />
+          <e p="TabularDataRow.cs" t="Include" />
+          <e p="ValidationDefinition.cs" t="Include" />
+        </e>
       </e>
       <e p="SFA.DAS.Assessor.Functions.sln" t="IncludeFlat" />
     </e>
