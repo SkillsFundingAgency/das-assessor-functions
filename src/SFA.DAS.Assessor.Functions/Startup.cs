@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.StartupConfiguration;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -45,9 +46,10 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddOptions();
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
-            
-            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
             builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
+
+            builder.Services.ConfigureHttpClients(config.GetSection("AssessorApiAuthentication").Get<AssessorApiAuthentication>(), configuration);
+            builder.Services.ConfigureDependencies();
         }
     }
 }
