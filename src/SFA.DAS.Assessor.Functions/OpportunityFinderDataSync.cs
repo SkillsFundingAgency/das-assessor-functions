@@ -1,8 +1,8 @@
 using System;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 
 namespace SFA.DAS.Assessor.Functions.OpportunityFinder
 {
