@@ -21,6 +21,8 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         private readonly IOptions<SqlConnectionStrings> _configuration;
         private readonly SqlConnectionStrings _connectionStrings;
 
+        private const string _schema = "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"id\":\"http://example.com/example.json\",\"title\":\"ApplicationData\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"OrganisationReferenceId\",\"OrganisationName\"],\"properties\":{\"OrganisationReferenceId\":{\"type\":\"string\",\"minLength\":1},\"OrganisationName\":{\"type\":\"string\",\"minLength\":1},\"OrganisationType\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"ReferenceNumber\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"StandardName\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"StandardCode\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"TradingName\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"UseTradingName\":{\"minLength\":1,\"type\":\"boolean\"},\"ContactGivenName\":{\"minLength\":1},\"CompanySummary\":{\"oneOf\":[{\"type\":\"null\"},{\"$ref\":\"#/definitions/CompaniesHouseSummary\"}]},\"CharitySummary\":{\"oneOf\":[{\"type\":\"null\"},{\"$ref\":\"#/definitions/CharityCommissionSummary\"}]}},\"definitions\":{\"CompaniesHouseSummary\":{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"CompanyName\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"CompanyNumber\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"Status\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"CompanyType\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"CompanyTypeDescription\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"IncorporationDate\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"format\":\"date-time\"},\"Directors\":{\"oneOf\":[{\"type\":\"array\"},{\"type\":\"null\"}],\"items\":{\"$ref\":\"#/definitions/DirectorInformation\"}},\"PersonsWithSignificantControl\":{\"oneOf\":[{\"type\":\"array\"},{\"type\":\"null\"}],\"items\":{\"$ref\":\"#/definitions/PersonWithSignificantControlInformation\"}},\"ManualEntryRequired\":{\"minLength\":1,\"type\":\"boolean\"}}},\"DirectorInformation\":{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"Id\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"Name\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"DateOfBirth\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"AppointedDate\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"format\":\"date-time\"},\"ResignedDate\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"format\":\"date-time\"},\"Active\":{\"minLength\":1,\"type\":\"boolean\"}}},\"PersonWithSignificantControlInformation\":{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"Id\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"Name\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"DateOfBirth\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"NotifiedDate\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"format\":\"date-time\"},\"CeasedDate\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"format\":\"date-time\"},\"Active\":{\"minLength\":1,\"type\":\"boolean\"}}},\"CharityCommissionSummary\":{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"CharityName\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"CharityNumber\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"IncorporatedOn\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}],\"format\":\"date-time\"},\"Trustees\":{\"oneOf\":[{\"type\":\"array\"},{\"type\":\"null\"}],\"items\":{\"$ref\":\"#/definitions/TrusteeInformation\"}},\"TrusteeManualEntryRequired\":{\"minLength\":1,\"type\":\"boolean\"}}},\"TrusteeInformation\":{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"Id\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"Name\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}}}}}";
+
         public WorkflowMigrator(IOptions<SqlConnectionStrings> configuration, IOptions<SqlConnectionStrings> connectionStrings)
         {
             _configuration = configuration;
@@ -28,27 +30,54 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         }
 
         [FunctionName("WorkflowMigrator")]
-        public IActionResult Run( [HttpTrigger(AuthorizationLevel.Function, "post", Route = "workflowMigrator")] HttpRequest req, ILogger log)
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "workflowMigrator")] HttpRequest req, ILogger log)
         {
             log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
 
-            using (var applyConnection = new SqlConnection(_connectionStrings.Apply))
-            using (var qnaConnection = new SqlConnection(_connectionStrings.QnA))
+            try
             {
-                // Convert tables over to new format.
-                var projectId = CreateProject(qnaConnection);
-                CreateWorkflows(applyConnection, qnaConnection, projectId);
-                // Merge assets into QnaData
-                MergeAssets(applyConnection, qnaConnection, projectId);
-
-                CreateNotRequiredConditions(qnaConnection, projectId);
-
-                CreateActivatedByPageId(qnaConnection, projectId);
-
-                ConvertNextConditionsToArray(qnaConnection, projectId);
+                using (var applyConnection = new SqlConnection(_connectionStrings.Apply))
+                using (var qnaConnection = new SqlConnection(_connectionStrings.QnA))
+                {
+                    var projectId = CreateProject(qnaConnection);
+                    CreateWorkflows(applyConnection, qnaConnection, projectId);
+                    MergeAssets(applyConnection, qnaConnection, projectId);
+                    CreateNotRequiredConditions(qnaConnection, projectId);
+                    CreateActivatedByPageId(qnaConnection, projectId);
+                    ConvertNextConditionsToArray(qnaConnection, projectId);
+                    ConvertDateOfBirthToMonthAndYear(qnaConnection, projectId);
+                }
+            }
+            catch (Exception ex)
+            { 
+                return (ActionResult)new OkObjectResult($"Error: {ex.Message}, Stack: {ex.StackTrace}");
             }
 
-            return (ActionResult) new OkObjectResult("Ok");
+            return (ActionResult)new OkObjectResult("Ok");
+        }
+
+        private void ConvertDateOfBirthToMonthAndYear(SqlConnection qnaConnection, Guid projectId)
+        {
+            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new { projectId });
+            foreach (var workflowSection in qnaSections)
+            {
+                var qnaData = JsonConvert.DeserializeObject<QnAData>((string)workflowSection.QnAData);
+                foreach (var page in qnaData.Pages)
+                {
+                    foreach (var question in page.Questions)
+                    {
+                        if(question.Input.Type == "DateOfBirth")
+                        {
+                            question.Input.Type = "MonthAndYear";
+                            foreach(var validation in question.Input.Validations)
+                            {
+                                validation.Name = validation.Name.Replace("DateOfBirth", "MonthAndYear");
+                            }
+                        }
+                    }
+                }
+                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id });
+            }
         }
 
         private static Guid CreateProject(IDbConnection qnaConnection)
@@ -58,7 +87,8 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                                             VALUES (@projectId, 'EPAO Project', 'EPAO', @applicationDataSchema, @createdAt, 'Migration')",
                 new
                 {
-                    projectId, applicationDataSchema = "{   '$schema': 'http://json-schema.org/draft-04/schema#',   'definitions': {},   'id': 'http://example.com/example.json',   'properties': {     'TradingName': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'UseTradingName': {       'minLength': 1,       'type': 'boolean'     },     'ContactGivenName': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'ReferenceNumber': {        'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'StandardCode': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },      'StandardName': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'OrganisationReferenceId': {       'minLength': 1,       'type': 'string'     },     'OrganisationName': {       'minLength': 1,       'type': 'string'     }   },   'additionalProperties': false,   'required': [     'OrganisationReferenceId',     'OrganisationName'   ],   'type': 'object'  }",
+                    projectId,
+                    applicationDataSchema = _schema,
                     createdAt = DateTime.UtcNow
                 });
             return projectId;
@@ -70,18 +100,29 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
             foreach (var atWorkflow in atWorkflows)
             {
                 qnaConnection.Execute(@"INSERT INTO Workflows (Id, Description, Version, Type, Status, CreatedAt, CreatedBy, ProjectId, ApplicationDataSchema) 
-                                                            VALUES (@id, @description, @version, @type, @status, @createdAt, @createdBy, @projectId, @applicationDataSchema)", 
-                    new {atWorkflow.Id, atWorkflow.Description, atWorkflow.Version, atWorkflow.Type, atWorkflow.Status, createdAt = DateTime.UtcNow, createdBy = "Migration", projectId, applicationDataSchema = "{   '$schema': 'http://json-schema.org/draft-04/schema#',   'definitions': {},   'id': 'http://example.com/example.json',   'properties': {     'TradingName': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'UseTradingName': {       'minLength': 1,       'type': 'boolean'     },     'ContactGivenName': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'ReferenceNumber': {        'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'StandardCode': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },      'StandardName': {       'anyOf': [             {'type':'string'},             {'type':'null'}         ]     },     'OrganisationReferenceId': {       'minLength': 1,       'type': 'string'     },     'OrganisationName': {       'minLength': 1,       'type': 'string'     }   },   'additionalProperties': false,   'required': [     'OrganisationReferenceId',     'OrganisationName'   ],   'type': 'object'  }"});
+                                                            VALUES (@id, @description, @version, @type, @status, @createdAt, @createdBy, @projectId, @applicationDataSchema)",
+                    new
+                    {
+                        atWorkflow.Id,
+                        atWorkflow.Description,
+                        atWorkflow.Version,
+                        atWorkflow.Type,
+                        atWorkflow.Status,
+                        createdAt = DateTime.UtcNow,
+                        createdBy = "Migration",
+                        projectId,
+                        applicationDataSchema = _schema
+                    });
 
                 var atSections = applyConnection.Query("SELECT * FROM WorkflowSections WHERE WorkflowId = @workflowId", new { workflowId = atWorkflow.Id });
 
                 foreach (var atSection in atSections)
                 {
                     qnaConnection.Execute(@"INSERT INTO WorkflowSequences (Id, WorkflowId, SequenceNo, SectionNo, SectionId, Status, IsActive) 
-                    VALUES (@id, @workflowId, @sequenceNo, @sectionNo, @sectionId, 'Draft', 1)", new {id = Guid.NewGuid(), workflowId = atWorkflow.Id, sequenceNo = atSection.SequenceId, sectionNo = atSection.SectionId, sectionId = atSection.Id});
+                    VALUES (@id, @workflowId, @sequenceNo, @sectionNo, @sectionId, 'Draft', 1)", new { id = Guid.NewGuid(), workflowId = atWorkflow.Id, sequenceNo = atSection.SequenceId, sectionNo = atSection.SectionId, sectionId = atSection.Id });
 
                     qnaConnection.Execute(@"INSERT INTO WorkflowSections (Id, ProjectId, QnaData, Title, LinkTitle, Status, DisplayType) 
-                                                VALUES (@id, @projectId, @qnaData, @title, @linkTitle, 'Draft', @displayType)", new {id = atSection.Id, projectId, qnaData = atSection.QnAData, title = atSection.Title, linkTitle = atSection.LinkTitle, displayType = atSection.DisplayType});
+                                                VALUES (@id, @projectId, @qnaData, @title, @linkTitle, 'Draft', @displayType)", new { id = atSection.Id, projectId, qnaData = atSection.QnAData, title = atSection.Title, linkTitle = atSection.LinkTitle, displayType = atSection.DisplayType });
                 }
             }
         }
@@ -89,7 +130,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         private static void MergeAssets(IDbConnection applyConnection, IDbConnection qnaConnection, Guid projectId)
         {
             var assets = applyConnection.Query("SELECT * FROM Assets").ToList();
-            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new {projectId});
+            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new { projectId });
             foreach (var workflowSection in qnaSections)
             {
                 var qnaData = (string)workflowSection.QnAData;
@@ -108,39 +149,39 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
 
         private static void CreateNotRequiredConditions(SqlConnection qnaConnection, Guid projectId)
         {
-            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new {projectId});
+            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new { projectId });
             foreach (var workflowSection in qnaSections)
             {
                 var qnaData = JsonConvert.DeserializeObject<QnAData>((string)workflowSection.QnAData);
                 foreach (var page in qnaData.Pages)
                 {
                     var notRequiredOrgTypes = page.NotRequiredOrgTypes;
-                    
+
                     page.NotRequiredConditions = new List<NotRequiredCondition>();
-                    
+
                     if (notRequiredOrgTypes.Length > 0)
                     {
-                        page.NotRequiredConditions.Add(new NotRequiredCondition {Field = "OrganisationType", IsOneOf = notRequiredOrgTypes});
+                        page.NotRequiredConditions.Add(new NotRequiredCondition { Field = "OrganisationType", IsOneOf = notRequiredOrgTypes });
                     }
 
                     page.NotRequiredOrgTypes = null;
                 }
 
-                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new {qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id});
+                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id });
             }
         }
 
         private static void CreateActivatedByPageId(IDbConnection qnaConnection, Guid projectId)
         {
-            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new {projectId});
+            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new { projectId });
             foreach (var workflowSection in qnaSections)
             {
-                var qnaData = JsonConvert.DeserializeObject<QnAData>((string) workflowSection.QnAData);
+                var qnaData = JsonConvert.DeserializeObject<QnAData>((string)workflowSection.QnAData);
                 for (int pageIndex = 0; pageIndex < qnaData.Pages.Count; pageIndex++)
                 {
                     var currentPage = qnaData.Pages[pageIndex];
                     var nextPageActions = currentPage.Next.Where(n => n.Action == "NextPage").ToList();
-                    
+
                     if (nextPageActions.Count > 1)
                     {
                         foreach (var nextPageAction in nextPageActions)
@@ -153,30 +194,30 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                         }
                     }
                 }
-                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new {qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id});
+                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id });
             }
         }
 
         private void ConvertNextConditionsToArray(SqlConnection qnaConnection, Guid projectId)
         {
-            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new {projectId});
+            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new { projectId });
             foreach (var workflowSection in qnaSections)
             {
-                var qnaData = JsonConvert.DeserializeObject<QnAData>((string) workflowSection.QnAData);
+                var qnaData = JsonConvert.DeserializeObject<QnAData>((string)workflowSection.QnAData);
                 foreach (var page in qnaData.Pages)
                 {
-                    foreach(var next in page.Next)
+                    foreach (var next in page.Next)
                     {
                         next.Conditions = new List<Condition>();
-                        if(next.Condition != null)
+                        if (next.Condition != null)
                         {
-                            next.Conditions.Add(new Condition{ QuestionId = next.Condition.QuestionId, MustEqual = next.Condition.MustEqual, QuestionTag = next.Condition.QuestionTag});
+                            next.Conditions.Add(new Condition { QuestionId = next.Condition.QuestionId, MustEqual = next.Condition.MustEqual, QuestionTag = next.Condition.QuestionTag });
                             next.Condition = null;
                         }
                     }
                 }
-                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new {qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id});
-            }            
+                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id });
+            }
         }
     }
 }

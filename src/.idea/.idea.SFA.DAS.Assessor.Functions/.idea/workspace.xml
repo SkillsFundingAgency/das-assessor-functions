@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="db959f0d-8f2a-4ad1-a529-5e80e73ba667" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/AzureTableStorageConfigurationExtensions.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/AzureTableStorageConfigurationProvider.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/AzureTableStorageConfigurationSource.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/ConfigurationItem.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/SqlConnectionStrings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/contentModel.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/SFA.DAS.Assessor.Functions.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/SFA.DAS.Assessor.Functions.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Startup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Startup.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" afterDir="false" />
-    </list>
+    <list default="true" id="db959f0d-8f2a-4ad1-a529-5e80e73ba667" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,6 +12,8 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Infrastructure/AssessorApiAuthentication.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Startup.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
@@ -87,6 +78,7 @@
       <workItem from="1567514366169" duration="860000" />
       <workItem from="1569222054247" duration="499000" />
       <workItem from="1569226003226" duration="3527000" />
+      <workItem from="1569845599463" duration="220000" />
     </task>
     <servers />
   </component>
