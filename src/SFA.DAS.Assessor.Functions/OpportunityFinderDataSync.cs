@@ -1,24 +1,39 @@
 using System;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using SFA.DAS.Assessor.Functions.ApiClient;
 
 namespace SFA.DAS.Assessor.Functions.OpportunityFinder
 {
     public class OpportunityFinderDataSync
     {
-        private readonly AssessorApiAuthentication assessorApiAuthenticationOptions;
+        private readonly IAssessorServiceApiClient _assessorApiClient;
 
-        public OpportunityFinderDataSync(IOptions<AssessorApiAuthentication> assessorApiAuthenticationOptions)
+        public OpportunityFinderDataSync(IAssessorServiceApiClient assessorServiceApiClient)
         {
-            this.assessorApiAuthenticationOptions = assessorApiAuthenticationOptions.Value;
+            _assessorApiClient = assessorServiceApiClient;
         }
 
         [FunctionName("OpportunityFinderDataSync")]
-        public void Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
+        public void Run([TimerTrigger("0 0 7 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+            try
+            {
+                if (myTimer.IsPastDue)
+                {
+                    log.LogInformation("Update standard summary timer trigger is running later than scheduled");
+                }
+
+                log.LogInformation($"Update standard summary function started");
+
+                _assessorApiClient.UpdateStandardSummary();
+
+                log.LogInformation("Update standard summary function completed");
+            }
+            catch(Exception ex)
+            {
+                log.LogError(ex, "Update standard summary function failed");
+            }
         }
     }
 }
