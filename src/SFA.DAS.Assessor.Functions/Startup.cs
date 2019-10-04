@@ -47,9 +47,8 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddOptions();
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
             builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
-            
-            builder.Services.AddHttpClient<AssessorServiceApiClient>();
-            builder.Services.AddTransient<IAssessorServiceApiClient, AssessorServiceApiClient>();
+
+            builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();
         }
     }
 }
