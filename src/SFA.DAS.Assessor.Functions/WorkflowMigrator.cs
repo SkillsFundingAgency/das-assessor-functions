@@ -46,6 +46,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
                     CreateActivatedByPageId(qnaConnection, projectId);
                     ConvertNextConditionsToArray(qnaConnection, projectId);
                     ConvertDateOfBirthToMonthAndYear(qnaConnection, projectId);
+                    UpdateActiveStatusses(qnaConnection, projectId);
                 }
             }
             catch (Exception ex)
@@ -54,6 +55,30 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
             }
 
             return (ActionResult)new OkObjectResult("Ok");
+        }
+
+        private void UpdateActiveStatusses(SqlConnection qnaConnection, Guid projectId)
+        {
+            var qnaSections = qnaConnection.Query("SELECT * FROM WorkflowSections WHERE ProjectId = @projectId", new { projectId });
+            foreach (var workflowSection in qnaSections)
+            {
+                var qnaData = JsonConvert.DeserializeObject<QnAData>((string) workflowSection.QnAData);
+                foreach (var page in qnaData.Pages)
+                {
+                    if (page.SectionId == "1" && page.SequenceId == "1" && page.PageId == "9")
+                    {
+                        page.Active = false;
+                        page.ActivatedByPageId = "8";
+                    }
+                    
+                    else if (page.SectionId == "1" && page.SequenceId == "1" && page.PageId == "10")
+                    {
+                        page.Active = false;
+                        page.ActivatedByPageId = "9";
+                    }
+                }
+                qnaConnection.Execute("UPDATE WorkflowSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = workflowSection.Id });
+            }
         }
 
         private void ConvertDateOfBirthToMonthAndYear(SqlConnection qnaConnection, Guid projectId)
