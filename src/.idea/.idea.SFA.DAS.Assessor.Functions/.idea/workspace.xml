@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="db959f0d-8f2a-4ad1-a529-5e80e73ba667" name="Default Changelist" comment="" />
+    <list default="true" id="db959f0d-8f2a-4ad1-a529-5e80e73ba667" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/contentModel.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.SFA.DAS.Assessor.Functions/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,6 +25,7 @@
       <list>
         <option value="$PROJECT_DIR$/SFA.DAS.Assessor.Functions.WorkflowMigrator/WorkflowMigrator.cs" />
         <option value="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/Startup.cs" />
+        <option value="$PROJECT_DIR$/SFA.DAS.Assessor.Functions/WorkflowMigrator.cs" />
       </list>
     </option>
   </component>
@@ -79,6 +84,7 @@
       <workItem from="1569222054247" duration="499000" />
       <workItem from="1569226003226" duration="3527000" />
       <workItem from="1569845599463" duration="220000" />
+      <workItem from="1570449566282" duration="1986000" />
     </task>
     <servers />
   </component>
