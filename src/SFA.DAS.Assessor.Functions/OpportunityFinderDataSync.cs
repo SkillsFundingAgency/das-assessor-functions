@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.ApiClient;
@@ -17,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.OpportunityFinder
         }
 
         [FunctionName("OpportunityFinderDataSync")]
-        public void Run([TimerTrigger("0 0 7 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 0 7 * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
@@ -27,8 +28,9 @@ namespace SFA.DAS.Assessor.Functions.OpportunityFinder
                 }
 
                 log.LogInformation($"Update standard summary function started");
+                log.LogInformation($"Using api base address: {_assessorApiClient.Client.BaseAddress}");
 
-                _assessorApiClient.UpdateStandardSummary();
+                await _assessorApiClient.UpdateStandardSummary();
 
                 log.LogInformation("Update standard summary function completed");
             }
