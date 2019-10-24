@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 
 
@@ -37,9 +38,19 @@ namespace SFA.DAS.Assessor.Functions
                     throw new ApplicationException("Workflow of Type 'EPAO' not found.");
                 }
 
-                var applyApplications = applyConnection.Query("SELECT * FROM Applications WHERE ApplicationStatus NOT IN ('Approved','Rejected')");
+                var applyApplications = applyConnection.Query(@"SELECT *, JSON_Value(ApplicationData, '$.StandardCode') AS StandardCode, 
+                                                                JSON_QUERY(ApplicationSections.QnaData, '$.FinancialApplicationGrade') AS FinancialGrade,
+                                                                JSON_QUERY(ApplicationSections.QnaData, '$.Pages[0].PageOfAnswers[0].Answers') AS Answers
+                                                                FROM Applications 
+                                                                INNER JOIN ApplicationSections ON Applications.Id = ApplicationSections.ApplicationId
+                                                                WHERE ApplicationStatus NOT IN ('Approved','Rejected') AND ApplicationSections.SectionId = 3");
+                
                 foreach (var originalApplyApplication in applyApplications)
                 {
+                    originalApplyApplication.AnswersArray = JArray.Parse(originalApplyApplication.Answers);
+                    
+
+
                     var qnaApplicationId = Guid.NewGuid();
 
                     // Create Qna Applications record
@@ -51,6 +62,7 @@ namespace SFA.DAS.Assessor.Functions
 
                     foreach (var applySequence in applySequences) 
                     {
+                        // Create Qna ApplicationSequences record
                         qnaConnection.Execute("INSERT INTO ApplicationSequences (Id, ApplicationId, SequenceNo, IsActive) VALUES (@Id, @ApplicationId, @SequenceNo, @IsActive)",
                                                 new {Id = applySequence.Id, ApplicationId = qnaApplicationId, SequenceNo = applySequence.SequenceId, IsActive = applySequence.IsActive});
 
@@ -58,25 +70,67 @@ namespace SFA.DAS.Assessor.Functions
                                                                     new {ApplicationId = originalApplyApplication.Id, SequenceId = applySequence.SequenceId});
                         foreach (var applySection in applySections)
                         {
+                            // Create Qna ApplicationSections record
                             qnaConnection.Execute(@"INSERT INTO ApplicationSections (Id, ApplicationId, SequenceNo, SectionNo, QnaData, Title, LinkTitle, DisplayType, SequenceId) 
                                                     VALUES (@Id, @ApplicationId, @SequenceNo, @SectionNo, @QnaData, @Title, @LinkTitle, @DisplayType, @SequenceId)",
                                                     new {Id = applySection.Id, ApplicationId = qnaApplicationId, SequenceNo = applySequence.SequenceId, SectionNo = applySection.SectionId, QnaData = applySection.QnAData, Title = applySection.Title, LinkTitle = applySection.LinkTitle, DisplayType = applySection.DisplayType, SequenceId = applySequence.Id});
                         }
                     }
+
+                    var applyingOrganisation = applyConnection.QuerySingle("SELECT RoEPAOApproved", new {Id = originalApplyApplication.ApplyingOrganisationId});
+
+                    Guid organisationId;
+                    if (!applyingOrganisation.RoEPAOApproved)
+                    {
+                        // Create Organisation record if RoEPAOApproved is false
+                        // Generate new EPAOrgId
+
+                        var sqlToGetHighestOrganisationId = "select max(EndPointAssessorOrganisationId) OrgId from organisations where EndPointAssessorOrganisationId like 'EPA%' " + 
+                                                " and isnumeric(replace(EndPointAssessorOrganisationId,'EPA','')) = 1";
+                        var highestEpaOrgId = assessorConnection.ExecuteScalar<string>(sqlToGetHighestOrganisationId);
+
+                        var nextEpaOrgId = int.TryParse(highestEpaOrgId.Replace("EPA", string.Empty), out int currentIntValue) 
+                            ? $@"EPA{currentIntValue + 1:D4}" : 
+                            string.Empty;
+
+                        organisationId = Guid.NewGuid();
+                        assessorConnection.Execute(@"INSERT INTO Organisation (Id, CreatedAt, EndPointAssessorName, EndPointAssessorOrganisationId, EndPointAssessorUkprn, PrimaryContact, Status, OrganisationData, ApiEnabled) 
+                                                    VALUES (@Id, @CreatedAt, @EndPointAssessorName, @EndPointAssessorOrganisationId, @EndPointAssessorUkprn, @PrimaryContact, 'Applying', @OrganisationData, 0)",
+                                                    new {
+                                                        Id = organisationId, 
+                                                        CreatedAt = originalApplyApplication.CreatedAt, 
+                                                        EndPointAssessorName = originalApplyApplication.Name,
+                                                        EndPointAssessorOrganisationId = nextEpaOrgId, 
+                                                        EndPointAssessorUkPrn = "",
+                                                        PrimaryContact = "",
+                                                        OrganisationData = originalApplyApplication.OrganisationDetails
+                                                    });
+                    }
+                    else
+                    {
+                        // Get Organisation Id from existing Assessor Org record.
+                        organisationId = assessorConnection.QuerySingle<Guid>("SELECT Id FROM Organisations WHERE EndPointAssessorUkprn = @ukprn", new{ukprn = applyingOrganisation.OrganisationUKPRN});
+                    }
+                    
+                    // Create Assessor Apply record.
+                    assessorConnection.Execute(@"INSERT INTO Apply (Id, ApplicationId, OrganisationId, ApplicationStatus, ReviewStatus, ApplyData, FinancialReviewStatus, FinancialGrade, StandardCode, CreatedAt, CreatedBy) 
+                                                VALUES (NEWID(), @ApplicationId, @OrganisationId, @ApplicationStatus, @ReviewStatus, @ApplyData, @FinancialReviewStatus, @FinancialGrade, @StandardCode, @CreatedAt, @CreatedBy)", new {
+                        ApplicationId = qnaApplicationId,
+                        OrganisationId = organisationId,
+                        ApplicationStatus = originalApplyApplication.ApplicationStatus,
+                        ReviewStatus = "", //TODO: ReviewStatus
+                        ApplyData = "", // TODO: ApplyData
+                        FinancialReviewStatus = "", // TODO: FinancialReviewStatus
+                        FinancialGrade = "",
+                        StandardCode = "",
+                        CreatedAt = originalApplyApplication.CreatedAt,
+                        CreatedBy = originalApplyApplication.CreatedBy
+                    });
+
+                    // Convert ApplicationData
+                    // Modify QnAData to new format.
                 }
             }
-
-
-            // For each existing in-flight Application in Apply.
-            
-            // Convert ApplicationData
-            // Create Qna ApplicationSequences record
-            // Create Qna ApplicationSections record
-            // Modify QnAData to new format.
-            // Create Assessor Apply record.
-            // Create Organisation record if it ain't there.
-            
-
             return new OkResult();
         }
     }
