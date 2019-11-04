@@ -85,22 +85,17 @@ namespace SFA.DAS.Assessor.Functions
                         // Create Organisation record if RoEPAOApproved is false
                         // Generate new EPAOrgId
 
-                        var sqlToGetHighestOrganisationId = "select max(EndPointAssessorOrganisationId) OrgId from organisations where EndPointAssessorOrganisationId like 'EPA%' " + 
-                                                " and isnumeric(replace(EndPointAssessorOrganisationId,'EPA','')) = 1";
-                        var highestEpaOrgId = assessorConnection.ExecuteScalar<string>(sqlToGetHighestOrganisationId);
-
-                        var nextEpaOrgId = int.TryParse(highestEpaOrgId.Replace("EPA", string.Empty), out int currentIntValue) 
-                            ? $@"EPA{currentIntValue + 1:D4}" : 
-                            string.Empty;
+                        string nextEpaOrgId = GetNextEpaOrgId(assessorConnection);
 
                         organisationId = Guid.NewGuid();
                         assessorConnection.Execute(@"INSERT INTO Organisation (Id, CreatedAt, EndPointAssessorName, EndPointAssessorOrganisationId, EndPointAssessorUkprn, PrimaryContact, Status, OrganisationData, ApiEnabled) 
                                                     VALUES (@Id, @CreatedAt, @EndPointAssessorName, @EndPointAssessorOrganisationId, @EndPointAssessorUkprn, @PrimaryContact, 'Applying', @OrganisationData, 0)",
-                                                    new {
-                                                        Id = organisationId, 
-                                                        CreatedAt = originalApplyApplication.CreatedAt, 
+                                                    new
+                                                    {
+                                                        Id = organisationId,
+                                                        CreatedAt = originalApplyApplication.CreatedAt,
                                                         EndPointAssessorName = originalApplyApplication.Name,
-                                                        EndPointAssessorOrganisationId = nextEpaOrgId, 
+                                                        EndPointAssessorOrganisationId = nextEpaOrgId,
                                                         EndPointAssessorUkPrn = "",
                                                         PrimaryContact = "",
                                                         OrganisationData = originalApplyApplication.OrganisationDetails
@@ -132,6 +127,18 @@ namespace SFA.DAS.Assessor.Functions
                 }
             }
             return new OkResult();
+        }
+
+        private static string GetNextEpaOrgId(SqlConnection assessorConnection)
+        {
+            var sqlToGetHighestOrganisationId = "select max(EndPointAssessorOrganisationId) OrgId from organisations where EndPointAssessorOrganisationId like 'EPA%' " +
+                                                            " and isnumeric(replace(EndPointAssessorOrganisationId,'EPA','')) = 1";
+            var highestEpaOrgId = assessorConnection.ExecuteScalar<string>(sqlToGetHighestOrganisationId);
+
+            var nextEpaOrgId = int.TryParse(highestEpaOrgId.Replace("EPA", string.Empty), out int currentIntValue)
+                ? $@"EPA{currentIntValue + 1:D4}" :
+                string.Empty;
+            return nextEpaOrgId;
         }
     }
 }
