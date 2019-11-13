@@ -58,7 +58,7 @@ namespace SFA.DAS.Assessor.Functions
 
                         foreach (var applySection in applySections)
                         {
-                            if (applySection.SequenceId == applySequence.Id)
+                            if (applySection.SequenceId == applySequence.SequenceId)
                             {
                                 CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
                             }
@@ -120,7 +120,7 @@ namespace SFA.DAS.Assessor.Functions
                 sequences.Add(sequenceObject);
                 foreach (var applySection in applySections)
                 {
-                    if (applySection.SequenceId == sequence.Id)
+                    if (applySection.SequenceId == sequence.SequenceId)
                     {
                         var sectionObject = new JObject();
                         sectionObject.Add("SectionId", applySection.Id);
