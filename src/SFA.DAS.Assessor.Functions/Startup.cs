@@ -49,6 +49,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
 
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();
+            builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
         }
     }
 }

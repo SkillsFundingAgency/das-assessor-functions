@@ -28,7 +28,7 @@ namespace SFA.DAS.Assessor.Functions.WorkflowMigrator
         }
 
         [FunctionName("WorkflowMigrator")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "workflowMigrator")] HttpRequest req, ILogger log)
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "old")] HttpRequest req, ILogger log)
         {
             log.LogInformation($"WorkflowMigrator - HTTP trigger function executed at: {DateTime.Now}");
 

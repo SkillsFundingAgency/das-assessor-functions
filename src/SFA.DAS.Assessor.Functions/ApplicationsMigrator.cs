@@ -19,14 +19,16 @@ namespace SFA.DAS.Assessor.Functions
     public class ApplicationsMigrator
     {
         private readonly SqlConnectionStrings _connectionStrings;
+        private readonly IQnaDataTranslator _qnaDataTranslator;
 
-        public ApplicationsMigrator(IOptions<SqlConnectionStrings> connectionStrings)
+        public ApplicationsMigrator(IOptions<SqlConnectionStrings> connectionStrings, IQnaDataTranslator qnaDataTranslator)
         {
             _connectionStrings = connectionStrings.Value;
+            _qnaDataTranslator = qnaDataTranslator;
         }
         
         [FunctionName("ApplicationsMigrator")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "applicationsMigrator")]
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "workflowMigrator")]
             HttpRequest req, ILogger log)
         {
             log.LogInformation($"ApplicationsMigrator - HTTP trigger function executed at: {DateTime.Now}");
@@ -94,10 +96,14 @@ namespace SFA.DAS.Assessor.Functions
                             CreatedAt = originalApplyApplication.CreatedAt,
                             CreatedBy = originalApplyApplication.CreatedBy
                         });
+
                         // Convert ApplicationData
-                        // Modify QnAData to new format.
+                        
                     }
                 }
+
+                // Translate QnAData to new format.
+                _qnaDataTranslator.Translate(qnaConnection);
             }
             return new OkResult();
         }
@@ -116,16 +122,37 @@ namespace SFA.DAS.Assessor.Functions
             {
                 var sequenceObject = new JObject();
                 sequenceObject.Add("SequenceId", sequence.Id);
+                sequenceObject.Add("SequenceNo", sequence.SequenceId);
+                sequenceObject.Add("Status", ""); // TODO: Sequence Status
+                sequenceObject.Add("IsActive", sequence.IsActive); 
+                sequenceObject.Add("NotRequired", sequence.NotRequired); 
+                sequenceObject.Add("ApprovedDate", ""); // TODO: ApprovedDate
+                sequenceObject.Add("ApprovedBy", ""); // TODO: ApprovedBy
 
-                sequences.Add(sequenceObject);
+                var sections = new JArray();
+
                 foreach (var applySection in applySections)
                 {
                     if (applySection.SequenceId == sequence.SequenceId)
                     {
                         var sectionObject = new JObject();
                         sectionObject.Add("SectionId", applySection.Id);
+                        sectionObject.Add("SectionNo", applySection.SectionId);
+                        sectionObject.Add("Status", applySection.Status);
+
+                        sectionObject.Add("ReviewStartDate", ""); // TODO: ReviewStartDate
+                        sectionObject.Add("ReviewedBy", ""); // TODO: ReviewedBy
+                        sectionObject.Add("EvaluatedDate", ""); // TODO: EvaluatedDate
+                        sectionObject.Add("EvaluatedBy", ""); // TODO: EvaluatedBy
+
+                        sectionObject.Add("NotRequired", applySection.NotRequired);
+                        sectionObject.Add("RequestedFeedbackAnswered", null);
+                        sections.Add(sectionObject);
                     }
                 }
+                sequenceObject.Add("Sections", sections);
+
+                sequences.Add(sequenceObject);                
             }
 
             applyDataObject.Add("Sequences", sequences);
@@ -133,6 +160,8 @@ namespace SFA.DAS.Assessor.Functions
             var applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
 
             applyDataObject.Add("Apply",applicationData);
+
+            applyDataObject.Add("OriginalApplicationId", originalApplyApplication.OriginalApplicationId);
 
             return applyDataObject.ToString();
         }
@@ -234,13 +263,14 @@ namespace SFA.DAS.Assessor.Functions
 
         private static IEnumerable<dynamic> GetCurrentApplyApplications(SqlConnection applyConnection)
         {
-            return applyConnection.Query(@"SELECT *, JSON_Value(ApplicationData, '$.StandardCode') AS StandardCode, 
+            return applyConnection.Query(@"SELECT TOP(10) *, JSON_Value(ApplicationData, '$.StandardCode') AS StandardCode, 
                                                                 JSON_QUERY(ApplicationSections.QnaData, '$.FinancialApplicationGrade') AS FinancialGrade,
                                                                 JSON_QUERY(ApplicationSections.QnaData, '$.Pages[0].PageOfAnswers[0].Answers') AS FinancialAnswers,
 																ApplicationSections.Id AS SectionGuid,
 																ApplicationSequences.Id AS SequenceGuid,
 																Organisations.Name,
-																Organisations.OrganisationDetails
+																Organisations.OrganisationDetails,
+																Applications.Id AS OriginalApplicationId
                                                                 FROM Applications 
                                                                 INNER JOIN ApplicationSections ON Applications.Id = ApplicationSections.ApplicationId
 																INNER JOIN ApplicationSequences ON Applications.Id = ApplicationSequences.ApplicationId AND ApplicationSequences.SequenceId = 2
