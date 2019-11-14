@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SFA.DAS.QnA.Api.Types.Page;
 
@@ -11,12 +12,12 @@ namespace SFA.DAS.Assessor.Functions
 {
     public interface IQnaDataTranslator
     {
-        void Translate(System.Data.SqlClient.SqlConnection qnaConnection);
+        void Translate(System.Data.SqlClient.SqlConnection qnaConnection, Microsoft.Extensions.Logging.ILogger log);
     }
 
     public class QnaDataTranslator : IQnaDataTranslator
     {
-        public void Translate(SqlConnection qnaConnection)
+        public void Translate(SqlConnection qnaConnection, Microsoft.Extensions.Logging.ILogger log)
         {
             var qnaSections = qnaConnection.Query("SELECT * FROM ApplicationSections");
             foreach (var applicationSection in qnaSections)
@@ -32,6 +33,8 @@ namespace SFA.DAS.Assessor.Functions
                 FixQuestionTags(qnaData);
 
                 qnaConnection.Execute("UPDATE ApplicationSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = applicationSection.Id });
+
+                log.LogInformation($"Translated QNAData for {applicationSection.Id}");
             }
         }
 

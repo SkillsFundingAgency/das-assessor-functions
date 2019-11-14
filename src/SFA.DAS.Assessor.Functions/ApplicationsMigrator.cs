@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Dynamic;
+using System.Transactions;
 using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,85 +27,88 @@ namespace SFA.DAS.Assessor.Functions
             _connectionStrings = connectionStrings.Value;
             _qnaDataTranslator = qnaDataTranslator;
         }
-        
+
         [FunctionName("ApplicationsMigrator")]
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = "workflowMigrator")]
             HttpRequest req, ILogger log)
         {
             log.LogInformation($"ApplicationsMigrator - HTTP trigger function executed at: {DateTime.Now}");
 
-            using (var applyConnection = new SqlConnection(_connectionStrings.Apply))
-            using (var qnaConnection = new SqlConnection(_connectionStrings.QnA))
-            using (var assessorConnection = new SqlConnection(_connectionStrings.Assessor))
-            {
-                var workflowId = qnaConnection.QuerySingleOrDefault<Guid?>("SELECT Id FROM Workflows WHERE Type = 'EPAO'");
-                if (workflowId is null)
+                using (var applyConnection = new SqlConnection(_connectionStrings.Apply))
+                using (var qnaConnection = new SqlConnection(_connectionStrings.QnA))
+                using (var assessorConnection = new SqlConnection(_connectionStrings.Assessor))
                 {
-                    throw new ApplicationException("Workflow of Type 'EPAO' not found.");
-                }
-
-                var applyApplications = GetCurrentApplyApplications(applyConnection);
-
-                foreach (var originalApplyApplication in applyApplications)
-                {
-                    //originalApplyApplication.AnswersArray = JArray.Parse(originalApplyApplication.Answers);
-
-                    Guid qnaApplicationId = CreateQnaApplicationRecord(qnaConnection, workflowId, originalApplyApplication);
-
-                    var applySequences = GetCurrentApplyApplicationSequences(applyConnection, originalApplyApplication);
-                    var applySections = GetCurrentApplyApplicationSections(applyConnection, originalApplyApplication);
-
-                    foreach (var applySequence in applySequences)
+                    var workflowId = qnaConnection.QuerySingleOrDefault<Guid?>("SELECT Id FROM Workflows WHERE Type = 'EPAO'");
+                    if (workflowId is null)
                     {
-                        CreateQnaApplicationSequencesRecord(qnaConnection, qnaApplicationId, applySequence);
+                        throw new ApplicationException("Workflow of Type 'EPAO' not found.");
+                    }
 
-                        foreach (var applySection in applySections)
+                    var applyApplications = GetCurrentApplyApplications(applyConnection);
+
+                    foreach (var originalApplyApplication in applyApplications)
+                    {
+                        //originalApplyApplication.AnswersArray = JArray.Parse(originalApplyApplication.Answers);
+
+                        Guid qnaApplicationId = CreateQnaApplicationRecord(qnaConnection, workflowId, originalApplyApplication);
+
+                        var applySequences = GetCurrentApplyApplicationSequences(applyConnection, originalApplyApplication);
+                        var applySections = GetCurrentApplyApplicationSections(applyConnection, originalApplyApplication);
+
+                        foreach (var applySequence in applySequences)
                         {
-                            if (applySection.SequenceId == applySequence.SequenceId)
+                            CreateQnaApplicationSequencesRecord(qnaConnection, qnaApplicationId, applySequence);
+
+                            foreach (var applySection in applySections)
                             {
-                                CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
+                                if (applySection.SequenceId == applySequence.SequenceId)
+                                {
+                                    CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
+                                }
                             }
+                        }
+
+                        var applyingOrganisation = applyConnection.QuerySingle("SELECT * FROM Organisations WHERE Id = @Id", new { Id = originalApplyApplication.ApplyingOrganisationId });
+
+                        Guid? organisationId = null;
+                        if (!applyingOrganisation.RoEPAOApproved)
+                        {
+                            organisationId = CreateNewOrganisation(assessorConnection, originalApplyApplication);
+                        }
+                        else
+                        {
+                            organisationId = GetExistingOrganisation(assessorConnection, applyingOrganisation);
+                        }
+
+                        if (organisationId != default(Guid))
+                        {
+                            // Create Assessor Apply record.
+                            assessorConnection.Execute(@"INSERT INTO Apply (Id, ApplicationId, OrganisationId, ApplicationStatus, ReviewStatus, ApplyData, FinancialReviewStatus, FinancialGrade, StandardCode, CreatedAt, CreatedBy) 
+                                                    VALUES (NEWID(), @ApplicationId, @OrganisationId, @ApplicationStatus, @ReviewStatus, @ApplyData, @FinancialReviewStatus, @FinancialGrade, @StandardCode, @CreatedAt, @CreatedBy)", new
+                            {
+                                ApplicationId = qnaApplicationId,
+                                OrganisationId = organisationId.Value,
+                                ApplicationStatus = originalApplyApplication.ApplicationStatus,
+                                ReviewStatus = "", //TODO: ReviewStatus
+                                ApplyData = (string)GenerateApplyData(originalApplyApplication, applySequences, applySections),
+                                FinancialReviewStatus = "", // TODO: FinancialReviewStatus
+                                FinancialGrade = (string)CreateFinancialGradeObject(originalApplyApplication),
+                                StandardCode = "",
+                                CreatedAt = originalApplyApplication.CreatedAt,
+                                CreatedBy = originalApplyApplication.CreatedBy
+                            });
+
+                            log.LogInformation($"Converted application: {originalApplyApplication.Id}");
+
+                            // Convert ApplicationData
+
                         }
                     }
 
-                    var applyingOrganisation = applyConnection.QuerySingle("SELECT * FROM Organisations WHERE Id = @Id", new { Id = originalApplyApplication.ApplyingOrganisationId });
-
-                    Guid? organisationId = null;
-                    if (!applyingOrganisation.RoEPAOApproved)
-                    {
-                        organisationId = CreateNewOrganisation(assessorConnection, originalApplyApplication);
-                    }
-                    else
-                    {
-                        organisationId = GetExistingOrganisation(assessorConnection, applyingOrganisation);
-                    }
-
-                    if(organisationId != default(Guid))
-                    {
-                        // Create Assessor Apply record.
-                        assessorConnection.Execute(@"INSERT INTO Apply (Id, ApplicationId, OrganisationId, ApplicationStatus, ReviewStatus, ApplyData, FinancialReviewStatus, FinancialGrade, StandardCode, CreatedAt, CreatedBy) 
-                                                    VALUES (NEWID(), @ApplicationId, @OrganisationId, @ApplicationStatus, @ReviewStatus, @ApplyData, @FinancialReviewStatus, @FinancialGrade, @StandardCode, @CreatedAt, @CreatedBy)", new
-                        {
-                            ApplicationId = qnaApplicationId,
-                            OrganisationId = organisationId.Value,
-                            ApplicationStatus = originalApplyApplication.ApplicationStatus,
-                            ReviewStatus = "", //TODO: ReviewStatus
-                            ApplyData = (string)GenerateApplyData(originalApplyApplication, applySequences, applySections),
-                            FinancialReviewStatus = "", // TODO: FinancialReviewStatus
-                            FinancialGrade = (string)CreateFinancialGradeObject(originalApplyApplication),
-                            StandardCode = "",
-                            CreatedAt = originalApplyApplication.CreatedAt,
-                            CreatedBy = originalApplyApplication.CreatedBy
-                        });
-
-                        // Convert ApplicationData
-                        
-                    }
+                    // Translate QnAData to new format.
+                    _qnaDataTranslator.Translate(qnaConnection, log);
                 }
 
-                // Translate QnAData to new format.
-                _qnaDataTranslator.Translate(qnaConnection);
-            }
             return new OkResult();
         }
 
@@ -118,14 +122,14 @@ namespace SFA.DAS.Assessor.Functions
             var applyDataObject = new JObject();
             var sequences = new JArray();
 
-            foreach(var sequence in applySequences)
+            foreach (var sequence in applySequences)
             {
                 var sequenceObject = new JObject();
                 sequenceObject.Add("SequenceId", sequence.Id);
                 sequenceObject.Add("SequenceNo", sequence.SequenceId);
                 sequenceObject.Add("Status", ""); // TODO: Sequence Status
-                sequenceObject.Add("IsActive", sequence.IsActive); 
-                sequenceObject.Add("NotRequired", sequence.NotRequired); 
+                sequenceObject.Add("IsActive", sequence.IsActive);
+                sequenceObject.Add("NotRequired", sequence.NotRequired);
                 sequenceObject.Add("ApprovedDate", ""); // TODO: ApprovedDate
                 sequenceObject.Add("ApprovedBy", ""); // TODO: ApprovedBy
 
@@ -152,14 +156,14 @@ namespace SFA.DAS.Assessor.Functions
                 }
                 sequenceObject.Add("Sections", sections);
 
-                sequences.Add(sequenceObject);                
+                sequences.Add(sequenceObject);
             }
 
             applyDataObject.Add("Sequences", sequences);
 
             var applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
 
-            applyDataObject.Add("Apply",applicationData);
+            applyDataObject.Add("Apply", applicationData);
 
             applyDataObject.Add("OriginalApplicationId", originalApplyApplication.OriginalApplicationId);
 
@@ -173,17 +177,17 @@ namespace SFA.DAS.Assessor.Functions
                 return null;
             }
 
-            JArray financialEvidences =  new JArray();
+            JArray financialEvidences = new JArray();
             JArray financialAnswers = null;
-            
+
             if (originalApplyApplication.FinancialAnswers != null)
             {
                 financialAnswers = JArray.Parse(originalApplyApplication.FinancialAnswers);
             }
-             
-            if(financialAnswers != null && financialAnswers.Count > 0)
+
+            if (financialAnswers != null && financialAnswers.Count > 0)
             {
-                foreach(dynamic financialAnswer in financialAnswers)
+                foreach (dynamic financialAnswer in financialAnswers)
                 {
                     Guid id = originalApplyApplication.Id;
                     Guid sequenceGuid = originalApplyApplication.SequenceGuid;
@@ -200,13 +204,13 @@ namespace SFA.DAS.Assessor.Functions
 
 
             dynamic financialGrade = null;
-            if(originalApplyApplication.FinancialGrade != null)
+            if (originalApplyApplication.FinancialGrade != null)
             {
                 financialGrade = JObject.Parse(originalApplyApplication.FinancialGrade);
-            }            
-            
+            }
+
             dynamic applicationData = null;
-            if(originalApplyApplication.ApplicationData != null)
+            if (originalApplyApplication.ApplicationData != null)
             {
                 applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
             }
