@@ -12,16 +12,13 @@ namespace SFA.DAS.Assessor.Functions
 {
     public interface IQnaDataTranslator
     {
-        void Translate(System.Data.SqlClient.SqlConnection qnaConnection, Microsoft.Extensions.Logging.ILogger log);
+        string Translate(dynamic applicationSection, Microsoft.Extensions.Logging.ILogger log);
     }
 
     public class QnaDataTranslator : IQnaDataTranslator
     {
-        public void Translate(SqlConnection qnaConnection, Microsoft.Extensions.Logging.ILogger log)
+        public string Translate(dynamic applicationSection, Microsoft.Extensions.Logging.ILogger log)
         {
-            var qnaSections = qnaConnection.Query("SELECT * FROM ApplicationSections");
-            foreach (var applicationSection in qnaSections)
-            {
                 var qnaData = JsonConvert.DeserializeObject<QnAData>((string)applicationSection.QnAData);
 
                 CreateNotRequiredConditions(qnaData);
@@ -32,9 +29,29 @@ namespace SFA.DAS.Assessor.Functions
 
                 FixQuestionTags(qnaData);
 
-                qnaConnection.Execute("UPDATE ApplicationSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = applicationSection.Id });
+                FixAddressData(qnaData);
+
+                //qnaConnection.Execute("UPDATE ApplicationSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = applicationSection.Id });
 
                 log.LogInformation($"Translated QNAData for {applicationSection.Id}");
+
+                return JsonConvert.SerializeObject(qnaData);
+        }
+
+        private void FixAddressData(QnAData qnaData)
+        {
+            foreach (var page in qnaData.Pages)
+            {
+                foreach(var poa in page.PageOfAnswers)
+                {
+                    foreach (var answer in poa.Answers)
+                    {
+                        if(!(answer.Value is string))
+                        {
+                            answer.Value = JsonConvert.SerializeObject(answer.Value);
+                        }
+                    }
+                }
             }
         }
 

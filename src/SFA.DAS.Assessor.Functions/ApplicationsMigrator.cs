@@ -63,6 +63,8 @@ namespace SFA.DAS.Assessor.Functions
                             {
                                 if (applySection.SequenceId == applySequence.SequenceId)
                                 {
+                                    applySection.QnAData = _qnaDataTranslator.Translate(applySection, log);
+
                                     CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
                                 }
                             }
@@ -105,8 +107,7 @@ namespace SFA.DAS.Assessor.Functions
                         }
                     }
 
-                    // Translate QnAData to new format.
-                    _qnaDataTranslator.Translate(qnaConnection, log);
+                    
                 }
 
             return new OkResult();
@@ -233,7 +234,9 @@ namespace SFA.DAS.Assessor.Functions
         {
             qnaConnection.Execute(@"INSERT INTO ApplicationSections (Id, ApplicationId, SequenceNo, SectionNo, QnaData, Title, LinkTitle, DisplayType, SequenceId) 
                                                     VALUES (@Id, @ApplicationId, @SequenceNo, @SectionNo, @QnaData, @Title, @LinkTitle, @DisplayType, @SequenceId)",
-                                                                new { Id = applySection.Id, ApplicationId = qnaApplicationId, SequenceNo = applySequence.SequenceId, SectionNo = applySection.SectionId, QnaData = applySection.QnAData, Title = applySection.Title, LinkTitle = applySection.LinkTitle, DisplayType = applySection.DisplayType, SequenceId = applySequence.Id });
+                                                                new { Id = applySection.Id, ApplicationId = qnaApplicationId, SequenceNo = applySequence.SequenceId, 
+                                                                SectionNo = applySection.SectionId, QnaData = applySection.QnAData, Title = applySection.Title, 
+                                                                LinkTitle = applySection.LinkTitle, DisplayType = applySection.DisplayType, SequenceId = applySequence.Id });
         }
 
         private static IEnumerable<dynamic> GetCurrentApplyApplicationSections(SqlConnection applyConnection, dynamic originalApplyApplication)
@@ -267,7 +270,7 @@ namespace SFA.DAS.Assessor.Functions
 
         private static IEnumerable<dynamic> GetCurrentApplyApplications(SqlConnection applyConnection)
         {
-            return applyConnection.Query(@"SELECT TOP(10) *, JSON_Value(ApplicationData, '$.StandardCode') AS StandardCode, 
+            return applyConnection.Query(@"SELECT *, JSON_Value(ApplicationData, '$.StandardCode') AS StandardCode, 
                                                                 JSON_QUERY(ApplicationSections.QnaData, '$.FinancialApplicationGrade') AS FinancialGrade,
                                                                 JSON_QUERY(ApplicationSections.QnaData, '$.Pages[0].PageOfAnswers[0].Answers') AS FinancialAnswers,
 																ApplicationSections.Id AS SectionGuid,
