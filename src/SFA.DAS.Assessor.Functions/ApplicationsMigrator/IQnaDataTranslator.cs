@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SFA.DAS.QnA.Api.Types.Page;
 
-namespace SFA.DAS.Assessor.Functions
+namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 {
     public interface IQnaDataTranslator
     {
@@ -30,10 +30,6 @@ namespace SFA.DAS.Assessor.Functions
                 FixQuestionTags(qnaData);
 
                 FixAddressData(qnaData);
-
-                //qnaConnection.Execute("UPDATE ApplicationSections SET QnAData = @qnaData WHERE Id = @id", new { qnaData = JsonConvert.SerializeObject(qnaData), id = applicationSection.Id });
-
-                log.LogInformation($"Translated QNAData for {applicationSection.Id}");
 
                 return JsonConvert.SerializeObject(qnaData);
         }

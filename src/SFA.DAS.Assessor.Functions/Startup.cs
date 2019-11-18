@@ -5,6 +5,7 @@ using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.ApiClient;
+using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -50,6 +51,7 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();
             builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
+            builder.Services.AddTransient<IDataAccess, DataAccess>();
         }
     }
 }
