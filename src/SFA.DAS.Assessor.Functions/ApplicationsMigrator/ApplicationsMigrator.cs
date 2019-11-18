@@ -1,5 +1,6 @@
 using System;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -50,11 +51,13 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 var applicationsMigrated = 0;
                 foreach (var originalApplyApplication in applyApplications)
                 {
+
                     Guid qnaApplicationId = _dataAccess.CreateQnaApplicationRecord(qnaConnection, workflowId, originalApplyApplication);
-
+                    
                     var applySequences = _dataAccess.GetCurrentApplyApplicationSequences(applyConnection, originalApplyApplication);
+                    
                     var applySections = _dataAccess.GetCurrentApplyApplicationSections(applyConnection, originalApplyApplication);
-
+                    
                     foreach (var applySequence in applySequences)
                     {
                         _dataAccess.CreateQnaApplicationSequencesRecord(qnaConnection, qnaApplicationId, applySequence);
@@ -64,7 +67,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                             if (applySection.SequenceId == applySequence.SequenceId)
                             {
                                 applySection.QnAData = _qnaDataTranslator.Translate(applySection, log);
-
                                 _dataAccess.CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
                             }
                         }
@@ -88,6 +90,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                         dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication);
 
                         _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject);
+                        
 
                         // Convert ApplicationData
                     }
