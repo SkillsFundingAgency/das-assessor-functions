@@ -38,7 +38,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             return qnaApplicationId;
         }
 
-       
+
 
         public List<dynamic> GetCurrentApplyApplications(SqlConnection applyConnection)
         {
@@ -92,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                         {
                                             Id = organisationId,
                                             CreatedAt = originalApplyApplication.CreatedAt,
-                                            EndPointAssessorName = originalApplyApplication.Name,
+                                            EndPointAssessorName = ((string)originalApplyApplication.Name).Truncate(100),
                                             EndPointAssessorOrganisationId = nextEpaOrgId,
                                             EndPointAssessorUkPrn = "",
                                             PrimaryContact = "",
@@ -139,6 +139,16 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 CreatedAt = originalApplyApplication.CreatedAt,
                 CreatedBy = originalApplyApplication.CreatedBy
             });
+        }
+
+
+    }
+    public static class StringExtensions
+    {
+        public static string Truncate(this string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
         }
     }
 }
