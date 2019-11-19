@@ -33,74 +33,86 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         {
             log.LogInformation($"ApplicationsMigrator - HTTP trigger function executed at: {DateTime.Now}");
 
-            using (var applyConnection = new SqlConnection(_connectionStrings.Apply))
-            using (var qnaConnection = new SqlConnection(_connectionStrings.QnA))
-            using (var assessorConnection = new SqlConnection(_connectionStrings.Assessor))
+            try
             {
-                var workflowId = _dataAccess.GetEpaoWorkflowId(qnaConnection);
-                if (workflowId is null)
+
+                using (var applyConnection = new SqlConnection(_connectionStrings.Apply))
+                using (var qnaConnection = new SqlConnection(_connectionStrings.QnA))
+                using (var assessorConnection = new SqlConnection(_connectionStrings.Assessor))
                 {
-                    throw new ApplicationException("Workflow of Type 'EPAO' not found.");
-                }
-
-                var applyApplications = _dataAccess.GetCurrentApplyApplications(applyConnection);
-                
-                int totalApplicationsToMigrate = applyApplications.Count;
-                log.LogInformation($"Number of applications to Migrate: {totalApplicationsToMigrate}");
-
-                var applicationsMigrated = 0;
-                foreach (var originalApplyApplication in applyApplications)
-                {
-
-                    Guid qnaApplicationId = _dataAccess.CreateQnaApplicationRecord(qnaConnection, workflowId, originalApplyApplication);
-                    
-                    var applySequences = _dataAccess.GetCurrentApplyApplicationSequences(applyConnection, originalApplyApplication);
-                    
-                    var applySections = _dataAccess.GetCurrentApplyApplicationSections(applyConnection, originalApplyApplication);
-                    
-                    foreach (var applySequence in applySequences)
+                    var workflowId = _dataAccess.GetEpaoWorkflowId(qnaConnection);
+                    if (workflowId is null)
                     {
-                        _dataAccess.CreateQnaApplicationSequencesRecord(qnaConnection, qnaApplicationId, applySequence);
+                        throw new ApplicationException("Workflow of Type 'EPAO' not found.");
+                    }
 
-                        foreach (var applySection in applySections)
+                    var applyApplications = _dataAccess.GetCurrentApplyApplications(applyConnection);
+
+                    int totalApplicationsToMigrate = applyApplications.Count;
+                    log.LogInformation($"Number of applications to Migrate: {totalApplicationsToMigrate}");
+
+                    var applicationsMigrated = 0;
+                    foreach (var originalApplyApplication in applyApplications)
+                    {
+
+                        Guid qnaApplicationId = _dataAccess.CreateQnaApplicationRecord(qnaConnection, workflowId, originalApplyApplication);
+
+                        var applySequences = _dataAccess.GetCurrentApplyApplicationSequences(applyConnection, originalApplyApplication);
+
+                        var applySections = _dataAccess.GetCurrentApplyApplicationSections(applyConnection, originalApplyApplication);
+
+                        foreach (var applySequence in applySequences)
                         {
-                            if (applySection.SequenceId == applySequence.SequenceId)
+                            _dataAccess.CreateQnaApplicationSequencesRecord(qnaConnection, qnaApplicationId, applySequence);
+
+                            foreach (var applySection in applySections)
                             {
-                                applySection.QnAData = _qnaDataTranslator.Translate(applySection, log);
-                                _dataAccess.CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
+                                if (applySection.SequenceId == applySequence.SequenceId)
+                                {
+                                    applySection.QnAData = _qnaDataTranslator.Translate(applySection, log);
+                                    _dataAccess.CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
+                                }
                             }
                         }
+
+                        var applyingOrganisation = _dataAccess.GetApplyingOrganisation(applyConnection, originalApplyApplication.ApplyingOrganisationId);
+
+                        Guid? organisationId = null;
+                        if (!applyingOrganisation.RoEPAOApproved)
+                        {
+                            organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication);
+                        }
+                        else
+                        {
+                            organisationId = _dataAccess.GetExistingOrganisation(assessorConnection, applyingOrganisation);
+                        }
+
+                        if (organisationId != default(Guid))
+                        {
+                            dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections);
+                            dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication);
+
+                            _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject);
+
+
+                            // Convert ApplicationData
+                        }
+
+                        applicationsMigrated++;
+
+                        if (applicationsMigrated % 10 == 0 || applicationsMigrated == totalApplicationsToMigrate)
+                        {
+                            log.LogInformation($"Completed {applicationsMigrated} of {totalApplicationsToMigrate}");
+                        }
                     }
-
-                    var applyingOrganisation = _dataAccess.GetApplyingOrganisation(applyConnection, originalApplyApplication.ApplyingOrganisationId);
-
-                    Guid? organisationId = null;
-                    if (!applyingOrganisation.RoEPAOApproved)
-                    {
-                        organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication);
-                    }
-                    else
-                    {
-                        organisationId = _dataAccess.GetExistingOrganisation(assessorConnection, applyingOrganisation);
-                    }
-
-                    if (organisationId != default(Guid))
-                    {
-                        dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections);
-                        dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication);
-
-                        _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject);
-                        
-
-                        // Convert ApplicationData
-                    }
-
-                    applicationsMigrated++;
-
-                    if (applicationsMigrated % 10 == 0 || applicationsMigrated == totalApplicationsToMigrate)
-                    {
-                        log.LogInformation($"Completed {applicationsMigrated} of {totalApplicationsToMigrate}");
-                    }
+                }
+            }
+            catch (Exception e)
+            {
+                log.LogError("Exception in Function", e);
+                if (e.InnerException != null)
+                {
+                    log.LogError("Inner Exception in Function", e);
                 }
             }
 
