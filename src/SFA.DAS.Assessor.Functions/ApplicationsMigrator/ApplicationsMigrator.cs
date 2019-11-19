@@ -109,10 +109,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             }
             catch (Exception e)
             {
-                log.LogError("Exception in Function", e);
+                log.LogError($"Exception in Function: {e.Message} {e.StackTrace}", e);
                 if (e.InnerException != null)
                 {
-                    log.LogError("Inner Exception in Function", e);
+                    log.LogError($"Inner Exception in Function: {e.Message} {e.StackTrace}", e);
                 }
             }
 
