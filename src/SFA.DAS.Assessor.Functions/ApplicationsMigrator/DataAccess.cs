@@ -38,7 +38,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             return qnaApplicationId;
         }
 
-
+        public void UpdateQnaApplicationData(SqlConnection qnaConnection, Guid applicationId, string applicationData)
+        {
+            qnaConnection.Execute("UPDATE Applications SET ApplicationData = @applicationData WHERE Id = @applicationId", new{applicationId, applicationData});
+        }
 
         public List<dynamic> GetCurrentApplyApplications(SqlConnection applyConnection)
         {

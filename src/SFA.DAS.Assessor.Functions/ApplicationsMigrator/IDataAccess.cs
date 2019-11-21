@@ -14,6 +14,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         void CreateQnaApplicationSequencesRecord(SqlConnection qnaConnection, Guid qnaApplicationId, dynamic applySequence);
         IEnumerable<dynamic> GetCurrentApplyApplicationSequences(SqlConnection applyConnection, dynamic originalApplyApplication);
         Guid CreateQnaApplicationRecord(SqlConnection qnaConnection, Guid? workflowId, dynamic originalApplyApplication);
+        void UpdateQnaApplicationData(SqlConnection qnaConnection, Guid applicationId, string applicationData);
         Guid? GetEpaoWorkflowId(SqlConnection qnaConnection);
 
         dynamic GetApplyingOrganisation(SqlConnection applyConnection, Guid organisationId);
