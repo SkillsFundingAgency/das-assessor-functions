@@ -180,8 +180,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     if (question.ContainsKey("QuestionTag") && !string.IsNullOrWhiteSpace((string)question["QuestionTag"]))
                     {
                         string questionId = question["QuestionId"].Value<string>();
-
-                        //log.LogInformation($"{question["QuestionId"]}: {question["QuestionTag"]}");
                         InjectAnswer(log, applicationDataObject, page, question, questionId);
                     }
                     else
@@ -196,8 +194,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                     if (furtherQuestion.ContainsKey("QuestionTag") && !string.IsNullOrWhiteSpace((string)furtherQuestion["QuestionTag"]))
                                     {
                                         string questionId = furtherQuestion["QuestionId"].Value<string>();
-
-                                        //log.LogInformation($"{furtherQuestion["QuestionId"]}: {furtherQuestion["QuestionTag"]}");
                                         InjectAnswer(log, applicationDataObject, page, furtherQuestion, questionId);
                                     }
                                 }
@@ -217,7 +213,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             {
                 if (answer["QuestionId"].Value<string>() == questionId)
                 {
-                    //log.LogInformation($"{question["QuestionId"]}: {question["QuestionTag"]} ANSWER: {answer["Value"]}");
                     applicationDataObject.Add(question["QuestionTag"].Value<string>(), answer["Value"].Value<string>());
                 }
             }
@@ -239,7 +234,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var sequenceObject = new JObject();
             sequenceObject.Add("SequenceId", sequence.Id);
             sequenceObject.Add("SequenceNo", sequence.SequenceId);
-            sequenceObject.Add("Status", ""); // TODO: Sequence Status
+            sequenceObject.Add("Status", sequence.Status);
             sequenceObject.Add("IsActive", sequence.IsActive);
             sequenceObject.Add("NotRequired", sequence.NotRequired);
             sequenceObject.Add("ApprovedDate", ""); // TODO: ApprovedDate
