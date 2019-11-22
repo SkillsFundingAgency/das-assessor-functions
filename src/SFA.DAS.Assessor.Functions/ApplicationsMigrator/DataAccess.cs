@@ -46,18 +46,20 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         public List<dynamic> GetCurrentApplyApplications(SqlConnection applyConnection)
         {
             return applyConnection.Query(@"SELECT *, JSON_Value(ApplicationData, '$.StandardCode') AS StandardCode, 
-                                                                JSON_QUERY(ApplicationSections.QnaData, '$.FinancialApplicationGrade') AS FinancialGrade,
-                                                                JSON_QUERY(ApplicationSections.QnaData, '$.Pages[0].PageOfAnswers[0].Answers') AS FinancialAnswers,
-																ApplicationSections.Id AS SectionGuid,
-																ApplicationSequences.Id AS SequenceGuid,
-																Organisations.Name,
-																Organisations.OrganisationDetails,
-																Applications.Id AS OriginalApplicationId
-                                                                FROM Applications 
-                                                                INNER JOIN ApplicationSections ON Applications.Id = ApplicationSections.ApplicationId
-																INNER JOIN ApplicationSequences ON Applications.Id = ApplicationSequences.ApplicationId AND ApplicationSequences.SequenceId = 2
-																INNER JOIN Organisations ON Organisations.Id = Applications.ApplyingOrganisationId
-                                                                WHERE ApplicationStatus NOT IN ('Approved','Rejected') AND ApplicationSections.SectionId = 3").ToList();
+				JSON_QUERY(FinancialSection.QnaData, '$.FinancialApplicationGrade') AS FinancialGrade,
+				JSON_QUERY(FinancialSection.QnaData, '$.Pages[0].PageOfAnswers[0].Answers') AS FinancialAnswers,
+				FinancialSection.Id AS FinancialSectionGuid,
+				SequenceOne.Id AS SequenceOneGuid,
+				Organisations.Name,
+				Organisations.OrganisationDetails,
+				Applications.Id AS OriginalApplicationId,
+				FinancialStatus = FinancialSection.Status,
+				ReviewStatus = SequenceOne.Status
+				FROM Applications 
+				INNER JOIN ApplicationSections AS FinancialSection ON Applications.Id = FinancialSection.ApplicationId AND FinancialSection.SectionId = 3
+				INNER JOIN ApplicationSequences AS SequenceOne ON Applications.Id = SequenceOne.ApplicationId AND SequenceOne.SequenceId = 1
+				INNER JOIN Organisations ON Organisations.Id = Applications.ApplyingOrganisationId
+				WHERE ApplicationStatus NOT IN ('Approved','Rejected')").ToList();
         }
 
         public Guid? GetExistingOrganisation(SqlConnection assessorConnection, dynamic applyingOrganisation)
@@ -134,9 +136,9 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 ApplicationId = qnaApplicationId,
                 OrganisationId = organisationId.Value,
                 ApplicationStatus = originalApplyApplication.ApplicationStatus,
-                ReviewStatus = "", //TODO: ReviewStatus
+                ReviewStatus = originalApplyApplication.ReviewStatus,
                 ApplyData = (string)applyDataObject,
-                FinancialReviewStatus = "", // TODO: FinancialReviewStatus
+                FinancialReviewStatus = originalApplyApplication.FinancialReviewStatus,
                 FinancialGrade = (string)financialGradeObject,
                 StandardCode = "",
                 CreatedAt = originalApplyApplication.CreatedAt,

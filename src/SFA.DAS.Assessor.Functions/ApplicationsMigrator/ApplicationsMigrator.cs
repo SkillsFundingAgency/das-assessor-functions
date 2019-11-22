@@ -297,8 +297,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             foreach (dynamic financialAnswer in financialAnswers)
             {
                 Guid id = originalApplyApplication.Id;
-                Guid sequenceGuid = originalApplyApplication.SequenceGuid;
-                Guid sectionGuid = originalApplyApplication.SectionGuid;
+                Guid sequenceGuid = originalApplyApplication.SequenceOneGuid;
+                Guid sectionGuid = originalApplyApplication.FinancialSectionGuid;
                 string questionId = financialAnswer.QuestionId.Value;
                 string filename = financialAnswer.Value.Value;
 
