@@ -133,6 +133,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 NumberOfApplicationsMigrated = applicationsMigrated, 
                 MigrationErrors = notMigratedApplications 
             };
+
+            log.LogInformation(JsonConvert.SerializeObject(returnInformation, Formatting.Indented));
         
             return returnInformation;
         }
