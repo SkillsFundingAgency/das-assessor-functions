@@ -127,6 +127,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 {
                     log.LogError($"Inner Exception in Function: {e.Message} {e.StackTrace}", e);
                 }
+                return new MigrationResult{MigrationErrors = new List<MigrationError>{new MigrationError{OriginalApplicationId = null, Reason = $"Exception in Function: {e.Message} {e.StackTrace}"}}};
             }
             var returnInformation = new MigrationResult() { 
                 NumberOfApplicationsToMigrate = totalApplicationsToMigrate, 
