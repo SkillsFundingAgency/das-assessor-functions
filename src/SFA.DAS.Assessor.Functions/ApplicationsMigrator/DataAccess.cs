@@ -120,7 +120,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         public Guid? GetEpaoWorkflowId(SqlConnection qnaConnection)
         {
-            return qnaConnection.QuerySingleOrDefault<Guid?>("SELECT Id FROM Workflows WHERE Type = 'EPAO'");
+            return qnaConnection.QueryFirstOrDefault<Guid?>("SELECT Id FROM Workflows WHERE Type = 'EPAO' AND Status = 'Live'");
         }
 
         public dynamic GetApplyingOrganisation(SqlConnection applyConnection, Guid organisationId)
