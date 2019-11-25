@@ -163,6 +163,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         applicationDataObject.Add("CompanySummary", null);
         applicationDataObject.Add("CharitySummary", null);
+        applicationDataObject.Add("OriginalApplicationId", originalApplyApplication.Id)
 
         InjectQuestionTagAnswers(qnaSectionQnaDatas, log, applicationDataObject);
 
