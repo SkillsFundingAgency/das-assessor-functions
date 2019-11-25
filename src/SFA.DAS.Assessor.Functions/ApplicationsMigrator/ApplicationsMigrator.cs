@@ -224,12 +224,15 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
     private string GenerateApplyData(dynamic originalApplyApplication, dynamic applySequences, dynamic applySections)
     {
+        var applyDataObject = new JObject();
+
+        applyDataObject.Add("OriginalApplicationId", originalApplyApplication.OriginalApplicationId);
+
         if (originalApplyApplication.ApplicationData == null)
         {
-            return null;
+            return applyDataObject.ToString();
         }
 
-        var applyDataObject = new JObject();
         var sequences = new JArray();
 
         foreach (var sequence in applySequences)
@@ -274,8 +277,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         var applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
 
         applyDataObject.Add("Apply", applicationData);
-
-        applyDataObject.Add("OriginalApplicationId", originalApplyApplication.OriginalApplicationId);
 
         return applyDataObject.ToString();
     }
