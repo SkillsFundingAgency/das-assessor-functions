@@ -135,10 +135,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             {
                 ApplicationId = qnaApplicationId,
                 OrganisationId = organisationId.Value,
-                ApplicationStatus = originalApplyApplication.ApplicationStatus,
-                ReviewStatus = originalApplyApplication.ReviewStatus,
+                ApplicationStatus = (string)originalApplyApplication.ApplicationStatus,
+                ReviewStatus = (string)originalApplyApplication.ReviewStatus,
                 ApplyData = (string)applyDataObject,
-                FinancialReviewStatus = originalApplyApplication.FinancialReviewStatus,
+                FinancialReviewStatus = (string)originalApplyApplication.FinancialReviewStatus,
                 FinancialGrade = (string)financialGradeObject,
                 StandardCode = "",
                 CreatedAt = originalApplyApplication.CreatedAt,
