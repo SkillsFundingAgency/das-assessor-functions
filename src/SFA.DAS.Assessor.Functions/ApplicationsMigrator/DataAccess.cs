@@ -138,7 +138,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 ApplicationStatus = (string)originalApplyApplication.ApplicationStatus,
                 ReviewStatus = (string)originalApplyApplication.ReviewStatus,
                 ApplyData = (string)applyDataObject,
-                FinancialReviewStatus = (string)originalApplyApplication.FinancialReviewStatus,
+                FinancialReviewStatus = (string)originalApplyApplication.FinancialStatus,
                 FinancialGrade = (string)financialGradeObject,
                 StandardCode = "",
                 CreatedAt = originalApplyApplication.CreatedAt,
