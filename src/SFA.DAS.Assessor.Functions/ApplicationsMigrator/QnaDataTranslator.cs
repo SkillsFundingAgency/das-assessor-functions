@@ -24,18 +24,19 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
             FixAddressData(qnaData);
 
-            FixPageSequenceAndSectionIds(qnaData, applicationSection, applySequence);
+            FixPageSequenceAndSectionIds(qnaData, applicationSection, applySequence, log);
 
             string serializedQnaData = JsonConvert.SerializeObject(qnaData);
             return serializedQnaData;
         }
 
-        private void FixPageSequenceAndSectionIds(QnAData qnaData, dynamic applicationSection, dynamic applySequence)
+        private void FixPageSequenceAndSectionIds(QnAData qnaData, dynamic applicationSection, dynamic applySequence, Microsoft.Extensions.Logging.ILogger log)
         {
             foreach (var page in qnaData.Pages)
             {
                 page.SectionId = ((Guid)applicationSection.Id).ToString();
                 page.SequenceId = ((Guid)applySequence.Id).ToString();
+                log.LogInformation($"Section.Id = {applicationSection.Id}, Page.SectionId = {page.SectionId}");
             }
         }
 
