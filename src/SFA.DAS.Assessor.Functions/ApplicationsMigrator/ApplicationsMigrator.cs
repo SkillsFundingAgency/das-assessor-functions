@@ -53,6 +53,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     var applyApplications = _dataAccess.GetCurrentApplyApplications(applyConnection);
 
                     totalApplicationsToMigrate = applyApplications.Count;
+                    log.LogTrace($"Version 2");
                     log.LogTrace($"Number of applications to Migrate: {totalApplicationsToMigrate}");
 
                     var applicationsProcessed = 0;
