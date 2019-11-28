@@ -88,7 +88,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                 {
                                     if (applySection.SequenceId == applySequence.SequenceId)
                                     {
-                                        applySection.QnAData = _qnaDataTranslator.Translate(applySection, log);
+                                        applySection.QnAData = _qnaDataTranslator.Translate(applySection, applySequence, log);
                                         _dataAccess.CreateQnaApplicationSectionsRecord(qnaConnection, qnaApplicationId, applySequence, applySection);
                                         qnaSectionQnaDatas.Add(applySection.QnAData);
                                     }

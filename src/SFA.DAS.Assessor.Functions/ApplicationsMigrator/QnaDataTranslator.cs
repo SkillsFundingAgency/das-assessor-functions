@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 {
     public class QnaDataTranslator : IQnaDataTranslator
     {
-        public string Translate(dynamic applicationSection, Microsoft.Extensions.Logging.ILogger log)
+        public string Translate(dynamic applicationSection, dynamic applySequence, Microsoft.Extensions.Logging.ILogger log)
         {
             var qnaData = JsonConvert.DeserializeObject<QnAData>((string)applicationSection.QnAData);
 
@@ -23,8 +24,19 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
             FixAddressData(qnaData);
 
+            FixPageSequenceAndSectionIds(qnaData, applicationSection, applySequence);
+
             string serializedQnaData = JsonConvert.SerializeObject(qnaData);
             return serializedQnaData;
+        }
+
+        private void FixPageSequenceAndSectionIds(QnAData qnaData, dynamic applicationSection, dynamic applySequence)
+        {
+            foreach (var page in qnaData.Pages)
+            {
+                page.SectionId = applicationSection.Id;
+                page.SequenceId = applySequence.Id;
+            }
         }
 
         private void FixAddressData(QnAData qnaData)
