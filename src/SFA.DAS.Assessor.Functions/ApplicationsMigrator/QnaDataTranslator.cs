@@ -34,8 +34,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         {
             foreach (var page in qnaData.Pages)
             {
-                page.SectionId = applicationSection.Id;
-                page.SequenceId = applySequence.Id;
+                page.SectionId = ((Guid)applicationSection.Id).ToString();
+                page.SequenceId = ((Guid)applySequence.Id).ToString();
             }
         }
 
