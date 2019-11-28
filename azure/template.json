@@ -20,7 +20,7 @@
                 "description": "Short name of the service. Used for the name of resources created"
             }
         },
-        "SharedStorageAccountConnectionString": {
+        "sharedStorageAccountConnectionString": {
             "type": "securestring",
             "metadata": {
                 "description": "Name of the connection string for shared storage account"
