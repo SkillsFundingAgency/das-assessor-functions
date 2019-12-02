@@ -159,6 +159,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         public void CreateContact(SqlConnection assessorConnection, dynamic contact, Guid organisationId)
         {
+            try {
+
             assessorConnection.Execute(@"INSERT INTO Contacts (Id, CreatedAt, DisplayName, Email, OrganisationId, Status, UpdatedAt, Username, GivenNames, FamilyName, SignInType, SignInId) 
                     VALUES (NEWID(), @CreatedAt, @DisplayName, @Email, @OrganisationId, 'Applying', GETUTCDATE(), @Email, @GivenNames, @FamilyName, 'AsLogin', @SignInId)", 
                 new {
@@ -170,6 +172,14 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     FamilyName = contact.FamilyName,
                     SignInId = contact.SigninId
                 });
+            }
+            catch(SqlException ex)
+            {
+                if (!ex.Message.Contains("UNIQUE KEY constraint"))
+                {
+                    throw ex;
+                }                
+            }
         }
     }
     public static class StringExtensions
