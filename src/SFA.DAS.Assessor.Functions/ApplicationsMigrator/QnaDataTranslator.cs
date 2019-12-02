@@ -36,7 +36,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             {
                 page.SectionId = ((Guid)applicationSection.Id).ToString();
                 page.SequenceId = ((Guid)applySequence.Id).ToString();
-                log.LogInformation($"Section.Id = {applicationSection.Id}, Page.SectionId = {page.SectionId}");
             }
         }
 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 {
@@ -87,6 +89,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         public Guid CreateNewOrganisation(SqlConnection assessorConnection, dynamic originalApplyApplication)
         {
+            var orgDataObj = JObject.Parse(originalApplyApplication.OrganisationDetails);
+            orgDataObj.Add("OriginalApplicationId", originalApplyApplication.Id);
+            var orgData = JsonConvert.SerializeObject(orgDataObj);
+
             Guid organisationId;
             string nextEpaOrgId = GetNextEpaOrgId(assessorConnection);
 
@@ -101,7 +107,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                             EndPointAssessorOrganisationId = nextEpaOrgId,
                                             EndPointAssessorUkPrn = "",
                                             PrimaryContact = "",
-                                            OrganisationData = originalApplyApplication.OrganisationDetails
+                                            OrganisationData = orgData
                                         });
             return organisationId;
         }
