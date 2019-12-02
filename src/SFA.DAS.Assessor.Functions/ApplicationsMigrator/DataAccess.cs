@@ -87,10 +87,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                                                 });
         }
 
-        public Guid CreateNewOrganisation(SqlConnection assessorConnection, dynamic originalApplyApplication)
+        public Guid CreateNewOrganisation(SqlConnection assessorConnection, dynamic originalApplyApplication, dynamic originalApplyOrganisation)
         {
             var orgDataObj = JObject.Parse(originalApplyApplication.OrganisationDetails);
-            orgDataObj.Add("OriginalApplicationId", originalApplyApplication.Id);
+            orgDataObj.Add("OriginalOrganisationId", originalApplyOrganisation.Id);
             var orgData = JsonConvert.SerializeObject(orgDataObj);
 
             Guid organisationId;
@@ -152,7 +152,25 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             });
         }
 
+        public List<dynamic> GetApplyOrganisationContacts(SqlConnection applyConnection, Guid id)
+        {
+            return applyConnection.Query("SELECT * FROM Contacts WHERE ApplyOrganisationId = @OrganisationId", new {OrganisationId = id}).ToList();
+        }
 
+        public void CreateContact(SqlConnection assessorConnection, dynamic contact, Guid organisationId)
+        {
+            assessorConnection.Execute(@"INSERT INTO Contacts (Id, CreatedAt, DisplayName, Email, OrganisationId, Status, UpdatedAt, Username, GivenNames, FamilyName, SignInType, SignInId) 
+                    VALUES (NEWID(), @CreatedAt, @DisplayName, @Email, @OrganisationId, 'Applying', GETUTCDATE(), @Email, @GivenNames, @FamilyName, 'AsLogin', @SignInId)", 
+                new {
+                    CreatedAt = contact.CreatedAt,
+                    DisplayName = contact.GivenNames + " " + contact.FamilyName,
+                    Email = contact.Email,
+                    organisationId = organisationId,
+                    GivenNames = contact.GivenNames,
+                    FamilyName = contact.FamilyName,
+                    SignInId = contact.SigninId
+                });
+        }
     }
     public static class StringExtensions
     {

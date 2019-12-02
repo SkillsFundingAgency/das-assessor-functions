@@ -64,7 +64,13 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                         Guid? organisationId = null;
                         if (!applyingOrganisation.RoEPAOApproved)
                         {
-                            organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication);
+                            organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication, applyingOrganisation);
+                            // Get contacts for this Apply organisation and insert them into Assessor Contacts.
+                            var applyOrganisationContacts = _dataAccess.GetApplyOrganisationContacts(applyConnection, applyingOrganisation.Id);
+                            foreach (var contact in applyOrganisationContacts)
+                            {
+                                _dataAccess.CreateContact(assessorConnection, contact, organisationId.Value);
+                            }
                         }
                         else
                         {
