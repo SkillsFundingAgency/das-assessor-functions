@@ -114,8 +114,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         private static string GetNextEpaOrgId(SqlConnection assessorConnection)
         {
-            var sqlToGetHighestOrganisationId = "select max(EndPointAssessorOrganisationId) OrgId from organisations where EndPointAssessorOrganisationId like 'EPA%' " +
-                                                            " and isnumeric(replace(EndPointAssessorOrganisationId,'EPA','')) = 1";
+            var sqlToGetHighestOrganisationId = @"select max(CAST( replace(EndPointAssessorOrganisationId,'EPA','') AS int)) OrgId from organisations where EndPointAssessorOrganisationId like 'EPA%' 
+                                                        and isnumeric(replace(EndPointAssessorOrganisationId,'EPA','')) = 1";
             var highestEpaOrgId = assessorConnection.ExecuteScalar<string>(sqlToGetHighestOrganisationId);
 
             var nextEpaOrgId = int.TryParse(highestEpaOrgId.Replace("EPA", string.Empty), out int currentIntValue)
