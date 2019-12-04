@@ -96,8 +96,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             Guid organisationId;
             string nextEpaOrgId = GetNextEpaOrgId(assessorConnection);
 
-            var organisationTypeId = assessorConnection.QuerySingle<int>("SELECT Id FROM OrganisationType WHERE Type = @Type", 
-                                                                        new {Type = originalApplyOrganisation.OrganisationType.Replace(" ","")});
+            var organisationTypeId = assessorConnection.QuerySingle<int>("SELECT Id FROM OrganisationType WHERE REPLACE(Type,' ','') = @Type", 
+                                                                        new {Type = originalApplyOrganisation.OrganisationType});
 
             organisationId = Guid.NewGuid();
             assessorConnection.Execute(@"INSERT INTO Organisations (Id, CreatedAt, EndPointAssessorName, EndPointAssessorOrganisationId, EndPointAssessorUkprn, PrimaryContact, Status, OrganisationData, ApiEnabled) 
