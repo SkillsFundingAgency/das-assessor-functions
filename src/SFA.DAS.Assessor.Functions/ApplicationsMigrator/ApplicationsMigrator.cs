@@ -283,14 +283,14 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         applyDataObject.Add("Sequences", sequences);
 
-        var applicationData = "";
+        JObject applicationData;
         if (originalApplyApplication.ApplicationData == null)
         {
             var seq = _dataAccess.GetNextAppReferenceSequence(assessorConnection);
 
             var referenceNumber = $"AAD{seq:D6}";
 
-            applicationData = JsonConvert.SerializeObject(new {
+            applicationData = JObject.Parse(JsonConvert.SerializeObject(new {
                 ReferenceNumber = referenceNumber,
                 StandardCode = (string)null,
                 StandardReference = (string)null,
@@ -305,7 +305,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 LatestStandardSubmissionDate = (string)null,
                 StandardSubmissionFeedbackAddedDate = (string)null,
                 StandardSubmissionClosedDate = (string)null
-            });
+            }));
         }
         else
         {
