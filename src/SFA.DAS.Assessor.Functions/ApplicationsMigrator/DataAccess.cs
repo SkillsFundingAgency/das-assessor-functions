@@ -96,6 +96,9 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             Guid organisationId;
             string nextEpaOrgId = GetNextEpaOrgId(assessorConnection);
 
+            var organisationTypeId = assessorConnection.QuerySingle<int>("SELECT Id FROM OrganisationType WHERE Type = @Type", 
+                                                                        new {Type = originalApplyOrganisation.OrganisationType.Replace(" ","")});
+
             organisationId = Guid.NewGuid();
             assessorConnection.Execute(@"INSERT INTO Organisations (Id, CreatedAt, EndPointAssessorName, EndPointAssessorOrganisationId, EndPointAssessorUkprn, PrimaryContact, Status, OrganisationData, ApiEnabled) 
                                                     VALUES (@Id, @CreatedAt, @EndPointAssessorName, @EndPointAssessorOrganisationId, @EndPointAssessorUkprn, @PrimaryContact, 'Applying', @OrganisationData, 0)",
@@ -105,9 +108,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                             CreatedAt = originalApplyApplication.CreatedAt,
                                             EndPointAssessorName = ((string)originalApplyApplication.Name).Truncate(100),
                                             EndPointAssessorOrganisationId = nextEpaOrgId,
-                                            EndPointAssessorUkPrn = "",
-                                            PrimaryContact = "",
-                                            OrganisationData = orgData
+                                            EndPointAssessorUkPrn = (string)null,
+                                            PrimaryContact = (string)null,
+                                            OrganisationData = orgData,
+                                            OrganisationTypeId = organisationTypeId
                                         });
             return organisationId;
         }
@@ -180,6 +184,11 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     throw ex;
                 }                
             }
+        }
+
+        public int GetNextAppReferenceSequence(SqlConnection assessorConnection)
+        {
+            return (assessorConnection.Query<int>(@"SELECT NEXT VALUE FOR AppRefSequence")).FirstOrDefault();
         }
     }
     public static class StringExtensions

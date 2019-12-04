@@ -102,12 +102,12 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                 }
                             }
 
-                            dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections);
+                            dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections, assessorConnection);
                             dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication);
 
                             _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject);
 
-                            var applicationData = GenerateApplicationData(qnaSectionQnaDatas, log, organisationId, originalApplyApplication);
+                            var applicationData = GenerateApplicationData(qnaSectionQnaDatas, log, organisationId, originalApplyApplication, assessorConnection);
 
                             _dataAccess.UpdateQnaApplicationData(qnaConnection, qnaApplicationId, applicationData);
 
@@ -147,19 +147,25 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             return returnInformation;
         }
 
-    private string GenerateApplicationData(List<string> qnaSectionQnaDatas, ILogger log, Guid? organisationId, dynamic originalApplyApplication)
+    private string GenerateApplicationData(List<string> qnaSectionQnaDatas, ILogger log, Guid? organisationId, dynamic originalApplyApplication, SqlConnection assessorConnection)
     {
         JObject originalApplicationDataObj = null;
+        string referenceNumber = null;
         if (originalApplyApplication.ApplicationData != null)
         {
             originalApplicationDataObj = JObject.Parse(originalApplyApplication.ApplicationData);
         }
+        else
+        {
+            var seq = _dataAccess.GetNextAppReferenceSequence(assessorConnection);
+            referenceNumber = $"AAD{seq:D6}";
+        }            
 
         var applicationDataObject = new JObject();
 
         applicationDataObject.Add("OrganisationReferenceId", organisationId);
         applicationDataObject.Add("OrganisationName", originalApplyApplication.Name);
-        applicationDataObject.Add("ReferenceNumber", originalApplicationDataObj?["ReferenceNumber"]);
+        applicationDataObject.Add("ReferenceNumber", referenceNumber ?? originalApplicationDataObj?["ReferenceNumber"]);
         applicationDataObject.Add("StandardName", originalApplicationDataObj?["StandardName"]);
         applicationDataObject.Add("StandardCode", originalApplicationDataObj?["StandardCode"]);
 
@@ -230,16 +236,11 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         }
     }
 
-    private string GenerateApplyData(dynamic originalApplyApplication, dynamic applySequences, dynamic applySections)
+    private string GenerateApplyData(dynamic originalApplyApplication, dynamic applySequences, dynamic applySections, SqlConnection assessorConnection)
     {
         var applyDataObject = new JObject();
 
         applyDataObject.Add("OriginalApplicationId", originalApplyApplication.OriginalApplicationId);
-
-        if (originalApplyApplication.ApplicationData == null)
-        {
-            return applyDataObject.ToString();
-        }
 
         var sequences = new JArray();
 
@@ -282,7 +283,34 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         applyDataObject.Add("Sequences", sequences);
 
-        var applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
+        var applicationData = "";
+        if (originalApplyApplication.ApplicationData == null)
+        {
+            var seq = _dataAccess.GetNextAppReferenceSequence(assessorConnection);
+
+            var referenceNumber = $"AAD{seq:D6}";
+
+            applicationData = JsonConvert.SerializeObject(new {
+                ReferenceNumber = referenceNumber,
+                StandardCode = (string)null,
+                StandardReference = (string)null,
+                StandardName = (string)null,
+                InitSubmissions = JsonConvert.SerializeObject(new JArray()),
+                InitSubmissionCount = 0,
+                LatestInitSubmissionDate = (string)null,
+                InitSubmissionFeedbackAddedDate = (string)null,
+                InitSubmissionClosedDate = (string)null,
+                StandardSubmissions = JsonConvert.SerializeObject(new JArray()),
+                StandardSubmissionsCount = 0, 
+                LatestStandardSubmissionDate = (string)null,
+                StandardSubmissionFeedbackAddedDate = (string)null,
+                StandardSubmissionClosedDate = (string)null
+            });
+        }
+        else
+        {
+            applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
+        }
 
         applyDataObject.Add("Apply", applicationData);
 

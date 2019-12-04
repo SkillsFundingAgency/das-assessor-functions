@@ -21,5 +21,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         void CreateAssessorApplyRecord(SqlConnection assessorConnection, dynamic originalApplyApplication, Guid qnaApplicationId, Guid? organisationId, dynamic applyDataObject, dynamic financialGradeObject);
         List<dynamic> GetApplyOrganisationContacts(SqlConnection applyConnection, Guid id);
         void CreateContact(SqlConnection assessorConnection, dynamic contact, Guid organisationId);
+        int GetNextAppReferenceSequence(SqlConnection assessorConnection);
     }
 }
