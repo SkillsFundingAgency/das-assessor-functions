@@ -92,21 +92,21 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var orgDataObj = JObject.Parse(originalApplyApplication.OrganisationDetails);
             orgDataObj.Add("OriginalOrganisationId", originalApplyOrganisation.Id);
             var orgData = JsonConvert.SerializeObject(orgDataObj);
+            
+            string assessorName = ((string)originalApplyApplication.Name).Truncate(100);
+            
+            Guid? organisationId;
 
-            Guid organisationId;
+            organisationId = assessorConnection.QuerySingleOrDefault<Guid>("select Id FROM Organisations where EndPointAssessorName=@EndPointAssessorName", new {EndPointAssessorName = assessorName});
+            if (organisationId != null)
+            {
+                return organisationId.Value;
+            }            
+
             string nextEpaOrgId = GetNextEpaOrgId(assessorConnection);
 
-            int organisationTypeId = 0;
-
-            try {
-
-                organisationTypeId = assessorConnection.QuerySingle<int>("SELECT Id FROM OrganisationType WHERE REPLACE(Type,' ','') = @Type OR Type = @Type", 
+            var organisationTypeId = assessorConnection.QuerySingle<int>("SELECT Id FROM OrganisationType WHERE REPLACE(Type,' ','') = @Type OR Type = @Type", 
                                                                         new {Type = originalApplyOrganisation.OrganisationType});
-            }
-            catch(Exception ex)
-            {
-                var e = ex;
-            }
 
             organisationId = Guid.NewGuid();
             assessorConnection.Execute(@"INSERT INTO Organisations (Id, CreatedAt, EndPointAssessorName, EndPointAssessorOrganisationId, EndPointAssessorUkprn, PrimaryContact, Status, OrganisationData, ApiEnabled, OrganisationTypeId) 
@@ -115,14 +115,14 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                         {
                                             Id = organisationId,
                                             CreatedAt = originalApplyApplication.CreatedAt,
-                                            EndPointAssessorName = ((string)originalApplyApplication.Name).Truncate(100),
+                                            EndPointAssessorName = assessorName,
                                             EndPointAssessorOrganisationId = nextEpaOrgId,
                                             EndPointAssessorUkPrn = (string)null,
                                             PrimaryContact = (string)null,
                                             OrganisationData = orgData,
                                             OrganisationTypeId = organisationTypeId
                                         });
-            return organisationId;
+            return organisationId.Value;
         }
 
         private static string GetNextEpaOrgId(SqlConnection assessorConnection)
