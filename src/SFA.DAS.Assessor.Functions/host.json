@@ -3,8 +3,8 @@
     "logging": {
         "fileLoggingMode": "always",
         "logLevel": {
-          "default": "Information",
-          "Host.Results": "Error",
+          "default": "Trace",
+          "Host.Results": "Trace",
           "Function": "Trace",
           "Host.Aggregator": "Trace"
         }
