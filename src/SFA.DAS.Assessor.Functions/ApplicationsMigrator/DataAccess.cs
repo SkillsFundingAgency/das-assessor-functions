@@ -97,7 +97,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             
             Guid? organisationId;
 
-            organisationId = assessorConnection.QuerySingleOrDefault<Guid>("select Id FROM Organisations where EndPointAssessorName=@EndPointAssessorName", new {EndPointAssessorName = assessorName});
+            organisationId = assessorConnection.QueryFirstOrDefault<Guid>("select Id FROM Organisations where EndPointAssessorName=@EndPointAssessorName", new {EndPointAssessorName = assessorName});
             if (organisationId != null)
             {
                 return organisationId.Value;
