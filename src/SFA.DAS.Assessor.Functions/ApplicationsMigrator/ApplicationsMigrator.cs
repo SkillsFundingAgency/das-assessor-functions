@@ -153,18 +153,43 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         }
 
         private string GetReviewStatus(dynamic originalApplyApplication)
-        {
-            return "";
+        {            
+            var currentFinancialStatus = (string)originalApplyApplication.FinancialStatus;
+            var currentApplicationStatus = (string)originalApplyApplication.ApplicationStatus;
+            var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
+
+            if (currentApplicationStatus == "FeedbackAdded") return "Has Feedback";
+            if (currentApplicationStatus == "Submitted") return "New";
+
+            return currentReviewStatus;
         }
 
         private string GetApplicationStatus(dynamic originalApplyApplication)
         {
-            return "";
+            var currentFinancialStatus = (string)originalApplyApplication.FinancialStatus;
+            var currentApplicationStatus = (string)originalApplyApplication.ApplicationStatus;
+            var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
+
+            if (currentReviewStatus == "Approved") return "Approved";
+            return currentApplicationStatus;
         }
 
         private string GetFinancialReviewStatus(dynamic originalApplyApplication)
         {
-            return "";
+            var currentFinancialStatus = (string)originalApplyApplication.FinancialStatus;
+            var currentApplicationStatus = (string)originalApplyApplication.ApplicationStatus;
+            var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
+
+            if(currentFinancialStatus == "Draft" || currentFinancialStatus == "Submitted") return "New";
+            if(currentFinancialStatus == "Evaluated" ) return "Graded";
+            if(currentApplicationStatus == "In Progress" && currentReviewStatus == "Draft" && !originalApplyApplication.FinancialExempt)
+            {
+                return "Required";
+            }
+            else
+            {
+                return "Exempt";
+            }
         }
 
         private string GenerateApplicationData(List<string> qnaSectionQnaDatas, ILogger log, Guid? organisationId, dynamic originalApplyApplication, SqlConnection assessorConnection)
