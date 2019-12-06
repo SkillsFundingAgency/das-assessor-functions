@@ -8,13 +8,19 @@
                 "description": "Short name of the environment. Used for the reference of the environment in table storage"
             }
         },
+        "resourceEnvironmentName": {
+            "type": "string",
+            "metadata": {
+                "description": "Short name of the environment. Used for the naming of azure resources"
+            }
+        },
         "serviceName": {
             "type": "string",
             "metadata": {
                 "description": "Short name of the service. Used for the name of resources created"
             }
         },
-        "SharedStorageAccountConnectionString": {
+        "sharedStorageAccountConnectionString": {
             "type": "securestring",
             "metadata": {
                 "description": "Name of the connection string for shared storage account"
@@ -55,7 +61,7 @@
     },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
-        "resourceNamePrefix": "[toLower(concat('das-', parameters('EnvironmentName'),'-', parameters('serviceName')))]",
+        "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'),'-asp')]",
         "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]"
     },
@@ -130,11 +136,11 @@
                         "value": [
                             {
                                 "name": "AzureWebJobsStorage",
-                                "value": "[parameters('SharedStorageAccountConnectionString')]"
+                                "value": "[parameters('sharedStorageAccountConnectionString')]"
                             },
                             {
                                 "name": "AzureWebJobsDashboard",
-                                "value": "[parameters('SharedStorageAccountConnectionString')]"
+                                "value": "[parameters('sharedStorageAccountConnectionString')]"
                             },
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -146,7 +152,7 @@
                             },
                             {
                                 "name": "EnvironmentName",
-                                "value": "[toUpper(parameters('EnvironmentName'))]"
+                                "value": "[toUpper(parameters('environmentName'))]"
                             },
                             {
                                 "name": "LoggingRedisConnectionString",
