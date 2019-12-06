@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         Guid? GetEpaoWorkflowId(SqlConnection qnaConnection);
 
         dynamic GetApplyingOrganisation(SqlConnection applyConnection, Guid organisationId);
-        void CreateAssessorApplyRecord(SqlConnection assessorConnection, dynamic originalApplyApplication, Guid qnaApplicationId, Guid? organisationId, dynamic applyDataObject, dynamic financialGradeObject);
+        void CreateAssessorApplyRecord(SqlConnection assessorConnection, dynamic originalApplyApplication, Guid qnaApplicationId, Guid? organisationId, dynamic applyDataObject, dynamic financialGradeObject, string financialReviewStatus, string applicationStatus, string reviewStatus);
         List<dynamic> GetApplyOrganisationContacts(SqlConnection applyConnection, Guid id);
         void CreateContact(SqlConnection assessorConnection, dynamic contact, Guid organisationId);
         int GetNextAppReferenceSequence(SqlConnection assessorConnection);

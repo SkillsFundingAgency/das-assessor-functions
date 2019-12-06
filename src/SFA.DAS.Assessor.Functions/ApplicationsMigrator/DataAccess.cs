@@ -148,17 +148,17 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             return applyConnection.QuerySingle("SELECT * FROM Organisations WHERE Id = @Id", new { Id = organisationId });
         }
 
-        public void CreateAssessorApplyRecord(SqlConnection assessorConnection, dynamic originalApplyApplication, Guid qnaApplicationId, Guid? organisationId, dynamic applyDataObject, dynamic financialGradeObject)
+        public void CreateAssessorApplyRecord(SqlConnection assessorConnection, dynamic originalApplyApplication, Guid qnaApplicationId, Guid? organisationId, dynamic applyDataObject, dynamic financialGradeObject, string financialReviewStatus, string applicationStatus, string reviewStatus)
         {
             assessorConnection.Execute(@"INSERT INTO Apply (Id, ApplicationId, OrganisationId, ApplicationStatus, ReviewStatus, ApplyData, FinancialReviewStatus, FinancialGrade, StandardCode, CreatedAt, CreatedBy) 
                                                     VALUES (NEWID(), @ApplicationId, @OrganisationId, @ApplicationStatus, @ReviewStatus, @ApplyData, @FinancialReviewStatus, @FinancialGrade, @StandardCode, @CreatedAt, @CreatedBy)", new
             {
                 ApplicationId = qnaApplicationId,
                 OrganisationId = organisationId.Value,
-                ApplicationStatus = (string)originalApplyApplication.ApplicationStatus,
-                ReviewStatus = (string)originalApplyApplication.ReviewStatus,
+                ApplicationStatus = applicationStatus,
+                ReviewStatus = reviewStatus,
                 ApplyData = (string)applyDataObject,
-                FinancialReviewStatus = (string)originalApplyApplication.FinancialStatus,
+                FinancialReviewStatus = financialReviewStatus,
                 FinancialGrade = (string)financialGradeObject,
                 StandardCode = (string)null,
                 CreatedAt = originalApplyApplication.CreatedAt,

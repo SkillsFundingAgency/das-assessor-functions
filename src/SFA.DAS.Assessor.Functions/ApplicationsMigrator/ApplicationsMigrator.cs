@@ -110,7 +110,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                             var applicationStatus = GetApplicationStatus(originalApplyApplication);
                             var reviewStatus = GetReviewStatus(originalApplyApplication);
 
-                            _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject);
+                            _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject, financialReviewStatus, applicationStatus, reviewStatus);
 
                             var applicationData = GenerateApplicationData(qnaSectionQnaDatas, log, organisationId, originalApplyApplication, assessorConnection);
 
