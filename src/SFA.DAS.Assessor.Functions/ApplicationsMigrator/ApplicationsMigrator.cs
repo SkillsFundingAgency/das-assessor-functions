@@ -387,10 +387,13 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 string questionId = financialAnswer.QuestionId.Value;
                 string filename = financialAnswer.Value.Value;
 
-                var evidence = new JObject();
-                evidence.Add("FileName", $"{id}/{sequenceGuid}/{sectionGuid}/23/{questionId}/{filename}");
+                if (!string.IsNullOrWhiteSpace(filename))
+                {
+                    var evidence = new JObject();
+                    evidence.Add("FileName", $"{id}/{sequenceGuid}/{sectionGuid}/23/{questionId}/{filename}");
 
-                financialEvidences.Add(evidence);
+                    financialEvidences.Add(evidence);
+                }
             }
         }
         dynamic financialGrade = null;
