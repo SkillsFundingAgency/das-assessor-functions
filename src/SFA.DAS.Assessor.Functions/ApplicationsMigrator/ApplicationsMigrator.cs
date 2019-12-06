@@ -105,6 +105,11 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                             dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections, assessorConnection);
                             dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication);
 
+
+                            var financialReviewStatus = GetFinancialReviewStatus(originalApplyApplication);
+                            var applicationStatus = GetApplicationStatus(originalApplyApplication);
+                            var reviewStatus = GetReviewStatus(originalApplyApplication);
+
                             _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject);
 
                             var applicationData = GenerateApplicationData(qnaSectionQnaDatas, log, organisationId, originalApplyApplication, assessorConnection);
@@ -147,7 +152,22 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             return returnInformation;
         }
 
-    private string GenerateApplicationData(List<string> qnaSectionQnaDatas, ILogger log, Guid? organisationId, dynamic originalApplyApplication, SqlConnection assessorConnection)
+        private string GetReviewStatus(dynamic originalApplyApplication)
+        {
+            return "";
+        }
+
+        private string GetApplicationStatus(dynamic originalApplyApplication)
+        {
+            return "";
+        }
+
+        private string GetFinancialReviewStatus(dynamic originalApplyApplication)
+        {
+            return "";
+        }
+
+        private string GenerateApplicationData(List<string> qnaSectionQnaDatas, ILogger log, Guid? organisationId, dynamic originalApplyApplication, SqlConnection assessorConnection)
     {
         JObject originalApplicationDataObj = null;
         string referenceNumber = null;
@@ -266,10 +286,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     sectionObject.Add("SectionNo", applySection.SectionId);
                     sectionObject.Add("Status", applySection.Status);
 
-                    sectionObject.Add("ReviewStartDate", ""); // TODO: ReviewStartDate
-                    sectionObject.Add("ReviewedBy", ""); // TODO: ReviewedBy
-                    sectionObject.Add("EvaluatedDate", ""); // TODO: EvaluatedDate
-                    sectionObject.Add("EvaluatedBy", ""); // TODO: EvaluatedBy
+                    sectionObject.Add("ReviewStartDate", null); // TODO: ReviewStartDate
+                    sectionObject.Add("ReviewedBy", null); // TODO: ReviewedBy
+                    sectionObject.Add("EvaluatedDate", null); // TODO: EvaluatedDate
+                    sectionObject.Add("EvaluatedBy", null); // TODO: EvaluatedBy
 
                     sectionObject.Add("NotRequired", applySection.NotRequired);
                     sectionObject.Add("RequestedFeedbackAnswered", null);
@@ -295,12 +315,12 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 StandardCode = (string)null,
                 StandardReference = (string)null,
                 StandardName = (string)null,
-                InitSubmissions = JsonConvert.SerializeObject(new JArray()),
+                InitSubmissions = new JArray(),
                 InitSubmissionCount = 0,
                 LatestInitSubmissionDate = (string)null,
                 InitSubmissionFeedbackAddedDate = (string)null,
                 InitSubmissionClosedDate = (string)null,
-                StandardSubmissions = JsonConvert.SerializeObject(new JArray()),
+                StandardSubmissions = new JArray(),
                 StandardSubmissionsCount = 0, 
                 LatestStandardSubmissionDate = (string)null,
                 StandardSubmissionFeedbackAddedDate = (string)null,
