@@ -31,13 +31,11 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         public Guid CreateQnaApplicationRecord(SqlConnection qnaConnection, Guid? workflowId, dynamic originalApplyApplication)
         {
-            var qnaApplicationId = Guid.NewGuid();
-
             // Create Qna Applications record
             qnaConnection.Execute(@"INSERT INTO Applications (Id, WorkflowId, Reference, CreatedAt, ApplicationStatus, ApplicationData) 
                                             VALUES (@Id, @WorkflowId, 'Migrated from Apply', @CreatedAt, @ApplicationStatus, '')",
-                                    new { Id = qnaApplicationId, WorkflowId = workflowId, originalApplyApplication.CreatedAt, originalApplyApplication.ApplicationStatus });
-            return qnaApplicationId;
+                                    new { Id = originalApplyApplication.Id, WorkflowId = workflowId, originalApplyApplication.CreatedAt, originalApplyApplication.ApplicationStatus });
+            return originalApplyApplication.Id;
         }
 
         public void UpdateQnaApplicationData(SqlConnection qnaConnection, Guid applicationId, string applicationData)
