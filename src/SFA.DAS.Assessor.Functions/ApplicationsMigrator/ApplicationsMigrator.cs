@@ -297,7 +297,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             sequenceObject.Add("Status", sequence.Status);
             sequenceObject.Add("IsActive", sequence.IsActive);
             sequenceObject.Add("NotRequired", sequence.NotRequired);
-            sequenceObject.Add("ApprovedDate", ""); // TODO: ApprovedDate
+            sequenceObject.Add("ApprovedDate", null); // TODO: ApprovedDate
             sequenceObject.Add("ApprovedBy", ""); // TODO: ApprovedBy
 
             var sections = new JArray();
