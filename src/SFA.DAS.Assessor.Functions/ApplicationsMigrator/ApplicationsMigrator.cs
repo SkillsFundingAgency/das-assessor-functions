@@ -103,12 +103,12 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                             }
 
                             dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections, assessorConnection);
-                            dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication);
-
 
                             var financialReviewStatus = GetFinancialReviewStatus(originalApplyApplication);
                             var applicationStatus = GetApplicationStatus(originalApplyApplication);
                             var reviewStatus = GetReviewStatus(originalApplyApplication);
+
+                            dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication, reviewStatus, applicationStatus);
 
                             _dataAccess.CreateAssessorApplyRecord(assessorConnection, originalApplyApplication, qnaApplicationId, organisationId, applyDataObject, financialGradeObject, financialReviewStatus, applicationStatus, reviewStatus);
 
@@ -139,21 +139,22 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 {
                     log.LogError($"Inner Exception in Function: {e.Message} {e.StackTrace}", e);
                 }
-                return new MigrationResult{MigrationErrors = new List<MigrationError>{new MigrationError{OriginalApplicationId = null, Reason = $"Exception in Function: {e.Message} {e.StackTrace}"}}};
+                return new MigrationResult { MigrationErrors = new List<MigrationError> { new MigrationError { OriginalApplicationId = null, Reason = $"Exception in Function: {e.Message} {e.StackTrace}" } } };
             }
-            var returnInformation = new MigrationResult() { 
-                NumberOfApplicationsToMigrate = totalApplicationsToMigrate, 
-                NumberOfApplicationsMigrated = applicationsMigrated, 
-                MigrationErrors = notMigratedApplications 
+            var returnInformation = new MigrationResult()
+            {
+                NumberOfApplicationsToMigrate = totalApplicationsToMigrate,
+                NumberOfApplicationsMigrated = applicationsMigrated,
+                MigrationErrors = notMigratedApplications
             };
 
             log.LogInformation(JsonConvert.SerializeObject(returnInformation, Formatting.Indented));
-        
+
             return returnInformation;
         }
 
         private string GetReviewStatus(dynamic originalApplyApplication)
-        {            
+        {
             var currentFinancialStatus = (string)originalApplyApplication.FinancialStatus;
             var currentApplicationStatus = (string)originalApplyApplication.ApplicationStatus;
             var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
@@ -180,9 +181,9 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var currentApplicationStatus = (string)originalApplyApplication.ApplicationStatus;
             var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
 
-            if(currentFinancialStatus == "Draft" || currentFinancialStatus == "Submitted") return "New";
-            if(currentFinancialStatus == "Evaluated" ) return "Graded";
-            if(currentApplicationStatus == "In Progress" && currentReviewStatus == "Draft" && !originalApplyApplication.FinancialExempt)
+            if (currentFinancialStatus == "Draft" || currentFinancialStatus == "Submitted") return "New";
+            if (currentFinancialStatus == "Evaluated") return "Graded";
+            if (currentApplicationStatus == "In Progress" && currentReviewStatus == "Draft" && !originalApplyApplication.FinancialExempt)
             {
                 return "Required";
             }
@@ -193,70 +194,71 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         }
 
         private string GenerateApplicationData(List<string> qnaSectionQnaDatas, ILogger log, Guid? organisationId, dynamic originalApplyApplication, SqlConnection assessorConnection)
-    {
-        JObject originalApplicationDataObj = null;
-        string referenceNumber = null;
-        if (originalApplyApplication.ApplicationData != null)
         {
-            originalApplicationDataObj = JObject.Parse(originalApplyApplication.ApplicationData);
-        }
-        else
-        {
-            var seq = _dataAccess.GetNextAppReferenceSequence(assessorConnection);
-            referenceNumber = $"AAD{seq:D6}";
-        }            
-
-        var applicationDataObject = new JObject();
-
-        applicationDataObject.Add("OrganisationReferenceId", organisationId);
-        applicationDataObject.Add("OrganisationName", originalApplyApplication.Name);
-        applicationDataObject.Add("ReferenceNumber", referenceNumber ?? originalApplicationDataObj?["ReferenceNumber"]);
-        applicationDataObject.Add("StandardName", originalApplicationDataObj?["StandardName"]);
-        applicationDataObject.Add("StandardCode", originalApplicationDataObj?["StandardCode"]);
-
-        applicationDataObject.Add("OrganisationType", originalApplyApplication.OrganisationType);
-
-        applicationDataObject.Add("TradingName", (string)null);
-        applicationDataObject.Add("UseTradingName", false);
-        applicationDataObject.Add("ContactGivenName", (string)null);
-
-        applicationDataObject.Add("CompanySummary", null);
-        applicationDataObject.Add("CharitySummary", null);
-        applicationDataObject.Add("OriginalApplicationId", originalApplyApplication.Id);
-
-        InjectQuestionTagAnswers(qnaSectionQnaDatas, log, applicationDataObject);
-
-        return JsonConvert.SerializeObject(applicationDataObject, Formatting.None);
-    }
-
-    private static void InjectQuestionTagAnswers(List<string> qnaSectionQnaDatas, ILogger log, JObject applicationDataObject)
-    {
-        foreach (var qnaDataString in qnaSectionQnaDatas)
-        {
-            var qnaDataObj = JObject.Parse(qnaDataString);
-
-            foreach (JObject page in qnaDataObj["Pages"])
+            JObject originalApplicationDataObj = null;
+            string referenceNumber = null;
+            if (originalApplyApplication.ApplicationData != null)
             {
-                foreach (JObject question in page["Questions"])
+                originalApplicationDataObj = JObject.Parse(originalApplyApplication.ApplicationData);
+            }
+            else
+            {
+                var seq = _dataAccess.GetNextAppReferenceSequence(assessorConnection);
+                referenceNumber = $"AAD{seq:D6}";
+            }
+
+            var applicationDataObject = new JObject();
+
+            applicationDataObject.Add("OrganisationReferenceId", organisationId);
+            applicationDataObject.Add("OrganisationName", originalApplyApplication.Name);
+            applicationDataObject.Add("ReferenceNumber", referenceNumber ?? originalApplicationDataObj?["ReferenceNumber"]);
+            applicationDataObject.Add("StandardName", originalApplicationDataObj?["StandardName"]);
+            applicationDataObject.Add("StandardCode", originalApplicationDataObj?["StandardCode"].Value<int>() == 0 ? null : originalApplicationDataObj?["StandardCode"].Value<int>());
+
+            applicationDataObject.Add("OrganisationType", originalApplyApplication.OrganisationType);
+
+            applicationDataObject.Add("TradingName", (string)null);
+            applicationDataObject.Add("UseTradingName", false);
+            applicationDataObject.Add("ContactGivenName", (string)null);
+
+            applicationDataObject.Add("CompanySummary", null);
+            applicationDataObject.Add("CharitySummary", null);
+            applicationDataObject.Add("OriginalApplicationId", originalApplyApplication.Id);
+
+            InjectQuestionTagAnswers(qnaSectionQnaDatas, log, applicationDataObject);
+
+            return JsonConvert.SerializeObject(applicationDataObject, Formatting.None);
+        }
+
+        private static void InjectQuestionTagAnswers(List<string> qnaSectionQnaDatas, ILogger log, JObject applicationDataObject)
+        {
+            foreach (var qnaDataString in qnaSectionQnaDatas)
+            {
+                var qnaDataObj = JObject.Parse(qnaDataString);
+
+                foreach (JObject page in qnaDataObj["Pages"])
                 {
-                    if (question.ContainsKey("QuestionTag") && !string.IsNullOrWhiteSpace((string)question["QuestionTag"]))
+                    foreach (JObject question in page["Questions"])
                     {
-                        string questionId = question["QuestionId"].Value<string>();
-                        InjectAnswer(log, applicationDataObject, page, question, questionId);
-                    }
-                    else
-                    {
-                        var inputObj = question["Input"];
-                        if (inputObj["Type"].Value<string>() == "ComplexRadio")
+                        if (question.ContainsKey("QuestionTag") && !string.IsNullOrWhiteSpace((string)question["QuestionTag"]))
                         {
-                            foreach (var option in inputObj["Options"])
+                            string questionId = question["QuestionId"].Value<string>();
+                            InjectAnswer(log, applicationDataObject, page, question, questionId);
+                        }
+                        else
+                        {
+                            var inputObj = question["Input"];
+                            if (inputObj["Type"].Value<string>() == "ComplexRadio")
                             {
-                                foreach (JObject furtherQuestion in option["FurtherQuestions"])
+                                foreach (var option in inputObj["Options"])
                                 {
-                                    if (furtherQuestion.ContainsKey("QuestionTag") && !string.IsNullOrWhiteSpace((string)furtherQuestion["QuestionTag"]))
+                                    foreach (JObject furtherQuestion in option["FurtherQuestions"])
                                     {
-                                        string questionId = furtherQuestion["QuestionId"].Value<string>();
-                                        InjectAnswer(log, applicationDataObject, page, furtherQuestion, questionId);
+                                        if (furtherQuestion.ContainsKey("QuestionTag") && !string.IsNullOrWhiteSpace((string)furtherQuestion["QuestionTag"]))
+                                        {
+                                            string questionId = furtherQuestion["QuestionId"].Value<string>();
+                                            InjectAnswer(log, applicationDataObject, page, furtherQuestion, questionId);
+                                        }
                                     }
                                 }
                             }
@@ -265,161 +267,158 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 }
             }
         }
-    }
 
-    private static void InjectAnswer(ILogger log, JObject applicationDataObject, JObject page, JObject question, string questionId)
-    {
-        foreach (JObject pageOfAnswers in page["PageOfAnswers"])
+        private static void InjectAnswer(ILogger log, JObject applicationDataObject, JObject page, JObject question, string questionId)
         {
-            foreach (JObject answer in pageOfAnswers["Answers"])
+            foreach (JObject pageOfAnswers in page["PageOfAnswers"])
             {
-                if (answer["QuestionId"].Value<string>() == questionId)
+                foreach (JObject answer in pageOfAnswers["Answers"])
                 {
-                    applicationDataObject.Add(question["QuestionTag"].Value<string>(), answer["Value"].Value<string>());
+                    if (answer["QuestionId"].Value<string>() == questionId)
+                    {
+                        applicationDataObject.Add(question["QuestionTag"].Value<string>(), answer["Value"].Value<string>());
+                    }
                 }
             }
         }
-    }
 
-    private string GenerateApplyData(dynamic originalApplyApplication, dynamic applySequences, dynamic applySections, SqlConnection assessorConnection)
-    {
-        var applyDataObject = new JObject();
-
-        applyDataObject.Add("OriginalApplicationId", originalApplyApplication.OriginalApplicationId);
-
-        var sequences = new JArray();
-
-        foreach (var sequence in applySequences)
+        private string GenerateApplyData(dynamic originalApplyApplication, dynamic applySequences, dynamic applySections, SqlConnection assessorConnection)
         {
-            var sequenceObject = new JObject();
-            sequenceObject.Add("SequenceId", sequence.Id);
-            sequenceObject.Add("SequenceNo", sequence.SequenceId);
-            sequenceObject.Add("Status", sequence.Status);
-            sequenceObject.Add("IsActive", sequence.IsActive);
-            sequenceObject.Add("NotRequired", sequence.NotRequired);
-            sequenceObject.Add("ApprovedDate", null); // TODO: ApprovedDate
-            sequenceObject.Add("ApprovedBy", ""); // TODO: ApprovedBy
+            var applyDataObject = new JObject();
 
-            var sections = new JArray();
+            applyDataObject.Add("OriginalApplicationId", originalApplyApplication.OriginalApplicationId);
 
-            foreach (var applySection in applySections)
+            var sequences = new JArray();
+
+            foreach (var sequence in applySequences)
             {
-                if (applySection.SequenceId == sequence.SequenceId)
+                var sequenceObject = new JObject();
+                sequenceObject.Add("SequenceId", sequence.Id);
+                sequenceObject.Add("SequenceNo", sequence.SequenceId);
+                sequenceObject.Add("Status", sequence.Status);
+                sequenceObject.Add("IsActive", sequence.IsActive);
+                sequenceObject.Add("NotRequired", sequence.NotRequired);
+                sequenceObject.Add("ApprovedDate", null); // TODO: ApprovedDate
+                sequenceObject.Add("ApprovedBy", ""); // TODO: ApprovedBy
+
+                var sections = new JArray();
+
+                foreach (var applySection in applySections)
                 {
-                    var sectionObject = new JObject();
-                    sectionObject.Add("SectionId", applySection.Id);
-                    sectionObject.Add("SectionNo", applySection.SectionId);
-                    sectionObject.Add("Status", applySection.Status);
+                    if (applySection.SequenceId == sequence.SequenceId)
+                    {
+                        var sectionObject = new JObject();
+                        sectionObject.Add("SectionId", applySection.Id);
+                        sectionObject.Add("SectionNo", applySection.SectionId);
+                        sectionObject.Add("Status", applySection.Status);
 
-                    sectionObject.Add("ReviewStartDate", null); // TODO: ReviewStartDate
-                    sectionObject.Add("ReviewedBy", null); // TODO: ReviewedBy
-                    sectionObject.Add("EvaluatedDate", null); // TODO: EvaluatedDate
-                    sectionObject.Add("EvaluatedBy", null); // TODO: EvaluatedBy
+                        sectionObject.Add("ReviewStartDate", null); // TODO: ReviewStartDate
+                        sectionObject.Add("ReviewedBy", null); // TODO: ReviewedBy
+                        sectionObject.Add("EvaluatedDate", null); // TODO: EvaluatedDate
+                        sectionObject.Add("EvaluatedBy", null); // TODO: EvaluatedBy
 
-                    sectionObject.Add("NotRequired", applySection.NotRequired);
-                    sectionObject.Add("RequestedFeedbackAnswered", null);
-                    sections.Add(sectionObject);
+                        sectionObject.Add("NotRequired", applySection.NotRequired);
+                        sectionObject.Add("RequestedFeedbackAnswered", null);
+                        sections.Add(sectionObject);
+                    }
+                }
+                sequenceObject.Add("Sections", sections);
+
+                sequences.Add(sequenceObject);
+            }
+
+            applyDataObject.Add("Sequences", sequences);
+
+            JObject applicationData;
+            if (originalApplyApplication.ApplicationData == null)
+            {
+                var seq = _dataAccess.GetNextAppReferenceSequence(assessorConnection);
+
+                var referenceNumber = $"AAD{seq:D6}";
+
+                applicationData = JObject.Parse(JsonConvert.SerializeObject(new
+                {
+                    ReferenceNumber = referenceNumber,
+                    StandardCode = (string)null,
+                    StandardReference = (string)null,
+                    StandardName = (string)null,
+                    InitSubmissions = new JArray(),
+                    InitSubmissionCount = 0,
+                    LatestInitSubmissionDate = (string)null,
+                    InitSubmissionFeedbackAddedDate = (string)null,
+                    InitSubmissionClosedDate = (string)null,
+                    StandardSubmissions = new JArray(),
+                    StandardSubmissionsCount = 0,
+                    LatestStandardSubmissionDate = (string)null,
+                    StandardSubmissionFeedbackAddedDate = (string)null,
+                    StandardSubmissionClosedDate = (string)null
+                }));
+            }
+            else
+            {
+                applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
+            }
+
+            applyDataObject.Add("Apply", applicationData);
+
+            return applyDataObject.ToString();
+        }
+
+        private static string CreateFinancialGradeObject(dynamic originalApplyApplication, string reviewStatus, string applicationStatus)
+        {
+            if ((originalApplyApplication.ApplicationData == null) || (reviewStatus == "New" && applicationStatus == "Submitted")) return null;
+
+            JArray financialEvidences = new JArray();
+            JArray financialAnswers = null;
+
+            if (originalApplyApplication.FinancialAnswers != null)
+            {
+                financialAnswers = JArray.Parse(originalApplyApplication.FinancialAnswers);
+            }
+
+            if (financialAnswers != null && financialAnswers.Count > 0)
+            {
+                foreach (dynamic financialAnswer in financialAnswers)
+                {
+                    Guid id = originalApplyApplication.Id;
+                    Guid sequenceGuid = originalApplyApplication.SequenceOneGuid;
+                    Guid sectionGuid = originalApplyApplication.FinancialSectionGuid;
+                    string questionId = financialAnswer.QuestionId.Value;
+                    string filename = financialAnswer.Value.Value;
+
+                    if (!string.IsNullOrWhiteSpace(filename))
+                    {
+                        var evidence = new JObject();
+                        evidence.Add("FileName", $"{id}/{sequenceGuid}/{sectionGuid}/23/{questionId}/{filename}");
+
+                        financialEvidences.Add(evidence);
+                    }
                 }
             }
-            sequenceObject.Add("Sections", sections);
-
-            sequences.Add(sequenceObject);
-        }
-
-        applyDataObject.Add("Sequences", sequences);
-
-        JObject applicationData;
-        if (originalApplyApplication.ApplicationData == null)
-        {
-            var seq = _dataAccess.GetNextAppReferenceSequence(assessorConnection);
-
-            var referenceNumber = $"AAD{seq:D6}";
-
-            applicationData = JObject.Parse(JsonConvert.SerializeObject(new {
-                ReferenceNumber = referenceNumber,
-                StandardCode = (string)null,
-                StandardReference = (string)null,
-                StandardName = (string)null,
-                InitSubmissions = new JArray(),
-                InitSubmissionCount = 0,
-                LatestInitSubmissionDate = (string)null,
-                InitSubmissionFeedbackAddedDate = (string)null,
-                InitSubmissionClosedDate = (string)null,
-                StandardSubmissions = new JArray(),
-                StandardSubmissionsCount = 0, 
-                LatestStandardSubmissionDate = (string)null,
-                StandardSubmissionFeedbackAddedDate = (string)null,
-                StandardSubmissionClosedDate = (string)null
-            }));
-        }
-        else
-        {
-            applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
-        }
-
-        applyDataObject.Add("Apply", applicationData);
-
-        return applyDataObject.ToString();
-    }
-
-    private static string CreateFinancialGradeObject(dynamic originalApplyApplication)
-    {
-        if (originalApplyApplication.ApplicationData == null)
-        {
-            return null;
-        }
-
-        JArray financialEvidences = new JArray();
-        JArray financialAnswers = null;
-
-        if (originalApplyApplication.FinancialAnswers != null)
-        {
-            financialAnswers = JArray.Parse(originalApplyApplication.FinancialAnswers);
-        }
-
-        if (financialAnswers != null && financialAnswers.Count > 0)
-        {
-            foreach (dynamic financialAnswer in financialAnswers)
+            dynamic financialGrade = null;
+            if (originalApplyApplication.FinancialGrade != null)
             {
-                Guid id = originalApplyApplication.Id;
-                Guid sequenceGuid = originalApplyApplication.SequenceOneGuid;
-                Guid sectionGuid = originalApplyApplication.FinancialSectionGuid;
-                string questionId = financialAnswer.QuestionId.Value;
-                string filename = financialAnswer.Value.Value;
-
-                if (!string.IsNullOrWhiteSpace(filename))
-                {
-                    var evidence = new JObject();
-                    evidence.Add("FileName", $"{id}/{sequenceGuid}/{sectionGuid}/23/{questionId}/{filename}");
-
-                    financialEvidences.Add(evidence);
-                }
+                financialGrade = JObject.Parse(originalApplyApplication.FinancialGrade);
             }
-        }
-        dynamic financialGrade = null;
-        if (originalApplyApplication.FinancialGrade != null)
-        {
-            financialGrade = JObject.Parse(originalApplyApplication.FinancialGrade);
-        }
 
-        dynamic applicationData = null;
-        if (originalApplyApplication.ApplicationData != null)
-        {
-            applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
-        }
+            dynamic applicationData = null;
+            if (originalApplyApplication.ApplicationData != null)
+            {
+                applicationData = JObject.Parse(originalApplyApplication.ApplicationData);
+            }
 
-        return JsonConvert.SerializeObject(
-                                    new
-                                    {
-                                        ApplicationReference = applicationData?.ReferenceNumber.Value,
-                                        SelectedGrade = financialGrade?.SelectedGrade.Value,
-                                        InadequateMoreInformation = (string)financialGrade?.InadequateMoreInformation?.Value,
-                                        FinancialDueDate = (DateTime?)financialGrade?.FinancialDueDate?.Value,
-                                        GradedBy = (string)financialGrade?.GradedBy?.Value,
-                                        GradedDateTime = (DateTime?)financialGrade?.GradedDateTime?.Value,
-                                        FinancialEvidences = financialEvidences
-                                    }
-                                    );
+            return JsonConvert.SerializeObject(
+                                        new
+                                        {
+                                            ApplicationReference = applicationData?.ReferenceNumber.Value,
+                                            SelectedGrade = financialGrade?.SelectedGrade.Value,
+                                            InadequateMoreInformation = (string)financialGrade?.InadequateMoreInformation?.Value,
+                                            FinancialDueDate = (DateTime?)financialGrade?.FinancialDueDate?.Value,
+                                            GradedBy = (string)financialGrade?.GradedBy?.Value,
+                                            GradedDateTime = (DateTime?)financialGrade?.GradedDateTime?.Value,
+                                            FinancialEvidences = financialEvidences
+                                        }
+                                        );
+        }
     }
-}
 }

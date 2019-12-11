@@ -60,7 +60,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 				INNER JOIN ApplicationSections AS FinancialSection ON Applications.Id = FinancialSection.ApplicationId AND FinancialSection.SectionId = 3
 				INNER JOIN ApplicationSequences AS SequenceOne ON Applications.Id = SequenceOne.ApplicationId AND SequenceOne.SequenceId = 1
 				INNER JOIN Organisations ON Organisations.Id = Applications.ApplyingOrganisationId
-				WHERE ApplicationStatus NOT IN ('Approved','Rejected')").ToList(); 
+				WHERE ApplicationStatus NOT IN ('Approved','Rejected') AND Applications.Id = '293018d0-f137-42a2-b6a6-fc4c80262c87'").ToList(); 
         }
 
         public Guid? GetExistingOrganisation(SqlConnection assessorConnection, dynamic applyingOrganisation)
