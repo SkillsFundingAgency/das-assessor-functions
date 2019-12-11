@@ -26,8 +26,28 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
             FixPageSequenceAndSectionIds(qnaData, applicationSection, applySequence, log);
 
+            FixEmptyFileUploadAnswers(qnaData);
+
             string serializedQnaData = JsonConvert.SerializeObject(qnaData);
             return serializedQnaData;
+        }
+
+        private void FixEmptyFileUploadAnswers(QnAData qnaData)
+        {
+            foreach (var page in qnaData.Pages)
+            {
+                if(page.Questions.Any(q => q.Input.Type == "FileUpload"))
+                foreach(var poa in page.PageOfAnswers)
+                {
+                    for (int i = 0; i < poa.Answers.Count(); i++)
+                    {
+                        if(string.IsNullOrWhiteSpace(poa.Answers[i].Value.ToString()))
+                        {
+                            poa.Answers.RemoveAt(i);
+                        }
+                    }
+                }
+            }
         }
 
         private void FixPageSequenceAndSectionIds(QnAData qnaData, dynamic applicationSection, dynamic applySequence, Microsoft.Extensions.Logging.ILogger log)
