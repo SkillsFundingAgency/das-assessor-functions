@@ -55,12 +55,11 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 				Applications.Id AS OriginalApplicationId,
 				FinancialStatus = FinancialSection.Status,
 				ReviewStatus = SequenceOne.Status,
-				FinancialExempt = CAST(COALESCE(Json_value(OrganisationDetails, '$.FHADetails.FinancialExempt'), 'false') AS bit)
+				FinancialExempt = (CASE WHEN FinancialSection.NotRequired = 1 THEN FinancialSection.NotRequired ELSE CAST(COALESCE(Json_value(OrganisationDetails, '$.FHADetails.FinancialExempt'), 'false') AS bit) END)
 				FROM Applications 
 				INNER JOIN ApplicationSections AS FinancialSection ON Applications.Id = FinancialSection.ApplicationId AND FinancialSection.SectionId = 3
 				INNER JOIN ApplicationSequences AS SequenceOne ON Applications.Id = SequenceOne.ApplicationId AND SequenceOne.SequenceId = 1
-				INNER JOIN Organisations ON Organisations.Id = Applications.ApplyingOrganisationId
-				WHERE ApplicationStatus NOT IN ('Approved','Rejected')").ToList(); 
+				INNER JOIN Organisations ON Organisations.Id = Applications.ApplyingOrganisationId").ToList(); 
         }
 
         public Guid? GetExistingOrganisation(SqlConnection assessorConnection, dynamic applyingOrganisation)
