@@ -162,7 +162,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             if (currentApplicationStatus == "In Progress" && !originalApplyApplication.SequenceOneIsActive &&
                 originalApplyApplication.SequenceOneNotRequired && originalApplyApplication.SequenceOneStatus == "Approved") return "Draft";
             if (currentApplicationStatus == "FeedbackAdded") return "Has Feedback";
-            if (currentApplicationStatus == "Submitted" && currentFinancialStatus == "Evaluated" && !originalApplyApplication.FinancialExempt)  return "In Progress";
+            if (currentApplicationStatus == "Submitted" && currentFinancialStatus == "Graded" && !originalApplyApplication.FinancialExempt) return "In Progress";
+            if (currentApplicationStatus == "Submitted" && currentFinancialStatus == "Evaluated" && !originalApplyApplication.FinancialExempt) return "In Progress";
             if (currentApplicationStatus == "Submitted") return "New";
 
             return currentReviewStatus;
