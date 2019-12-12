@@ -54,6 +54,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 				Organisations.OrganisationDetails,
 				Applications.Id AS OriginalApplicationId,
 				FinancialStatus = FinancialSection.Status,
+				SelectedGrade = json_value(JSON_QUERY(FinancialSection.QnaData, '$.FinancialApplicationGrade') ,'$.SelectedGrade'),
 				SequenceOneIsActive = SequenceOne.IsActive,
 				SequenceOneNotRequired = SequenceOne.NotRequired,
 				SequenceOneStatus = SequenceOne.Status,

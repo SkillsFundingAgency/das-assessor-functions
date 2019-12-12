@@ -185,7 +185,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
 
             if (originalApplyApplication.FinancialExempt) return "Exempt";
-            if (originalApplyApplication.FinancialGrade == "Inadequate") return "Rejected";
+            if (originalApplyApplication.SelectedGrade == "Inadequate") return "Rejected";
             if (currentFinancialStatus == "Draft" || currentFinancialStatus == "Submitted") return "New";
             if (currentFinancialStatus == "Evaluated") return "Graded";
             if (currentApplicationStatus == "In Progress" && currentReviewStatus == "Draft" && !originalApplyApplication.FinancialExempt)
