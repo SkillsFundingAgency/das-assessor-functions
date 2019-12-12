@@ -343,7 +343,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     StandardReference = (string)null,
                     StandardName = (string)null,
                     InitSubmissions = new JArray(),
-                    InitSubmissionCount = 0,
+                    InitSubmissionsCount = 0,
                     LatestInitSubmissionDate = (string)null,
                     InitSubmissionFeedbackAddedDate = (string)null,
                     InitSubmissionClosedDate = (string)null,
