@@ -159,6 +159,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var currentApplicationStatus = (string)originalApplyApplication.ApplicationStatus;
             var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
 
+            if (currentApplicationStatus == "In Progress" && !originalApplyApplication.SequenceOneIsActive &&
+                originalApplyApplication.SequenceOneNotRequired && originalApplyApplication.SequenceOneStatus == "Approved") return "Draft";
             if (currentApplicationStatus == "FeedbackAdded") return "Has Feedback";
             if (currentApplicationStatus == "Submitted" && currentFinancialStatus == "Evaluated" && !originalApplyApplication.FinancialExempt)  return "In Progress";
             if (currentApplicationStatus == "Submitted") return "New";

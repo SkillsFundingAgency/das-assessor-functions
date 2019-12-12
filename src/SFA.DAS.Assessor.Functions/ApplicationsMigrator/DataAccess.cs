@@ -54,6 +54,9 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 				Organisations.OrganisationDetails,
 				Applications.Id AS OriginalApplicationId,
 				FinancialStatus = FinancialSection.Status,
+				SequenceOneIsActive = SequenceOne.IsActive,
+				SequenceOneNotRequired = SequenceOne.NotRequired,
+				SequenceOneStatus = SequenceOne.Status,
 				ReviewStatus = SequenceOne.Status,
 				FinancialExempt = (CASE WHEN FinancialSection.NotRequired = 1 THEN FinancialSection.NotRequired ELSE CAST(COALESCE(Json_value(OrganisationDetails, '$.FHADetails.FinancialExempt'), 'false') AS bit) END)
 				FROM Applications 
