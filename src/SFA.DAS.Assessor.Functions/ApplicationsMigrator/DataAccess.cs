@@ -161,7 +161,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 ApplyData = (string)applyDataObject,
                 FinancialReviewStatus = financialReviewStatus,
                 FinancialGrade = (string)financialGradeObject,
-                StandardCode = (string)null,
+                StandardCode = originalApplyApplication.StandardCode == null || originalApplyApplication.StandardCode == 0 ? null : originalApplyApplication.StandardCode,
                 CreatedAt = originalApplyApplication.CreatedAt,
                 CreatedBy = originalApplyApplication.CreatedBy
             });
