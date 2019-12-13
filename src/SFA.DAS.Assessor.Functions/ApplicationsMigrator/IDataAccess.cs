@@ -22,5 +22,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         List<dynamic> GetApplyOrganisationContacts(SqlConnection applyConnection, Guid id);
         void CreateContact(SqlConnection assessorConnection, dynamic contact, Guid organisationId);
         int GetNextAppReferenceSequence(SqlConnection assessorConnection);
+        Guid? GetExistingOrganisationIdByUkPrn(SqlConnection assessorConnection, int organisationUKPRN);
+        Guid? GetExistingOrganisationIdByName(SqlConnection assessorConnection, string name);
     }
 }

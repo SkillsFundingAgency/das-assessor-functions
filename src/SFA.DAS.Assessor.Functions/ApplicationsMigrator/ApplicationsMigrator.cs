@@ -62,19 +62,28 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                         var applyingOrganisation = _dataAccess.GetApplyingOrganisation(applyConnection, originalApplyApplication.ApplyingOrganisationId);
 
                         Guid? organisationId = null;
-                        if (!applyingOrganisation.RoEPAOApproved)
+
+                        if (applyingOrganisation.OrganisationUKPRN != null)
                         {
-                            organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication, applyingOrganisation);
-                            // Get contacts for this Apply organisation and insert them into Assessor Contacts.
-                            var applyOrganisationContacts = _dataAccess.GetApplyOrganisationContacts(applyConnection, applyingOrganisation.Id);
-                            foreach (var contact in applyOrganisationContacts)
-                            {
-                                _dataAccess.CreateContact(assessorConnection, contact, organisationId.Value);
-                            }
+                            organisationId = _dataAccess.GetExistingOrganisationIdByUkPrn(assessorConnection, applyingOrganisation.OrganisationUKPRN);
                         }
-                        else
+                        if (organisationId is null || organisationId == default(Guid))
                         {
-                            organisationId = _dataAccess.GetExistingOrganisation(assessorConnection, applyingOrganisation);
+                            string tradingName = null;
+                            JObject orgDetails = JObject.Parse(applyingOrganisation.OrganisationDetails);
+
+                            tradingName = orgDetails["TradingName"].Value<string>();
+                            organisationId = this._dataAccess.GetExistingOrganisationIdByName(assessorConnection, tradingName ?? applyingOrganisation.Name);
+                            if (organisationId is null || organisationId == default(Guid))
+                            {
+                                organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication, applyingOrganisation);
+                                // Get contacts for this Apply organisation and insert them into Assessor Contacts.
+                                var applyOrganisationContacts = _dataAccess.GetApplyOrganisationContacts(applyConnection, applyingOrganisation.Id);
+                                foreach (var contact in applyOrganisationContacts)
+                                {
+                                    _dataAccess.CreateContact(assessorConnection, contact, organisationId.Value);
+                                }    
+                            }
                         }
 
                         if (organisationId != default(Guid))
@@ -282,7 +291,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 {
                     if (answer["QuestionId"].Value<string>() == questionId)
                     {
-                        applicationDataObject.Add(question["QuestionTag"].Value<string>(), answer["Value"].Value<string>());
+                        applicationDataObject.Add(question["QuestionTag"].Value<string>().Replace("-", "_"), answer["Value"].Value<string>());
                     }
                 }
             }

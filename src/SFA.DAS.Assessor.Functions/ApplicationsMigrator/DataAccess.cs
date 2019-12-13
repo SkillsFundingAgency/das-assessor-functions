@@ -100,7 +100,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             Guid? organisationId;
 
             organisationId = assessorConnection.QueryFirstOrDefault<Guid>("select Id FROM Organisations where EndPointAssessorName=@EndPointAssessorName", new {EndPointAssessorName = assessorName});
-            if (organisationId != null)
+            if (organisationId != null && organisationId != default(Guid))
             {
                 return organisationId.Value;
             }            
@@ -151,6 +151,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
         public void CreateAssessorApplyRecord(SqlConnection assessorConnection, dynamic originalApplyApplication, Guid qnaApplicationId, Guid? organisationId, dynamic applyDataObject, dynamic financialGradeObject, string financialReviewStatus, string applicationStatus, string reviewStatus)
         {
+            int? standardCode = originalApplyApplication.StandardCode == null || originalApplyApplication.StandardCode == "0" ? (int?)null : int.Parse(originalApplyApplication.StandardCode);
             assessorConnection.Execute(@"INSERT INTO Apply (Id, ApplicationId, OrganisationId, ApplicationStatus, ReviewStatus, ApplyData, FinancialReviewStatus, FinancialGrade, StandardCode, CreatedAt, CreatedBy) 
                                                     VALUES (NEWID(), @ApplicationId, @OrganisationId, @ApplicationStatus, @ReviewStatus, @ApplyData, @FinancialReviewStatus, @FinancialGrade, @StandardCode, @CreatedAt, @CreatedBy)", new
             {
@@ -161,7 +162,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                 ApplyData = (string)applyDataObject,
                 FinancialReviewStatus = financialReviewStatus,
                 FinancialGrade = (string)financialGradeObject,
-                StandardCode = originalApplyApplication.StandardCode == null || originalApplyApplication.StandardCode == 0 ? null : originalApplyApplication.StandardCode,
+                StandardCode = (int?)standardCode,
                 CreatedAt = originalApplyApplication.CreatedAt,
                 CreatedBy = originalApplyApplication.CreatedBy
             });
@@ -200,6 +201,16 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         public int GetNextAppReferenceSequence(SqlConnection assessorConnection)
         {
             return (assessorConnection.Query<int>(@"SELECT NEXT VALUE FOR AppRefSequence")).FirstOrDefault();
+        }
+
+        public Guid? GetExistingOrganisationIdByUkPrn(SqlConnection assessorConnection, int ukprn)
+        {
+            return assessorConnection.QueryFirstOrDefault<Guid>("SELECT Id FROM Organisations WHERE EndPointAssessorUkprn = @ukprn", new { ukprn });
+        }
+
+        public Guid? GetExistingOrganisationIdByName(SqlConnection assessorConnection, string name)
+        {
+             return assessorConnection.QueryFirstOrDefault<Guid>("SELECT Id FROM Organisations WHERE EndPointAssessorName = @name", new { name });
         }
     }
     public static class StringExtensions
