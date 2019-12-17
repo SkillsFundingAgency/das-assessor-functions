@@ -110,12 +110,12 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var organisationTypeId = assessorConnection.QuerySingle<int>("SELECT Id FROM OrganisationType WHERE REPLACE(Type,' ','') = @Type OR Type = @Type", 
                                                                         new {Type = originalApplyOrganisation.OrganisationType});
 
-            organisationId = Guid.NewGuid();
+            //organisationId = Guid.NewGuid();
             assessorConnection.Execute(@"INSERT INTO Organisations (Id, CreatedAt, EndPointAssessorName, EndPointAssessorOrganisationId, EndPointAssessorUkprn, PrimaryContact, Status, OrganisationData, ApiEnabled, OrganisationTypeId) 
                                                     VALUES (@Id, @CreatedAt, @EndPointAssessorName, @EndPointAssessorOrganisationId, @EndPointAssessorUkprn, @PrimaryContact, 'Applying', @OrganisationData, 0, @OrganisationTypeId)",
                                         new
                                         {
-                                            Id = organisationId,
+                                            Id = originalApplyOrganisation.Id,
                                             CreatedAt = originalApplyApplication.CreatedAt,
                                             EndPointAssessorName = assessorName,
                                             EndPointAssessorOrganisationId = nextEpaOrgId,
@@ -124,7 +124,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                             OrganisationData = orgData,
                                             OrganisationTypeId = organisationTypeId
                                         });
-            return organisationId.Value;
+            return originalApplyOrganisation.Id;
         }
 
         private static string GetNextEpaOrgId(SqlConnection assessorConnection)
