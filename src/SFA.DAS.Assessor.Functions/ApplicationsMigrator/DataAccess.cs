@@ -63,7 +63,12 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 				FROM Applications 
 				INNER JOIN ApplicationSections AS FinancialSection ON Applications.Id = FinancialSection.ApplicationId AND FinancialSection.SectionId = 3
 				INNER JOIN ApplicationSequences AS SequenceOne ON Applications.Id = SequenceOne.ApplicationId AND SequenceOne.SequenceId = 1
-				INNER JOIN Organisations ON Organisations.Id = Applications.ApplyingOrganisationId").ToList(); 
+				INNER JOIN Organisations ON Organisations.Id = Applications.ApplyingOrganisationId
+				WHERE Applications.Id NOT in (
+					  select ap1.id from applications  ap1
+					  join ApplicationSequences as1 on ap1.id = as1.applicationid
+						where SequenceId = 1 and Notrequired = 1
+						and   json_value(applicationdata,'$.ReferenceNumber') IS NULL AND   json_value(applicationdata,'$.StandardCode') = '0')").ToList(); 
         }
 
         public Guid? GetExistingOrganisation(SqlConnection assessorConnection, dynamic applyingOrganisation)
