@@ -114,8 +114,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                             dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections, assessorConnection);
 
                             var financialReviewStatus = GetFinancialReviewStatus(originalApplyApplication);
-                            var applicationStatus = GetApplicationStatus(originalApplyApplication);
                             var reviewStatus = GetReviewStatus(originalApplyApplication);
+                            var applicationStatus = GetApplicationStatus(originalApplyApplication, reviewStatus);
 
                             dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication, reviewStatus, applicationStatus);
 
@@ -178,13 +178,11 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             return currentReviewStatus;
         }
 
-        private string GetApplicationStatus(dynamic originalApplyApplication)
+        private string GetApplicationStatus(dynamic originalApplyApplication, string newReviewStatus)
         {
-            var currentFinancialStatus = (string)originalApplyApplication.FinancialStatus;
             var currentApplicationStatus = (string)originalApplyApplication.ApplicationStatus;
-            var currentReviewStatus = (string)originalApplyApplication.ReviewStatus;
 
-            if (currentReviewStatus == "Approved") return "Approved";
+            if (newReviewStatus == "Approved") return "Approved";
             return currentApplicationStatus;
         }
 
