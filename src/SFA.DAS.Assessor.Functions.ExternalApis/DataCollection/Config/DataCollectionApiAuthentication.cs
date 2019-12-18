@@ -1,4 +1,4 @@
-namespace SFA.DAS.Assessor.Functions.Infrastructure
+namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication
 {
     public class DataCollectionApiAuthentication
     {

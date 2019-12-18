@@ -1,13 +1,10 @@
-﻿using SFA.DAS.Assessor.Functions.Domain;
-using System.Net.Http;
+﻿using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.ApiClient
+namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 {
     public interface IDataCollectionServiceAnonymousApiClient
     {
-        HttpClient Client { get; }
-
         Task<string> GetToken(DataCollectionTokenRequest request);
     }
 }

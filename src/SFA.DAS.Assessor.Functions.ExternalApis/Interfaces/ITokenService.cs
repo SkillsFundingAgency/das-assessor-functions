@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.Assessor.Functions.Interfaces
+﻿namespace SFA.DAS.Assessor.Functions.ExternalApis.Interfaces
 {
     public interface ITokenService
     {

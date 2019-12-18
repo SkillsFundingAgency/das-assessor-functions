@@ -4,10 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Assessor.Functions.ApiClient;
-using SFA.DAS.Assessor.Functions.Interfaces;
 using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
+using SFA.DAS.Assessor.Functions.Data;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
+using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -76,6 +78,7 @@ namespace SFA.DAS.Assessor.Functions
                 });
 
             builder.Services.AddScoped<IDataCollectionTokenService, DataCollectionTokenService>();
+            builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
         }
     }
 }

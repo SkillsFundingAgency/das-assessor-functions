@@ -1,19 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.ApiClient;
-using SFA.DAS.Assessor.Functions.Domain;
-using SFA.DAS.Assessor.Functions.Interfaces;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Options;
 
-namespace SFA.DAS.Assessor.Functions.Infrastructure
+namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication
 {
     public class DataCollectionTokenService : IDataCollectionTokenService
     {
         private readonly IDataCollectionServiceAnonymousApiClient _dataCollectionServiceAnonymousApiClient;
         private readonly IOptions<DataCollectionApiAuthentication> _dataCollectionApiAuthenticationOptions;
         
-
         public DataCollectionTokenService(IDataCollectionServiceAnonymousApiClient dataCollectionServiceAnonymousApiClient, IOptions<DataCollectionApiAuthentication> dataCollectionApiAuthenticationOptions)
         {
             _dataCollectionServiceAnonymousApiClient = dataCollectionServiceAnonymousApiClient;

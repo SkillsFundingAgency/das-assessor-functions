@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SFA.DAS.Assessor.Functions.Domain
+﻿namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication
 {
     public class DataCollectionTokenRequest
     {

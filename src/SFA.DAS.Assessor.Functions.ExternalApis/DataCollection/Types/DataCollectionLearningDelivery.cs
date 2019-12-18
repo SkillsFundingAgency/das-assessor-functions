@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SFA.DAS.Assessor.Functions.Domain
+namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 {
     public class DataCollectionLearningDelivery
     {

@@ -1,16 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using SFA.DAS.Assessor.Functions.Interfaces;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 
-namespace SFA.DAS.Assessor.Functions.Infrastructure
+namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
 {
-    public class AssessorTokenService : ITokenService
+    public class AssessorServiceTokenService : IAssessorServiceTokenService
     {
         private readonly AssessorApiAuthentication _assessorApiAuthenticationOptions;
         private readonly IConfiguration _configuration;
 
-        public AssessorTokenService(AssessorApiAuthentication assessorApiAuthenticationOptions, IConfiguration configuaration)
+        public AssessorServiceTokenService(AssessorApiAuthentication assessorApiAuthenticationOptions, IConfiguration configuaration)
         {
             _assessorApiAuthenticationOptions = assessorApiAuthenticationOptions;
             _configuration = configuaration;
