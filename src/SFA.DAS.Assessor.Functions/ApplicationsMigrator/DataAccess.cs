@@ -68,7 +68,25 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 					  select ap1.id from applications  ap1
 					  join ApplicationSequences as1 on ap1.id = as1.applicationid
 						where SequenceId = 1 and Notrequired = 1
-						and   json_value(applicationdata,'$.ReferenceNumber') IS NULL AND   json_value(applicationdata,'$.StandardCode') = '0')").ToList(); 
+						and   json_value(applicationdata,'$.ReferenceNumber') IS NULL AND   json_value(applicationdata,'$.StandardCode') = '0')
+                AND Applications.Id NOT in (
+                    select ap1.id
+                    from applications ap1 
+                    join (
+                    select as1.ApplicationId, 
+                    MAX(case when as1.sequenceid = 1 then convert(int,aq1.isActive) else NULL end) sequence1isActive,
+                    MAX(case when as1.sequenceid = 1 then convert(int,aq1.notrequired) else NULL end) sequence1notrequired,
+                    MAX(case when as1.sectionid = 1 then convert(int,as1.notrequired) else NULL end) section1notrequired,
+                    MAX(case when as1.sectionid = 2 then convert(int,as1.notrequired) else NULL end) section2notrequired,
+                    MAX(case when as1.sectionid = 3 then convert(int,as1.notrequired) else NULL end) section3notrequired,
+                    MAX(CASE WHEN  json_query(as1.QnAData,'$.Pages[0].PageOfAnswers') = '[]' THEN 0 ELSE 1 END) Started_FHA
+                    from
+                    applicationsections as1
+                    join ApplicationSequences aq1 on aq1.ApplicationId = as1.ApplicationId and aq1.SequenceId = as1.SequenceId 
+                    group by as1.ApplicationId
+                    ) se1 on se1.ApplicationId = ap1.Id
+                    where se1.sequence1isActive = 1 and sequence1notrequired = 0 and section1notrequired = 1 and section2notrequired =1 and section3notrequired = 0 and Started_FHA = 0
+                    ) ").ToList(); 
         }
 
         public Guid? GetExistingOrganisation(SqlConnection assessorConnection, dynamic applyingOrganisation)
