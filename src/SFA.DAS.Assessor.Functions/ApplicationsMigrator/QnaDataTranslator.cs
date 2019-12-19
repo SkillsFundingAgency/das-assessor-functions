@@ -28,8 +28,41 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
             FixEmptyFileUploadAnswers(qnaData);
 
+            FixMissingComplexRadioAnswers(qnaData);
+
             string serializedQnaData = JsonConvert.SerializeObject(qnaData);
             return serializedQnaData;
+        }
+
+        private void FixMissingComplexRadioAnswers(QnAData qnaData)
+        {
+            foreach (var page in qnaData.Pages)
+            {
+                if (page.PageOfAnswers != null && page.PageOfAnswers.Any())
+                {
+                    foreach(var complexQuestion in page.Questions.Where(q => q.Input.Type == "ComplexRadio"))
+                    {
+                        foreach (var option in complexQuestion.Input.Options)
+                        {
+                            if (option.FurtherQuestions != null && option.FurtherQuestions.Any())
+                            {
+                                foreach (var furtherQuestion in option.FurtherQuestions)
+                                {
+                                    var answer = page.PageOfAnswers[0].Answers.SingleOrDefault(a => a.QuestionId == furtherQuestion.QuestionId);
+                                    if (answer == null)
+                                    {
+                                        page.PageOfAnswers[0].Answers.Add(new Answer
+                                        {
+                                            QuestionId = furtherQuestion.QuestionId,
+                                            Value = ""
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                }
+            }
         }
 
         private void FixEmptyFileUploadAnswers(QnAData qnaData)
