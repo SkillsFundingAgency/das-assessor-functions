@@ -9,6 +9,7 @@ using SFA.DAS.Assessor.Functions.Domain;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
+using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
 
 namespace SFA.DAS.Assessor.Functions.Epao
 {

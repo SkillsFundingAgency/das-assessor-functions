@@ -53,6 +53,7 @@ namespace SFA.DAS.Assessor.Functions
             
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection("DataCollectionApiAuthentication"));
+            builder.Services.Configure<EpaoDataSync>(config.GetSection("EpaoDataSync"));
             builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
 
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();

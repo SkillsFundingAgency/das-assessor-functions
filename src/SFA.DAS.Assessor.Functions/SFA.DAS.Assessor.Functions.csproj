@@ -40,8 +40,4 @@
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.Infrastructure\SFA.DAS.Assessor.Functions.Infrastructure.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.QnATypes\SFA.DAS.Assessor.Functions.QnATypes.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Infrastructure\" />
-    <Folder Include="Interfaces\" />
-  </ItemGroup>
 </Project>

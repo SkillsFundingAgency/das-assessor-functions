@@ -56,7 +56,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             using (var request = new HttpRequestMessage(HttpMethod.Get, requestUri))
             {
                 var response = await GetAsync(request);
-                if (response.StatusCode == HttpStatusCode.OK)
+                if (response?.StatusCode == HttpStatusCode.OK)
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     var providers = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<int>>(json, JsonSettings));
@@ -70,6 +70,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                             PagingInfo = JsonConvert.DeserializeObject<DataCollectionPagingInfo>(pagingInfo)
                         };
                     }
+                }
+                else if(response?.StatusCode == HttpStatusCode.NoContent)
+                {
+                    return default;
                 }
 
                 return null;
@@ -115,7 +119,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             {
                 var response = await GetAsync(request);
 
-                if (response.StatusCode == HttpStatusCode.OK)
+                if (response?.StatusCode == HttpStatusCode.OK)
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     var learners = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<DataCollectionLearner>>(json, JsonSettings));
@@ -129,6 +133,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                             PagingInfo = JsonConvert.DeserializeObject<DataCollectionPagingInfo>(pagingInfo)
                         };
                     }
+                }
+                else if (response?.StatusCode == HttpStatusCode.NoContent)
+                {
+                    return default;
                 }
             }
 

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
+using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
 
 namespace SFA.DAS.Assessor.Functions.Epao
 {

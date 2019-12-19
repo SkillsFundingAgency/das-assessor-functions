@@ -127,24 +127,24 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
         protected async Task<string> PostPutRequestWithResponse<T>(HttpRequestMessage requestMessage, T model)
         {
-            var response = await PostPutRequestWithResponseInternal<T>(requestMessage, model);
+            var response = await PostPutRequestWithResponseInternal(requestMessage, model);
             return await response?.Content.ReadAsStringAsync();
         }
 
         protected async Task<U> PostPutRequestWithResponse<T, U>(HttpRequestMessage requestMessage, T model)
         {
-            var response = await PostPutRequestWithResponseInternal<T>(requestMessage, model);
+            var response = await PostPutRequestWithResponseInternal(requestMessage, model);
             var json = await response?.Content.ReadAsStringAsync();
 
-            if (response.StatusCode == HttpStatusCode.OK
-                || response.StatusCode == HttpStatusCode.Created
-                || response.StatusCode == HttpStatusCode.NoContent)
+            if (response?.StatusCode == HttpStatusCode.OK
+                || response?.StatusCode == HttpStatusCode.Created
+                || response?.StatusCode == HttpStatusCode.NoContent)
             {
                 return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<U>(json, JsonSettings));
             }
             else
             {
-                _logger.LogInformation($"HttpRequestException: Status Code: {response.StatusCode} Body: {json}");
+                _logger.LogInformation($"HttpRequestException: Status Code: {response?.StatusCode} Body: {json}");
                 throw new HttpRequestException(json);
             }
         }
@@ -256,26 +256,5 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             Client?.Dispose();
         }
 
-        private static bool IsValidJson(string strInput)
-        {
-            strInput = strInput.Trim();
-            if ((strInput.StartsWith("{") && strInput.EndsWith("}")) || 
-                (strInput.StartsWith("[") && strInput.EndsWith("]"))) 
-            {
-                try
-                {
-                    var obj = JToken.Parse(strInput);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
     }
 }
