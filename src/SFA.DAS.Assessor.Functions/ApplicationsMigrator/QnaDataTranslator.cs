@@ -27,11 +27,29 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             FixPageSequenceAndSectionIds(qnaData, applicationSection, applySequence, log);
 
             FixEmptyFileUploadAnswers(qnaData);
+            MoveFileUploadAnswersIntoSeparateAnswerPages(qnaData);
 
             FixMissingComplexRadioAnswers(qnaData);
 
             string serializedQnaData = JsonConvert.SerializeObject(qnaData);
             return serializedQnaData;
+        }
+
+        private void MoveFileUploadAnswersIntoSeparateAnswerPages(QnAData qnaData)
+        {
+            foreach (var page in qnaData.Pages)
+            {
+                if(page.Questions.Any(q => q.Input.Type == "FileUpload"))
+                {
+                    var fileUploadAnswers = page.PageOfAnswers.SelectMany(poa => poa.Answers).ToList();
+                    page.PageOfAnswers.Clear();
+
+                    foreach (var fileUploadAnswer in fileUploadAnswers)
+                    {
+                        page.PageOfAnswers.Add(new PageOfAnswers{Id = Guid.NewGuid(), Answers = new List<Answer>{fileUploadAnswer}});
+                    }
+                }
+            }
         }
 
         private void FixMissingComplexRadioAnswers(QnAData qnaData)
