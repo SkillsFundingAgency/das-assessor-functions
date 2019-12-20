@@ -137,8 +137,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
             if (originalApplyApplication.ApplicationData != null)
             {
-                var appData = JObject.Parse(originalApplyApplication.ApplicationData);
-                if (appData.ContainsKey("StandardSubmissionClosedDate") && appData.StandardSubmissionClosedDate.Value<DateTime>() != null && applicationStatus == "Approved" && reviewStatus == "Approved")
+                JObject appData = JObject.Parse(originalApplyApplication.ApplicationData);
+                if (appData.ContainsKey("StandardSubmissionClosedDate") && appData["StandardSubmissionClosedDate"].Value<string>() != null && applicationStatus == "Approved" && reviewStatus == "Approved")
                 {
                     orgStatus = "New";
                 }
@@ -167,6 +167,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var sqlToGetHighestOrganisationId = @"select max(CAST( replace(EndPointAssessorOrganisationId,'EPA','') AS int)) OrgId from organisations where EndPointAssessorOrganisationId like 'EPA%' 
                                                         and isnumeric(replace(EndPointAssessorOrganisationId,'EPA','')) = 1";
             var highestEpaOrgId = assessorConnection.ExecuteScalar<string>(sqlToGetHighestOrganisationId);
+
+            if (highestEpaOrgId == null) return "EPA0001";
 
             var nextEpaOrgId = int.TryParse(highestEpaOrgId.Replace("EPA", string.Empty), out int currentIntValue)
                 ? $@"EPA{currentIntValue + 1:D4}" :
