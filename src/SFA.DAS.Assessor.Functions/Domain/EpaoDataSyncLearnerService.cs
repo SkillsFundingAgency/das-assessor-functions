@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain
 {
-    public class EpaoDataSyncLearnerService
+    public class EpaoDataSyncLearnerService : IEpaoDataSyncLearnerService
     {
         private readonly IOptions<EpaoDataSync> _options;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
@@ -31,6 +31,9 @@ namespace SFA.DAS.Assessor.Functions.Domain
         {
             try
             {
+                _logger.LogDebug($"Using data collection api base address: {_dataCollectionServiceApiClient.BaseAddress()}");
+                _logger.LogDebug($"Using assessor api base address: {_assessorServiceApiClient.BaseAddress()}");
+
                 var learnersExported = false;
                 while (!learnersExported)
                 {
@@ -39,15 +42,17 @@ namespace SFA.DAS.Assessor.Functions.Domain
                         await ExportLearnerDetails(providerMessage);
                         learnersExported = true;
                     }
-                    catch (PagingInfoChangedException)
+                    catch (PagingInfoChangedException ex)
                     {
                         // the export process will be restarted when learners have changed whilst paging
+                        _logger.LogDebug($"The data collection providers have changed whilst paging");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Epao data sync dequeue providers function failed");
+                _logger.LogError(ex, "Epao data sync process learners failed");
+                throw;
             }
         }
 
@@ -67,24 +72,21 @@ namespace SFA.DAS.Assessor.Functions.Domain
                     // data collection API returns learners which have at least one learning delivery matching a filter, 
                     // but it then returns ALL learning deliveries for each matching learner
                     var filteredLearners = FilterLearners(learnersPage.Learners, providerMessage.Source, aimType, fundModels);
-                    ImportLearnerDetailRequest request = new ImportLearnerDetailRequest
+                    if (filteredLearners.Count > 0)
                     {
-                        ImportLearnerDetails = filteredLearners
-                    };
-
-                    var response = await _assessorServiceApiClient.ImportLearnerDetails(request);
-                    if (response?.LearnerDetailResults != null)
-                    {
-                        foreach (var result in response.LearnerDetailResults)
+                        ImportLearnerDetailRequest request = new ImportLearnerDetailRequest
                         {
-                            if (result.Errors != null)
+                            ImportLearnerDetails = filteredLearners
+                        };
+
+                        var response = await _assessorServiceApiClient.ImportLearnerDetails(request);
+                        response?.LearnerDetailResults?.ForEach(ld =>
+                        {
+                            ld?.Errors?.ForEach(e =>
                             {
-                                foreach (var error in result.Errors)
-                                {
-                                    _logger.LogDebug($"Unable to export Learner Details due to '{result.Outcome}' '{error}'");
-                                }
-                            }
-                        }
+                                _logger.LogDebug($"Unable to export Learner Details due to '{ld.Outcome}' '{e}'");
+                            });
+                        });
                     }
 
                     var nextLearnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, learnersPage.PagingInfo.PageNumber + 1);

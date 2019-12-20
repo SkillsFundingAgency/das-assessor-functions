@@ -1,3 +1,11 @@
 {
-    "version": "2.0"
+    "version": "2.0" 
+    /* // can be used in debug only to allow step through of a single message from the queue
+    ,"extensions": {
+        "queues": {
+            "maxPollingInterval": "00:00:02",
+            "batchSize": 1,
+            "maxDequeueCount": 1
+        }
+    }*/
 }

@@ -19,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure
 
         public async Task AddMessageAsync(CloudQueueMessage message)
         {
-            await _cloudQueue.AddMessageAsync(message, timeToLive: null, TimeSpan.FromMinutes(5), options: null, operationContext: null);
+            await _cloudQueue.AddMessageAsync(message);
         }
 
         private CloudQueue GetQueue(string queueName)

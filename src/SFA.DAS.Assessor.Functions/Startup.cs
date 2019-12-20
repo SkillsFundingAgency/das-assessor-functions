@@ -10,6 +10,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
+using SFA.DAS.Assessor.Functions.Domain;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -80,6 +81,14 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddScoped<IDataCollectionTokenService, DataCollectionTokenService>();
             builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
+
+            builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
+            builder.Services.AddScoped<IStorageQueueService>(ss =>
+            {
+                return new StorageQueueService(ss.GetService<IConfiguration>(), EpaoDataSync.ProviderQueueName);
+            });
+            builder.Services.AddScoped<IEpaoDataSyncProviderService, EpaoDataSyncProviderService>();
+            builder.Services.AddScoped<IEpaoDataSyncLearnerService, EpaoDataSyncLearnerService>();
         }
     }
 }

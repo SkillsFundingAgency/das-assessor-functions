@@ -5,6 +5,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 {
     public class DataCollectionLearner
     {
+        public DataCollectionLearner()
+        {
+            LearningDeliveries = new List<DataCollectionLearningDelivery>();
+        }
+
         public int? Ukprn { get; set; }
         public string LearnRefNumber { get; set; }
         public long? Uln { get; set; }

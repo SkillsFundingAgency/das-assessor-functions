@@ -25,8 +25,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 
         public async Task<List<string>> GetAcademicYears(DateTime dateTimeUtc)
         {
-            var requestUri = $@"/api/v{ApiVersion}/ilr-data/academic-years?" +
-                $"dateTimeUtc={dateTimeUtc.ToString("o")}";
+            // THIS DC API DOES NOT RETURN THE CORRECT RESULT - THE DC TEAM IS WORKING ON IT
+
+            /*var requestUri = $@"/api/v{ApiVersion}/ilr-data/academic-years?" +
+                $"dateTimeUtc={dateTimeUtc.ToString("u")}";
 
             using (var request = new HttpRequestMessage(HttpMethod.Get, requestUri))
             {
@@ -39,13 +41,16 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                 }
 
                 return default;
-            }
+            }*/
+
+            // HARDCODED TO CONTINUE DEVELOPMENT
+            return await Task.FromResult(new List<string> { "1920" });
         }
 
         public async Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize = null, int? pageNumber = null)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/providers?" +
-                $"startDateTime={startDateTime.ToString("o")}" +
+                $"startDateTime={startDateTime.ToString("u")}" +
                 (pageSize != null 
                     ? $"&pageSize={pageSize}" 
                     : string.Empty) +
@@ -73,7 +78,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                 }
                 else if(response?.StatusCode == HttpStatusCode.NoContent)
                 {
-                    return default;
+                    return new DataCollectionProvidersPage();
                 }
 
                 return null;
@@ -83,7 +88,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
         public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType = null, int? standardCode = null, List<int> fundModels = null, int? pageSize = null, int? pageNumber = null)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/learners?" +
-                $"startDateTime={startDateTime.ToString("o")}";
+                $"startDateTime={startDateTime.ToString("u")}";
 
             return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
         }
@@ -91,7 +96,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
         public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType = null, int? standardCode = null, List<int> fundModels = null, int? pageSize = null, int? pageNumber = null)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/learners?" +
-                $"learners?ukprn={ukprn}";
+                $"ukprn={ukprn}";
 
             return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
         }
@@ -136,7 +141,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                 }
                 else if (response?.StatusCode == HttpStatusCode.NoContent)
                 {
-                    return default;
+                    return new DataCollectionLearnersPage();
                 }
             }
 

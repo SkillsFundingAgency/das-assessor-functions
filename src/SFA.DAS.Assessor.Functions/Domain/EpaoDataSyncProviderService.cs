@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain
 {
-    public class EpaoDataSyncProviderService
+    public class EpaoDataSyncProviderService : IEpaoDataSyncProviderService
     {
         private readonly IOptions<EpaoDataSync> _options;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
@@ -33,7 +33,9 @@ namespace SFA.DAS.Assessor.Functions.Domain
 
         public async Task ProcessProviders()
         {
-            var lastRunDateTime = DateTime.Parse(await _assessorApiClient.GetAssessorSetting("EpaoDataSyncLastRunDate"));
+            _logger.LogDebug($"Using data collection api base address: {_dataCollectionServiceApiClient.BaseAddress()}");
+
+            var lastRunDateTime = await GetLastRunDateTime();
             var nextRunDateTime = _dateTimeHelper.DateTimeNow;
 
             var sources = await _dataCollectionServiceApiClient.GetAcademicYears(_dateTimeHelper.DateTimeUtcNow); 
@@ -62,16 +64,29 @@ namespace SFA.DAS.Assessor.Functions.Domain
                     }
                     catch (Exception ex)
                     {
+                        _logger.LogError(ex, $"Epao data sync enqueue providers failed for academic year {source}");
+
                         // if any source encouters an unexpected failure - all sources will be repeated, duplication
                         // by repeating a source is preferred to missing any updates.
-                        _logger.LogError(ex, $"Epao data sync enqueue providers failed for academic year {source}");
                         throw;
                     }
                 }
             }
 
             // when all sources were processed successfully store the date for the next run
-            await _assessorApiClient.UpdateAssessorSetting("EpaoDataSyncLastRunDate", nextRunDateTime.ToString("o"));
+            await _assessorApiClient.SetAssessorSetting("EpaoDataSyncLastRunDate", nextRunDateTime.ToString("u"));
+        }
+
+        private async Task<DateTime> GetLastRunDateTime()
+        {            
+            var lastRunDateTimeSetting = await _assessorApiClient.GetAssessorSetting("EpaoDataSyncLastRunDate");
+            if(lastRunDateTimeSetting != null)
+            {
+                if(DateTime.TryParse(lastRunDateTimeSetting, out DateTime lastRunDateTime))
+                    return lastRunDateTime;
+            }
+
+            return _options.Value.ProviderInitialRunDate;
         }
 
         private async Task<bool> ValidateAcademicYear(string source)
@@ -102,7 +117,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
             var pageSize = _options.Value.ProviderPageSize;
 
             var providersPage = await _dataCollectionServiceApiClient.GetProviders(source, lastRunDateTime, pageSize, pageNumber: 1);
-            if (providersPage != null)
+            if (providersPage != null && providersPage.PagingInfo.TotalItems > 0)
             {
                 do
                 {

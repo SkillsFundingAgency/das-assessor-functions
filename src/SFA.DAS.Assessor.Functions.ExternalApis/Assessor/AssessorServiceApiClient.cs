@@ -24,21 +24,19 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdateAssessorSetting(string settingName, string settingValue)
+        public async Task SetAssessorSetting(string name, string value)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Put, $"api/v1/assessorsetting/{settingName}/{settingValue}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"api/v1/assessor-setting/{name}/{value}"))
             {
-                //await PostPutRequest(request);
-                await Task.FromResult(request);
+                await PostPutRequest(request);
             }
         }
 
-        public async Task<string> GetAssessorSetting(string settingName)
+        public async Task<string> GetAssessorSetting(string name)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/assessorsetting/{settingName}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/assessor-setting/{name}"))
             {
-                //return await GetAsync<string>(request);
-                return await Task.FromResult(new DateTime(2019, 9, 1).ToString());
+                return await GetAsync<string>(request);
             }
         }
 
