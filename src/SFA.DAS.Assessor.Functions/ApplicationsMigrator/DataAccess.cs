@@ -112,7 +112,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                                                 });
         }
 
-        public Guid CreateNewOrganisation(SqlConnection assessorConnection, dynamic originalApplyApplication, dynamic originalApplyOrganisation)
+        public Guid CreateNewOrganisation(SqlConnection assessorConnection, dynamic originalApplyApplication, dynamic originalApplyOrganisation, string applicationStatus, string reviewStatus)
         {
             var orgDataObj = JObject.Parse(originalApplyApplication.OrganisationDetails);
             orgDataObj.Add("OriginalOrganisationId", originalApplyOrganisation.Id);
@@ -133,9 +133,20 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             var organisationTypeId = assessorConnection.QuerySingle<int>("SELECT Id FROM OrganisationType WHERE REPLACE(Type,' ','') = @Type OR Type = @Type", 
                                                                         new {Type = originalApplyOrganisation.OrganisationType});
 
+            var orgStatus = "Applying";
+
+            if (originalApplyApplication.ApplicationData != null)
+            {
+                var appData = JObject.Parse(originalApplyApplication.ApplicationData);
+                if (appData.StandardSubmissionClosedDate.Value<DateTime>() != null && applicationStatus == "Approved" && reviewStatus == "Approved")
+                {
+                    orgStatus = "New";
+                }
+            }
+
             //organisationId = Guid.NewGuid();
             assessorConnection.Execute(@"INSERT INTO Organisations (Id, CreatedAt, EndPointAssessorName, EndPointAssessorOrganisationId, EndPointAssessorUkprn, PrimaryContact, Status, OrganisationData, ApiEnabled, OrganisationTypeId) 
-                                                    VALUES (@Id, @CreatedAt, @EndPointAssessorName, @EndPointAssessorOrganisationId, @EndPointAssessorUkprn, @PrimaryContact, 'Applying', @OrganisationData, 0, @OrganisationTypeId)",
+                                                    VALUES (@Id, @CreatedAt, @EndPointAssessorName, @EndPointAssessorOrganisationId, @EndPointAssessorUkprn, @PrimaryContact, @Status, @OrganisationData, 0, @OrganisationTypeId)",
                                         new
                                         {
                                             Id = originalApplyOrganisation.Id,
@@ -145,7 +156,8 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                                             EndPointAssessorUkPrn = (string)null,
                                             PrimaryContact = (string)null,
                                             OrganisationData = orgData,
-                                            OrganisationTypeId = organisationTypeId
+                                            OrganisationTypeId = organisationTypeId,
+                                            Status = orgStatus
                                         });
             return originalApplyOrganisation.Id;
         }

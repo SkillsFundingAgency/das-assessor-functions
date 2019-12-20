@@ -7,7 +7,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
     public interface IDataAccess
     {
         void CreateQnaApplicationSectionsRecord(SqlConnection qnaConnection, Guid qnaApplicationId, dynamic applySequence, dynamic applySection);
-        Guid CreateNewOrganisation(SqlConnection assessorConnection, dynamic originalApplyApplication, dynamic originalApplyOrganisation);
+        Guid CreateNewOrganisation(SqlConnection assessorConnection, dynamic originalApplyApplication, dynamic originalApplyOrganisation, string applicationStatus, string reviewStatus);
         Guid? GetExistingOrganisation(SqlConnection assessorConnection, dynamic applyingOrganisation);
         List<dynamic> GetCurrentApplyApplications(SqlConnection applyConnection);
         IEnumerable<dynamic> GetCurrentApplyApplicationSections(SqlConnection applyConnection, dynamic originalApplyApplication);

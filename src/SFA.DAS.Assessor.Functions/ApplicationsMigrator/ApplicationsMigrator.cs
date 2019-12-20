@@ -61,6 +61,10 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     {
                         var applyingOrganisation = _dataAccess.GetApplyingOrganisation(applyConnection, originalApplyApplication.ApplyingOrganisationId);
 
+                        var financialReviewStatus = GetFinancialReviewStatus(originalApplyApplication);
+                        var reviewStatus = GetReviewStatus(originalApplyApplication);
+                        var applicationStatus = GetApplicationStatus(originalApplyApplication, reviewStatus);
+
                         Guid? organisationId = null;
 
                         if (applyingOrganisation.OrganisationUKPRN != null)
@@ -76,7 +80,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                             organisationId = this._dataAccess.GetExistingOrganisationIdByName(assessorConnection, tradingName ?? applyingOrganisation.Name);
                             if (organisationId is null || organisationId == default(Guid))
                             {
-                                organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication, applyingOrganisation);
+                                organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication, applyingOrganisation, applicationStatus, reviewStatus);
                                 // Get contacts for this Apply organisation and insert them into Assessor Contacts.
                                 var applyOrganisationContacts = _dataAccess.GetApplyOrganisationContacts(applyConnection, applyingOrganisation.Id);
                                 foreach (var contact in applyOrganisationContacts)
@@ -112,10 +116,6 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                             }
 
                             dynamic applyDataObject = GenerateApplyData(originalApplyApplication, applySequences, applySections, assessorConnection);
-
-                            var financialReviewStatus = GetFinancialReviewStatus(originalApplyApplication);
-                            var reviewStatus = GetReviewStatus(originalApplyApplication);
-                            var applicationStatus = GetApplicationStatus(originalApplyApplication, reviewStatus);
 
                             dynamic financialGradeObject = CreateFinancialGradeObject(originalApplyApplication, reviewStatus, applicationStatus);
 
