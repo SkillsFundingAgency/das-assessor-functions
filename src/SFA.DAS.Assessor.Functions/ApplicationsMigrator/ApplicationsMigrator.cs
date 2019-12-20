@@ -67,29 +67,37 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
 
                         Guid? organisationId = null;
 
-                        if (applyingOrganisation.OrganisationUKPRN != null)
+                        JObject orgDetails = JObject.Parse(applyingOrganisation.OrganisationDetails);
+                        if (orgDetails.ContainsKey("EndPointAssessmentOrgId") && orgDetails["EndPointAssessmentOrgId"].Value<string>() != null)
                         {
-                            organisationId = _dataAccess.GetExistingOrganisationIdByUkPrn(assessorConnection, applyingOrganisation.OrganisationUKPRN);
+                            organisationId = _dataAccess.GetExistingOrganisationIdByEpaOrgId(assessorConnection, orgDetails["EndPointAssessmentOrgId"].Value<string>());
                         }
+
                         if (organisationId is null || organisationId == default(Guid))
                         {
-                            string tradingName = null;
-                            JObject orgDetails = JObject.Parse(applyingOrganisation.OrganisationDetails);
-
-                            tradingName = orgDetails["TradingName"].Value<string>();
-                            organisationId = this._dataAccess.GetExistingOrganisationIdByName(assessorConnection, tradingName ?? applyingOrganisation.Name);
+                            if (applyingOrganisation.OrganisationUKPRN != null)
+                            {
+                                organisationId = _dataAccess.GetExistingOrganisationIdByUkPrn(assessorConnection, applyingOrganisation.OrganisationUKPRN);
+                            }
                             if (organisationId is null || organisationId == default(Guid))
                             {
-                                organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication, applyingOrganisation, applicationStatus, reviewStatus);
-                                // Get contacts for this Apply organisation and insert them into Assessor Contacts.
-                                var applyOrganisationContacts = _dataAccess.GetApplyOrganisationContacts(applyConnection, applyingOrganisation.Id);
-                                foreach (var contact in applyOrganisationContacts)
+                                string tradingName = null;
+
+                                tradingName = orgDetails["TradingName"].Value<string>();
+                                organisationId = this._dataAccess.GetExistingOrganisationIdByName(assessorConnection, tradingName ?? applyingOrganisation.Name);
+                                if (organisationId is null || organisationId == default(Guid))
                                 {
-                                    _dataAccess.CreateContact(assessorConnection, contact, organisationId.Value);
-                                }    
+                                    organisationId = _dataAccess.CreateNewOrganisation(assessorConnection, originalApplyApplication, applyingOrganisation, applicationStatus, reviewStatus);
+                                    // Get contacts for this Apply organisation and insert them into Assessor Contacts.
+                                    var applyOrganisationContacts = _dataAccess.GetApplyOrganisationContacts(applyConnection, applyingOrganisation.Id);
+                                    foreach (var contact in applyOrganisationContacts)
+                                    {
+                                        _dataAccess.CreateContact(assessorConnection, contact, organisationId.Value);
+                                    }    
+                                }
                             }
                         }
-
+                        
                         if (organisationId != default(Guid))
                         {
                             Guid qnaApplicationId = _dataAccess.CreateQnaApplicationRecord(qnaConnection, workflowId, originalApplyApplication);

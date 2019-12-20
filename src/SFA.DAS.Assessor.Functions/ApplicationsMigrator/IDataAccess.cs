@@ -24,5 +24,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         int GetNextAppReferenceSequence(SqlConnection assessorConnection);
         Guid? GetExistingOrganisationIdByUkPrn(SqlConnection assessorConnection, int organisationUKPRN);
         Guid? GetExistingOrganisationIdByName(SqlConnection assessorConnection, string name);
+
+        Guid? GetExistingOrganisationIdByEpaOrgId(SqlConnection assessorConnection, string epaOrgId);
     }
 }

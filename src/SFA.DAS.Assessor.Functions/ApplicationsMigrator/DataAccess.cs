@@ -247,6 +247,11 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
         {
              return assessorConnection.QueryFirstOrDefault<Guid>("SELECT Id FROM Organisations WHERE EndPointAssessorName = @name", new { name });
         }
+
+        public Guid? GetExistingOrganisationIdByEpaOrgId(SqlConnection assessorConnection, string epaOrgId)
+        {
+            return assessorConnection.QueryFirstOrDefault<Guid>("SELECT Id FROM Organisations WHERE EndPointAssessorOrganisationId = @epaOrgId", new { epaOrgId });
+        }
     }
     public static class StringExtensions
     {
