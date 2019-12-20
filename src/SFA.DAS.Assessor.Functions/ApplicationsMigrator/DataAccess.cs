@@ -138,7 +138,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             if (originalApplyApplication.ApplicationData != null)
             {
                 var appData = JObject.Parse(originalApplyApplication.ApplicationData);
-                if (appData.StandardSubmissionClosedDate.Value<DateTime>() != null && applicationStatus == "Approved" && reviewStatus == "Approved")
+                if (appData.ContainsKey("StandardSubmissionClosedDate") && appData.StandardSubmissionClosedDate.Value<DateTime>() != null && applicationStatus == "Approved" && reviewStatus == "Approved")
                 {
                     orgStatus = "New";
                 }
