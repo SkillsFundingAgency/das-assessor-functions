@@ -37,16 +37,8 @@ namespace SFA.DAS.Assessor.Functions.Domain
                 var learnersExported = false;
                 while (!learnersExported)
                 {
-                    try
-                    {
-                        await ExportLearnerDetails(providerMessage);
-                        learnersExported = true;
-                    }
-                    catch (PagingInfoChangedException ex)
-                    {
-                        // the export process will be restarted when learners have changed whilst paging
-                        _logger.LogDebug($"The data collection providers have changed whilst paging");
-                    }
+                    await ExportLearnerDetails(providerMessage);
+                    learnersExported = true;
                 }
             }
             catch (Exception ex)
@@ -89,18 +81,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
                         });
                     }
 
-                    var nextLearnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, learnersPage.PagingInfo.PageNumber + 1);
-                    if (nextLearnersPage != null)
-                    {
-                        if (nextLearnersPage.PagingInfo.TotalItems != learnersPage.PagingInfo.TotalItems || nextLearnersPage.PagingInfo.TotalPages != learnersPage.PagingInfo.TotalPages)
-                        {
-                            // if the total number of items or pages has changed then the process will need to be restarted to 
-                            // avoid skipping any updated learners on earlier pages
-                            throw new PagingInfoChangedException();
-                        }
-                    }
-
-                    learnersPage = nextLearnersPage;
+                    learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, learnersPage.PagingInfo.PageNumber + 1); ;
                 }
                 while (learnersPage != null && learnersPage.PagingInfo.PageNumber <= learnersPage.PagingInfo.TotalPages);
             }

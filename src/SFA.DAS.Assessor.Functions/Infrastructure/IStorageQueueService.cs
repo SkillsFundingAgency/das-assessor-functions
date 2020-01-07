@@ -1,10 +1,11 @@
-﻿using Microsoft.Azure.Storage.Queue;
+﻿using SFA.DAS.Assessor.Functions.Domain;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Infrastructure
 {
     public interface IStorageQueueService
     {
-        Task AddMessageAsync(CloudQueueMessage message);
+        Task SerializeAndQueueMessage(EpaoDataSyncProviderMessage message);
+        EpaoDataSyncProviderMessage DeserializeMessage(string message);
     }
 }

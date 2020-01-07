@@ -1,7 +1,5 @@
-﻿using Microsoft.Azure.Storage.Queue;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
@@ -38,7 +36,10 @@ namespace SFA.DAS.Assessor.Functions.Domain
             var lastRunDateTime = await GetLastRunDateTime();
             var nextRunDateTime = _dateTimeHelper.DateTimeNow;
 
-            var sources = await _dataCollectionServiceApiClient.GetAcademicYears(_dateTimeHelper.DateTimeUtcNow); 
+            // the sources which are valid at the last run datetime are obtained to ensure that extended
+            // periods of downtime do not result in missing updates for previous academic years
+            var sources = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime); 
+
             foreach (var source in sources)
             {
                 // process all the sources for which there is a valid endpoint in the data collection API
@@ -49,32 +50,24 @@ namespace SFA.DAS.Assessor.Functions.Domain
                         var providersQueued = false;
                         while (!providersQueued)
                         {
-                            try
-                            {
-                                await QueueProviders(source, lastRunDateTime);
-                                providersQueued = true;
-                            }
-                            catch (PagingInfoChangedException)
-                            {
-                                // the queue process will be restarted when providers have changed whilst queueing but the 
-                                // next run date will be advanced to avoid duplicating them on the next run
-                                nextRunDateTime = _dateTimeHelper.DateTimeNow;
-                            }
+                            await QueueProviders(source, lastRunDateTime);
+                            providersQueued = true;
                         }
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, $"Epao data sync enqueue providers failed for academic year {source}");
 
-                        // if any source encouters an unexpected failure - all sources will be repeated, duplication
-                        // by repeating a source is preferred to missing any updates.
+                        // if any source encouters an unexpected failure - the queue process will be aborted 
+                        // and will repeat for ALL sources the next time it is scheduled, duplication by repeating 
+                        // a successfully queued source is preferred to missing any updates.
                         throw;
                     }
                 }
             }
 
             // when all sources were processed successfully store the date for the next run
-            await _assessorApiClient.SetAssessorSetting("EpaoDataSyncLastRunDate", nextRunDateTime.ToString("u"));
+            await _assessorApiClient.SetAssessorSetting("EpaoDataSyncLastRunDate", nextRunDateTime.ToString("o"));
         }
 
         private async Task<DateTime> GetLastRunDateTime()
@@ -82,7 +75,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
             var lastRunDateTimeSetting = await _assessorApiClient.GetAssessorSetting("EpaoDataSyncLastRunDate");
             if(lastRunDateTimeSetting != null)
             {
-                if(DateTime.TryParse(lastRunDateTimeSetting, out DateTime lastRunDateTime))
+                if (DateTime.TryParse(lastRunDateTimeSetting, out DateTime lastRunDateTime))
                     return lastRunDateTime;
             }
 
@@ -129,22 +122,13 @@ namespace SFA.DAS.Assessor.Functions.Domain
                             Source = source
                         };
 
-                        var jsonMessage = JsonConvert.SerializeObject(message);
-                        await _storageQueueService.AddMessageAsync(new CloudQueueMessage(jsonMessage));
+                        await _storageQueueService.SerializeAndQueueMessage(message);
                     }
 
-                    var nextProvidersPage = await _dataCollectionServiceApiClient.GetProviders(source, lastRunDateTime, pageSize, providersPage.PagingInfo.PageNumber + 1);
-                    if (nextProvidersPage != null)
-                    {
-                        if (nextProvidersPage.PagingInfo.TotalItems != providersPage.PagingInfo.TotalItems || nextProvidersPage.PagingInfo.TotalPages != providersPage.PagingInfo.TotalPages)
-                        {
-                            // if the total number of items or pages has changed then the process will need to be restarted to 
-                            // avoid skipping any updated providers on earlier pages
-                            throw new PagingInfoChangedException();
-                        }
-                    }
-
-                    providersPage = nextProvidersPage;
+                    // each subsequent page will be retrieved; any data which has changed during paging which would be contained 
+                    // on a previously retrieved page will be proceseed on a subsequent run; any data which has changed during paging
+                    // which would be contained on a subsequent page will be duplicated on a subsequent run;
+                    providersPage = await _dataCollectionServiceApiClient.GetProviders(source, lastRunDateTime, pageSize, providersPage.PagingInfo.PageNumber + 1);
                 }
                 while (providersPage != null && providersPage.PagingInfo.PageNumber <= providersPage.PagingInfo.TotalPages);
             }

@@ -28,7 +28,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             // THIS DC API DOES NOT RETURN THE CORRECT RESULT - THE DC TEAM IS WORKING ON IT
 
             /*var requestUri = $@"/api/v{ApiVersion}/ilr-data/academic-years?" +
-                $"dateTimeUtc={dateTimeUtc.ToString("u")}";
+                $"dateTimeUtc={WebUtility.UrlEncode(dateTimeUtc.ToString("o"))}";
 
             using (var request = new HttpRequestMessage(HttpMethod.Get, requestUri))
             {
@@ -50,7 +50,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
         public async Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize = null, int? pageNumber = null)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/providers?" +
-                $"startDateTime={startDateTime.ToString("u")}" +
+                $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}" +
                 (pageSize != null 
                     ? $"&pageSize={pageSize}" 
                     : string.Empty) +
@@ -88,7 +88,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
         public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType = null, int? standardCode = null, List<int> fundModels = null, int? pageSize = null, int? pageNumber = null)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/learners?" +
-                $"startDateTime={startDateTime.ToString("u")}";
+                $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}";
 
             return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
         }
