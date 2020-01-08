@@ -20,10 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\EpaoDataSyncLearner\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.ExternalApis\SFA.DAS.Assessor.Functions.ExternalApis.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions\SFA.DAS.Assessor.Functions.csproj" />
   </ItemGroup>

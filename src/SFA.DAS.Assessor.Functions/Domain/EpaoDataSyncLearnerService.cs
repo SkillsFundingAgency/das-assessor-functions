@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
-using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +51,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
         {
             var aimType = 1;
             var allStandards = -1;
-            var fundModels = _options.Value.LearnerFundModels.Split(',').Select(int.Parse).ToList();
+            var fundModels = _options.Value.LearnerFundModelList;
             var pageSize = _options.Value.LearnerPageSize;
 
             var learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, pageNumber: 1);

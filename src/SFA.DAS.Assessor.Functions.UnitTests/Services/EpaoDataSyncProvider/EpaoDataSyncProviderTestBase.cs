@@ -197,7 +197,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
                 ProviderPageSize = 1,
                 ProviderInitialRunDate = new DateTime(2019, 10, 10),
                 LearnerPageSize = 1,
-                LearnerFundModels = "10,20,30"
+                LearnerFundModels = "10, 20, 30"
             });
 
             DataCollectionServiceApiClient = new Mock<IDataCollectionServiceApiClient>();

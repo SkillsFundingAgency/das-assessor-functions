@@ -47,7 +47,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             return await Task.FromResult(new List<string> { "1920" });
         }
 
-        public async Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize = null, int? pageNumber = null)
+        public async Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize, int? pageNumber)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/providers?" +
                 $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}" +
@@ -85,7 +85,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             }
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType = null, int? standardCode = null, List<int> fundModels = null, int? pageSize = null, int? pageNumber = null)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/learners?" +
                 $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}";
@@ -93,7 +93,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType = null, int? standardCode = null, List<int> fundModels = null, int? pageSize = null, int? pageNumber = null)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/learners?" +
                 $"ukprn={ukprn}";
