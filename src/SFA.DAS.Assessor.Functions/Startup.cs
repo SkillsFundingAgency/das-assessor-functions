@@ -11,6 +11,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.Domain;
+using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -89,6 +90,9 @@ namespace SFA.DAS.Assessor.Functions
             });
             builder.Services.AddScoped<IEpaoDataSyncProviderService, EpaoDataSyncProviderService>();
             builder.Services.AddScoped<IEpaoDataSyncLearnerService, EpaoDataSyncLearnerService>();
+            
+            builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
+            builder.Services.AddTransient<IDataAccess, DataAccess>();
         }
     }
 }
