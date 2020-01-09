@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 {
-    public class When_provider_is_dequeued_with_single_learner_and_no_standards : EpaoDataSyncLearnerTestBase
+    public class When_provider_is_dequeued_with_single_learner_and_single_standard_and_single_fundmodel : EpaoDataSyncLearnerTestBase
     {
         [SetUp]
         public void Arrange()
@@ -23,7 +23,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var providerMessage = new EpaoDataSyncProviderMessage
             {
                 Source = "1920",
-                Ukprn = UkprnOne
+                Ukprn = UkprnThree
             };
 
 
@@ -34,7 +34,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var optionsLearnerFundModels = ConfigHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
             DataCollectionServiceApiClient.Verify(p => p.GetLearners(
                 "1920",
-                UkprnOne,
+                UkprnThree,
                 1,
                 -1,
                 It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
@@ -43,7 +43,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 
             DataCollectionServiceApiClient.Verify(p => p.GetLearners(
                 "1920",
-                UkprnOne,
+                UkprnThree,
                 1,
                 -1,
                 It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
@@ -58,14 +58,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var providerMessage = new EpaoDataSyncProviderMessage
             {
                 Source = "1920",
-                Ukprn = UkprnOne
+                Ukprn = UkprnThree
             };
 
             // Act
             await Sut.ProcessLearners(providerMessage);
 
             // Assert       
-            AssertLearnerDetailRequest(UkprnOneOne);
+            AssertLearnerDetailRequest(UkprnThreeOne);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SFA.DAS.Assessor.Functions.Config;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
@@ -51,7 +52,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
         {
             var aimType = 1;
             var allStandards = -1;
-            var fundModels = _options.Value.LearnerFundModelList;
+            var fundModels = ConfigHelper.ConvertCsvValueToList<int>(_options.Value.LearnerFundModels);
             var pageSize = _options.Value.LearnerPageSize;
 
             var learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, pageNumber: 1);
