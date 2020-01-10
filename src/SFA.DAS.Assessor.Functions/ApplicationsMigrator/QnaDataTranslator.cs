@@ -21,6 +21,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             UpdateActiveStatusses(qnaData);
 
             FixQuestionTags(qnaData);
+            FixInfoText(qnaData);
 
             FixAddressData(qnaData);
 
@@ -166,6 +167,14 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                         question.QuestionTag = question.QuestionTag.Replace("-", "_");
                     }
                 }
+            }
+        }
+
+        private void FixInfoText(QnAData qnaData)
+        {
+            foreach (var page in qnaData.Pages)
+            {
+                page.InfoText = "";
             }
         }
 
