@@ -1,0 +1,4 @@
+# CODEOWNERS file for das-assessor-functions.
+# The following users will be automatically added as Reviewers to all PRs.
+
+* @davidgouge @ChrisJWoodcock @cofaulco
