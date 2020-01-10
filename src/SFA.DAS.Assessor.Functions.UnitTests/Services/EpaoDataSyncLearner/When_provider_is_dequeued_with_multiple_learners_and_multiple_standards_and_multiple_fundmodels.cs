@@ -34,14 +34,16 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 
             // Assert            
             var optionsLearnerFundModels = ConfigHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
-            DataCollectionServiceApiClient.Verify(p => p.GetLearners(
-                "1920",
-                UkprnTwo,
-                1,
-                -1,
-                It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
-                Options.Object.Value.LearnerPageSize,
-                pageNumber), Times.Once);
+            DataCollectionServiceApiClient.Verify(
+                v => v.GetLearners(
+                    "1920",
+                    UkprnTwo,
+                    1,
+                    -1,
+                    It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
+                    Options.Object.Value.LearnerPageSize,
+                    pageNumber), 
+                Times.Once);
         }
 
         [TestCase(1, 1)]
@@ -61,7 +63,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 
             // Assert
             EpaoServiceBusQueueService.Verify(
-                p => p.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == providerMessage.Ukprn && p.Source == providerMessage.Source)), 
+                v => v.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == providerMessage.Ukprn && p.Source == providerMessage.Source)), 
                 Times.Exactly(subsquentPageQueuedCount));
         }
 

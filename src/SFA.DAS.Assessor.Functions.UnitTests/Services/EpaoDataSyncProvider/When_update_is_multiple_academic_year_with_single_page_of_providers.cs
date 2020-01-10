@@ -22,7 +22,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             await Sut.ProcessProviders();
 
             // Assert
-            AssessorServiceApiClient.Verify(p => p.GetAssessorSetting("EpaoDataSyncLastRunDate"), Times.Once);
+            AssessorServiceApiClient.Verify(v => v.GetAssessorSetting("EpaoDataSyncLastRunDate"), Times.Once);
         }
 
 
@@ -33,7 +33,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             await Sut.ProcessProviders();
 
             // Assert
-            DataCollectionServiceApiClient.Verify(p => p.GetAcademicYears(Period13Date1920Period1Date2021), Times.Once);
+            DataCollectionServiceApiClient.Verify(v => v.GetAcademicYears(Period13Date1920Period1Date2021), Times.Once);
         }
 
 
@@ -45,7 +45,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             await Sut.ProcessProviders();
 
             // Assert
-            DataCollectionServiceApiClient.Verify(p => p.GetProviders(source, DateTime.MaxValue, 1, 1), Times.Once);
+            DataCollectionServiceApiClient.Verify(v => v.GetProviders(source, DateTime.MaxValue, 1, 1), Times.Once);
         }
 
 
@@ -61,7 +61,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             await Sut.ProcessProviders();
 
             // Assert
-            EpaoServiceBusQueueService.Verify(p => p.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == ukprn && p.Source == source)), Times.Once);
+            EpaoServiceBusQueueService.Verify(v => v.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == ukprn && p.Source == source)), Times.Once);
         }
     }
 }

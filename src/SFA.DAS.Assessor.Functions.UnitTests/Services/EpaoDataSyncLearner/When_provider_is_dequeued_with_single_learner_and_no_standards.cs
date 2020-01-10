@@ -34,14 +34,16 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 
             // Assert            
             var optionsLearnerFundModels = ConfigHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
-            DataCollectionServiceApiClient.Verify(p => p.GetLearners(
-                "1920",
-                UkprnOne,
-                1,
-                -1,
-                It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
-                Options.Object.Value.LearnerPageSize,
-                pageNumber), Times.Once);
+            DataCollectionServiceApiClient.Verify(
+                v => v.GetLearners(
+                    "1920",
+                    UkprnOne,
+                    1,
+                    -1,
+                    It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
+                    Options.Object.Value.LearnerPageSize,
+                    pageNumber), 
+                Times.Once);
         }
 
         [Test]

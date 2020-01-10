@@ -172,7 +172,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             });
 
             DataCollectionServiceApiClient = new Mock<IDataCollectionServiceApiClient>();
-            DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(p => Learners1920.ContainsKey(new Tuple<int, int>(p, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels,  int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
+            DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(l => Learners1920.ContainsKey(new Tuple<int, int>(l, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels,  int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
            
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
             EpaoServiceBusQueueService = new Mock<IEpaoServiceBusQueueService>();
@@ -214,22 +214,26 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 
             foreach ((int, int) importedLearner in importedLearners)
             {
-                AssessorServiceApiClient.Verify(p => p.ImportLearnerDetails(It.Is<ImportLearnerDetailRequest>(
-                p => p.ImportLearnerDetails.Exists(p =>
-                p.Ukprn == learnerTestData.Ukprn &&
-                p.Uln == GenerateUln(learnerTestData.Ukprn, learnerTestData.Uln) &&
-                p.StdCode == importedLearner.Item1 &&
-                p.FundingModel == importedLearner.Item2))), Times.Once);
+                AssessorServiceApiClient.Verify(
+                    v => v.ImportLearnerDetails(It.Is<ImportLearnerDetailRequest>(
+                        r => r.ImportLearnerDetails.Exists(
+                            l => l.Ukprn == learnerTestData.Ukprn &&
+                            l.Uln == GenerateUln(learnerTestData.Ukprn, learnerTestData.Uln) &&
+                            l.StdCode == importedLearner.Item1 &&
+                            l.FundingModel == importedLearner.Item2))), 
+                    Times.Once);
             }
 
             foreach ((int?, int) ignoredLearner in ignoredLearners)
             {
-                AssessorServiceApiClient.Verify(p => p.ImportLearnerDetails(It.Is<ImportLearnerDetailRequest>(
-                p => p.ImportLearnerDetails.Exists(p =>
-                p.Ukprn == learnerTestData.Ukprn &&
-                p.Uln == GenerateUln(learnerTestData.Ukprn, learnerTestData.Uln) &&
-                p.StdCode == ignoredLearner.Item1 &&
-                p.FundingModel == ignoredLearner.Item2))), Times.Never);
+                AssessorServiceApiClient.Verify(
+                    v => v.ImportLearnerDetails(It.Is<ImportLearnerDetailRequest>(
+                        r => r.ImportLearnerDetails.Exists(
+                            l => l.Ukprn == learnerTestData.Ukprn &&
+                            l.Uln == GenerateUln(learnerTestData.Ukprn, learnerTestData.Uln) &&
+                            l.StdCode == ignoredLearner.Item1 &&
+                            l.FundingModel == ignoredLearner.Item2))), 
+                    Times.Never);
             }
         }
 

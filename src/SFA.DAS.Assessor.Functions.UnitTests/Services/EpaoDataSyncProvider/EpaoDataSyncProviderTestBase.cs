@@ -201,9 +201,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             });
 
             DataCollectionServiceApiClient = new Mock<IDataCollectionServiceApiClient>();
-            DataCollectionServiceApiClient.Setup(p => p.GetAcademicYears(It.Is<DateTime>(p => AcademicYears.ContainsKey(p)))).ReturnsAsync((DateTime period) => AcademicYears[period]);
-            DataCollectionServiceApiClient.Setup(p => p.GetProviders("1920", It.Is<DateTime>(p => Providers1920.ContainsKey(new Tuple<DateTime, int>(p, 1).ToValueTuple())), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers1920[(period, pageNumber.Value)]);
-            DataCollectionServiceApiClient.Setup(p => p.GetProviders("2021", It.Is<DateTime>(p => Providers2021.ContainsKey(new Tuple<DateTime, int>(p, 1).ToValueTuple())), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers2021[(period, pageNumber.Value)]);
+            DataCollectionServiceApiClient.Setup(v => v.GetAcademicYears(It.Is<DateTime>(p => AcademicYears.ContainsKey(p)))).ReturnsAsync((DateTime period) => AcademicYears[period]);
+            DataCollectionServiceApiClient.Setup(v => v.GetProviders("1920", It.Is<DateTime>(p => Providers1920.ContainsKey(new Tuple<DateTime, int>(p, 1).ToValueTuple())), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers1920[(period, pageNumber.Value)]);
+            DataCollectionServiceApiClient.Setup(v => v.GetProviders("2021", It.Is<DateTime>(p => Providers2021.ContainsKey(new Tuple<DateTime, int>(p, 1).ToValueTuple())), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers2021[(period, pageNumber.Value)]);
 
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
             ArrangeEpaoDataSyncLastRunDate(EpaoDataSyncLastRunDate);
