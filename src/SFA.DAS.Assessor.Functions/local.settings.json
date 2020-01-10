@@ -1,0 +1,13 @@
+﻿{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
+
+        "EnvironmentName": "LOCAL",
+        "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
+
+        "EpaoProviderMessageQueueName": "epao-data-sync",
+        "EpaoServiceBusConnectionString": ""
+    }
+}

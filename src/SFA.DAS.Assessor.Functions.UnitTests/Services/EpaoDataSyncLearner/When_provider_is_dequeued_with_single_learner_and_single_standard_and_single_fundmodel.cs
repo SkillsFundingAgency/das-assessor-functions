@@ -16,14 +16,16 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             BaseArrange();
         }
 
-        [Test]
-        public async Task Then_learner_details_are_retrieved()
+        [TestCase(1)]
+        [TestCase(2)]
+        public async Task Then_learner_details_are_retrieved(int pageNumber)
         {
             // Arrange
             var providerMessage = new EpaoDataSyncProviderMessage
             {
                 Source = "1920",
-                Ukprn = UkprnThree
+                Ukprn = UkprnThree,
+                LearnerPageNumber = pageNumber
             };
 
 
@@ -39,16 +41,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
                 -1,
                 It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
                 Options.Object.Value.LearnerPageSize,
-                1), Times.Once);
-
-            DataCollectionServiceApiClient.Verify(p => p.GetLearners(
-                "1920",
-                UkprnThree,
-                1,
-                -1,
-                It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
-                Options.Object.Value.LearnerPageSize,
-                2), Times.Once);
+                pageNumber), Times.Once);
         }
 
         [Test]
@@ -58,7 +51,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var providerMessage = new EpaoDataSyncProviderMessage
             {
                 Source = "1920",
-                Ukprn = UkprnThree
+                Ukprn = UkprnThree,
+                LearnerPageNumber = 1
             };
 
             // Act

@@ -7,6 +7,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 
@@ -19,6 +20,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
         protected Mock<IOptions<EpaoDataSync>> Options;
         protected Mock<IDataCollectionServiceApiClient> DataCollectionServiceApiClient;
         protected Mock<IAssessorServiceApiClient> AssessorServiceApiClient;
+        protected Mock<IEpaoServiceBusQueueService> EpaoServiceBusQueueService;
         protected Mock<ILogger<EpaoDataSyncLearnerService>> Logger;
 
         protected static int UkprnOne = 111111;
@@ -31,6 +33,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
         protected static LearnerTestData UkprnTwoTwo = new LearnerTestData { Ukprn = UkprnTwo, Uln = 2, StdCodes = new List<int?> { 80, 200 }, FundModels = new List<int> { 20 } };
         protected static LearnerTestData UkprnThreeOne = new LearnerTestData { Ukprn = UkprnThree, Uln = 1, StdCodes = new List<int?> { 80, 200, null }, FundModels = new List<int> { 20, 30, 35 } };
         protected static LearnerTestData UkprnFourOne = new LearnerTestData { Ukprn = UkprnFour, Uln = 1, StdCodes = new List<int?> { null, null }, FundModels = new List<int> { 5, 10, 20 } };
+        protected static LearnerTestData UkprnFourTwo = new LearnerTestData { Ukprn = UkprnFour, Uln = 1, StdCodes = new List<int?> { 60, 70 }, FundModels = new List<int> { 10 } };
 
         protected Dictionary<(int, int), DataCollectionLearnersPage> Learners1920 = new Dictionary<(int, int), DataCollectionLearnersPage>
         {
@@ -40,8 +43,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
                     PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 2, TotalPages = 1 },
                     Learners = new List<DataCollectionLearner>
                     {
-                        GenerateTestLearner(UkprnOneOne.Ukprn, UkprnOneOne.Uln, UkprnOneOne.StdCodes, UkprnOneOne.FundModels),
-                        
+                        GenerateTestLearner(UkprnOneOne.Ukprn, UkprnOneOne.Uln, UkprnOneOne.StdCodes, UkprnOneOne.FundModels),                       
                     }
                 }
             },
@@ -90,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             {
                 (UkprnFour, 1), new DataCollectionLearnersPage
                 {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 2, TotalPages = 1 },
+                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 1, TotalItems = 2, TotalPages = 2 },
                     Learners = new List<DataCollectionLearner>
                     {
                         GenerateTestLearner(UkprnFour, UkprnFourOne.Uln, UkprnFourOne.StdCodes, UkprnFourOne.FundModels),
@@ -100,7 +102,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             {
                 (UkprnFour, 2), new DataCollectionLearnersPage
                 {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 3, TotalItems = 2, TotalPages = 1 },
+                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 1, TotalItems = 2, TotalPages = 2 },
+                    Learners = new List<DataCollectionLearner>
+                    {
+                        GenerateTestLearner(UkprnFour, UkprnFourTwo.Uln, UkprnFourTwo.StdCodes, UkprnFourTwo.FundModels),
+                    }
+                }
+            },
+            {
+                (UkprnFour, 3), new DataCollectionLearnersPage
+                {
+                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 3, PageSize = 1, TotalItems = 2, TotalPages = 2 },
                     Learners = new List<DataCollectionLearner>()
                 }
             }
@@ -163,9 +175,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(p => Learners1920.ContainsKey(new Tuple<int, int>(p, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels,  int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
            
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
+            EpaoServiceBusQueueService = new Mock<IEpaoServiceBusQueueService>();
             Logger = new Mock<ILogger<EpaoDataSyncLearnerService>>();
 
-            Sut = new EpaoDataSyncLearnerService(Options.Object, DataCollectionServiceApiClient.Object, AssessorServiceApiClient.Object, Logger.Object);
+            Sut = new EpaoDataSyncLearnerService(Options.Object, DataCollectionServiceApiClient.Object, AssessorServiceApiClient.Object, EpaoServiceBusQueueService.Object, Logger.Object);
         }
 
         protected void AssertLearnerDetailRequest(LearnerTestData learnerTestData)
@@ -224,7 +237,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
         {
             public int Ukprn { get; set; }
             public int Uln { get; set; }
-
             public List<int?> StdCodes { get; set; }
             public List<int> FundModels { get; set; }
         }

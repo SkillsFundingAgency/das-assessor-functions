@@ -5,6 +5,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain
@@ -14,17 +15,17 @@ namespace SFA.DAS.Assessor.Functions.Domain
         private readonly IOptions<EpaoDataSync> _options;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorApiClient;
-        private readonly IStorageQueueService _storageQueueService;
+        private readonly IEpaoServiceBusQueueService _epaoServiceBusQueueService;
         private readonly IDateTimeHelper _dateTimeHelper;
         private readonly ILogger<EpaoDataSyncProviderService> _logger;
 
         public EpaoDataSyncProviderService(IOptions<EpaoDataSync> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
-            IAssessorServiceApiClient assessorServiceApiClient, IStorageQueueService storageQueueService, IDateTimeHelper dateTimeHelper, ILogger<EpaoDataSyncProviderService> logger)
+            IAssessorServiceApiClient assessorServiceApiClient, IEpaoServiceBusQueueService storageQueueService, IDateTimeHelper dateTimeHelper, ILogger<EpaoDataSyncProviderService> logger)
         {
             _options = options;
             _dataCollectionServiceApiClient = dataCollectionServiceApiClient;
             _assessorApiClient = assessorServiceApiClient;
-            _storageQueueService = storageQueueService;
+            _epaoServiceBusQueueService = storageQueueService;
             _dateTimeHelper = dateTimeHelper;
             _logger = logger;
         }
@@ -38,21 +39,15 @@ namespace SFA.DAS.Assessor.Functions.Domain
 
             // the sources which are valid at the last run datetime are obtained to ensure that extended
             // periods of downtime do not result in missing updates for previous academic years
-            var sources = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime); 
-
-            foreach (var source in sources)
+            var sources = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
+            foreach (var source in sources ?? new List<string>())
             {
                 // process all the sources for which there is a valid endpoint in the data collection API
                 if (await ValidateAcademicYear(source))
                 {
                     try
                     {
-                        var providersQueued = false;
-                        while (!providersQueued)
-                        {
-                            await QueueProviders(source, lastRunDateTime);
-                            providersQueued = true;
-                        }
+                        await QueueProviders(source, lastRunDateTime);
                     }
                     catch (Exception ex)
                     {
@@ -119,10 +114,11 @@ namespace SFA.DAS.Assessor.Functions.Domain
                         var message = new EpaoDataSyncProviderMessage
                         {
                             Ukprn = providerUkprn,
-                            Source = source
+                            Source = source,
+                            LearnerPageNumber = 1
                         };
 
-                        await _storageQueueService.SerializeAndQueueMessage(message);
+                        await _epaoServiceBusQueueService.SerializeAndQueueMessage(message);
                     }
 
                     // each subsequent page will be retrieved; any data which has changed during paging which would be contained 

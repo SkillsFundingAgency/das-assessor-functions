@@ -60,7 +60,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             await Sut.ProcessProviders();
 
             // Assert
-            StorageQueueService.Verify(p => p.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == ukprn && p.Source == source)), Times.Once);
+            EpaoServiceBusQueueService.Verify(p => p.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == ukprn && p.Source == source)), Times.Once);
         }
     }
 }

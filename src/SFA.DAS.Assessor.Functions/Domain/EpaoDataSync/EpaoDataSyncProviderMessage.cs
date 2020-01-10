@@ -6,5 +6,6 @@ namespace SFA.DAS.Assessor.Functions.Domain
     {
         public int Ukprn { get; set; }
         public string Source { get; set; }
+        public int LearnerPageNumber { get; set; }
     }
 }
