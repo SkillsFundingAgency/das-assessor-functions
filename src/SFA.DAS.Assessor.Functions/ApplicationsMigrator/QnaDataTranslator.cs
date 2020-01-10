@@ -21,6 +21,7 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             UpdateActiveStatusses(qnaData);
 
             FixQuestionTags(qnaData);
+            FixInfoText(qnaData);
 
             FixAddressData(qnaData);
 
@@ -136,31 +137,44 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
                     if (question.QuestionId == "CD-30")
                     {
                         var furtherQuestion = question.Input.Options.First(o => o.FurtherQuestions.First().QuestionId == "CD-30.1").FurtherQuestions.First();
-                        furtherQuestion.QuestionTag = question.QuestionTag;
+                        furtherQuestion.QuestionTag = question.QuestionTag.Replace("-", "_");
                         question.QuestionTag = null;
                     }
 
                     if (question.QuestionId == "CD-26")
                     {
                         var furtherQuestion = question.Input.Options.First(o => o.FurtherQuestions.First().QuestionId == "CD-26.1").FurtherQuestions.First();
-                        furtherQuestion.QuestionTag = question.QuestionTag;
+                        furtherQuestion.QuestionTag = question.QuestionTag.Replace("-", "_");
                         question.QuestionTag = null;
                     }
 
                     if (question.QuestionId == "CD-12")
                     {
                         var furtherQuestion = question.Input.Options.First(o => o.FurtherQuestions.First().QuestionId == "CD-12.1").FurtherQuestions.First();
-                        furtherQuestion.QuestionTag = question.QuestionTag;
+                        furtherQuestion.QuestionTag = question.QuestionTag.Replace("-", "_");
                         question.QuestionTag = null;
                     }
 
                     if (question.QuestionId == "CD-17")
                     {
                         var furtherQuestion = question.Input.Options.First(o => o.FurtherQuestions.First().QuestionId == "CD-17.1").FurtherQuestions.First();
-                        furtherQuestion.QuestionTag = question.QuestionTag;
+                        furtherQuestion.QuestionTag = question.QuestionTag.Replace("-", "_");
                         question.QuestionTag = null;
                     }
+
+                    if (question.QuestionTag != null)
+                    {
+                        question.QuestionTag = question.QuestionTag.Replace("-", "_");
+                    }
                 }
+            }
+        }
+
+        private void FixInfoText(QnAData qnaData)
+        {
+            foreach (var page in qnaData.Pages)
+            {
+                page.InfoText = "";
             }
         }
 
