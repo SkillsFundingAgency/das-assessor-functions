@@ -23,7 +23,6 @@
     <PackageReference Include="SFA.DAS.NLog.Targets.Redis" Version="1.2.1" />
     <PackageReference Include="Dapper" Version="2.0.4" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
-    <PackageReference Include="WindowsAzure.ServiceBus" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
