@@ -111,7 +111,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                     ? $"&standardCode={standardCode.Value}"
                     : string.Empty)
                 + (fundModels != null
-                    ? string.Join(string.Empty, fundModels.ConvertAll(p => $"&fundModel={p}").ToArray())
+                    ? string.Join(string.Empty, fundModels.ConvertAll(p => $"&fundModel={p}"))
                     : string.Empty)
                 + (pageSize != null
                     ? $"&pageSize={pageSize.Value}"

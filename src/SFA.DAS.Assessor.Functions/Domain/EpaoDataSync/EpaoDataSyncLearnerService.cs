@@ -84,7 +84,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
                     {
                         ld?.Errors?.ForEach(e =>
                         {
-                            _logger.LogDebug($"Unable to export Learner Details due to '{ld.Outcome}' '{e}'");
+                            _logger.LogDebug($"Request to import learner details failed due to '{ld.Outcome}' '{e}'");
                         });
                     });
                 }

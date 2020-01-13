@@ -19,8 +19,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 {
     public abstract class ApiClientBase : IDisposable
     {
-        protected HttpClient Client;
-        private readonly ILogger<ApiClientBase> _logger;
+        protected readonly HttpClient Client;
+        protected readonly ILogger<ApiClientBase> Logger;
         private readonly RetryPolicy<HttpResponseMessage> _retryPolicy;
 
         protected readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
@@ -30,25 +30,18 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
         };
 
         protected ApiClientBase(HttpClient httpClient, ITokenService tokenService, ILogger<ApiClientBase> logger)
+            : this(httpClient, logger)
         {
-            Client = httpClient;
-
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenService.GetToken());
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            _logger = logger;
-
-            _retryPolicy = HttpPolicyExtensions
-                .HandleTransientHttpError()
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         protected ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase> logger)
         {
             Client = httpClient;
 
-            _logger = logger;
+            Logger = logger;
 
             _retryPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
@@ -144,7 +137,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             }
             else
             {
-                _logger.LogInformation($"HttpRequestException: Status Code: {response?.StatusCode} Body: {json}");
+                Logger.LogInformation($"HttpRequestException: Status Code: {response?.StatusCode} Body: {json}");
                 throw new HttpRequestException(json);
             }
         }
