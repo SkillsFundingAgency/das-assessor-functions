@@ -23,7 +23,7 @@ namespace SFA.DAS.Assessor.Functions.Epao
 
         [FunctionName("EpaoDataSyncDequeueProviders")]
         public async Task Run(
-            [ServiceBusTrigger("%EpaoProviderMessageQueueName%", Connection = "EpaoServiceBusConnectionString")] Message message, 
+            [ServiceBusTrigger(QueueNames.EpaoDataSync, Connection = "EpaoServiceBusConnectionString")] Message message, 
             int deliveryCount,
             ILogger logger)
         {

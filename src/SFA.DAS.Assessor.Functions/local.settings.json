@@ -7,7 +7,6 @@
         "EnvironmentName": "LOCAL",
         "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
 
-        "EpaoProviderMessageQueueName": "epao-data-sync",
         "EpaoServiceBusConnectionString": ""
     }
 }
