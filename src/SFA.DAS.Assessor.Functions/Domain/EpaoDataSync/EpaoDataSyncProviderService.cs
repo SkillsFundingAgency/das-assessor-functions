@@ -66,12 +66,19 @@ namespace SFA.DAS.Assessor.Functions.Domain
         }
 
         private async Task<DateTime> GetLastRunDateTime()
-        {            
-            var lastRunDateTimeSetting = await _assessorApiClient.GetAssessorSetting("EpaoDataSyncLastRunDate");
-            if(lastRunDateTimeSetting != null)
+        {
+            try
             {
-                if (DateTime.TryParse(lastRunDateTimeSetting, out DateTime lastRunDateTime))
-                    return lastRunDateTime;
+                var lastRunDateTimeSetting = await _assessorApiClient.GetAssessorSetting("EpaoDataSyncLastRunDate");
+                if (lastRunDateTimeSetting != null)
+                {
+                    if (DateTime.TryParse(lastRunDateTimeSetting, out DateTime lastRunDateTime))
+                        return lastRunDateTime;
+                }
+            }
+            catch
+            {
+                _logger.LogInformation($"There is no EpaoDataSyncLastRunDate, using default last run date {_options.Value.ProviderInitialRunDate}");
             }
 
             return _options.Value.ProviderInitialRunDate;

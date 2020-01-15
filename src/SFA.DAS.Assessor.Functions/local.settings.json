@@ -4,6 +4,7 @@
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
         "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
 
+        "AppName": "das-assessor-functions",
         "EnvironmentName": "LOCAL",
         "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
 

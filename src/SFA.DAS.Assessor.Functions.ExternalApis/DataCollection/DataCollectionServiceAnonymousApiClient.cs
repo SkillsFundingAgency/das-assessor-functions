@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.ExternalApis;
-using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Data
+namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 {
     public class DataCollectionServiceAnonymousApiClient : ApiClientBase, IDataCollectionServiceAnonymousApiClient
     {

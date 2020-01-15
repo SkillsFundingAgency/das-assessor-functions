@@ -5,7 +5,6 @@ using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Net.Http;
-using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;

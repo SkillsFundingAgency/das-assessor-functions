@@ -166,7 +166,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             return response;
         }
 
-
         protected async Task PostPutRequest<T>(HttpRequestMessage requestMessage, T model)
         {
             if (requestMessage.Method != HttpMethod.Post && requestMessage.Method != HttpMethod.Put)
