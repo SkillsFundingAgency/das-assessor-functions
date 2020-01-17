@@ -39,9 +39,8 @@ instance of SFA.DAS.AssessorService.Application.Api project to which the local s
 
 ### Epao DataSync
 
-1) In the local.settings.json update the EpaoServiceBusConnectionString; for local development an azure account is required in which a service bus can
-be created, for a getting started guide see https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal; an existing queue
-should be created in the development azure account; the name of the queue is defined in [QueueNames.cs](src\SFA.DAS.Assessor.Functions\Infrastructure\QueueNames.cs).
+1) When the EpaoDataSyncEnqueueProviders function starts and there are any providers updated in the DC API since the EpaoDataSyncLastRunDate
+in the assessor, a Azure Storage Queue will be created automatically; the name of the queue is defined in [QueueNames.cs](src\SFA.DAS.Assessor.Functions\Infrastructure\QueueNames.cs).
 
 ### Opportunity Finder DataSync
 

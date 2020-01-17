@@ -49,11 +49,13 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.IntegrationTests.DataCollectio
 
             DataCollectionServiceApiClientLogger = new Mock<ILogger<DataCollectionServiceApiClient>>();
             DataCollectionServiceAnonymousApiClientLogger = new Mock<ILogger<DataCollectionServiceAnonymousApiClient>>();
-            
+
             // remove ssl client certfication checks
-            var handler = new HttpClientHandler();
-            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
-           
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }
+            };
+
             var dataCollectionServiceAnonymousApiClient = new DataCollectionServiceAnonymousApiClient(
                 new HttpClient(handler), 
                 DataCollectionOptions.Object, 

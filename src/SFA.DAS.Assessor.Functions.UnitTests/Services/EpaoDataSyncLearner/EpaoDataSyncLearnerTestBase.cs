@@ -7,7 +7,6 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 
@@ -20,7 +19,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
         protected Mock<IOptions<EpaoDataSync>> Options;
         protected Mock<IDataCollectionServiceApiClient> DataCollectionServiceApiClient;
         protected Mock<IAssessorServiceApiClient> AssessorServiceApiClient;
-        protected Mock<IEpaoServiceBusQueueService> EpaoServiceBusQueueService;
         protected Mock<ILogger<EpaoDataSyncLearnerService>> Logger;
 
         protected static int UkprnOne = 111111;
@@ -175,10 +173,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(l => Learners1920.ContainsKey(new Tuple<int, int>(l, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels,  int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
            
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
-            EpaoServiceBusQueueService = new Mock<IEpaoServiceBusQueueService>();
             Logger = new Mock<ILogger<EpaoDataSyncLearnerService>>();
 
-            Sut = new EpaoDataSyncLearnerService(Options.Object, DataCollectionServiceApiClient.Object, AssessorServiceApiClient.Object, EpaoServiceBusQueueService.Object, Logger.Object);
+            Sut = new EpaoDataSyncLearnerService(Options.Object, DataCollectionServiceApiClient.Object, AssessorServiceApiClient.Object, Logger.Object);
         }
 
         protected void AssertLearnerDetailRequest(LearnerTestData learnerTestData)

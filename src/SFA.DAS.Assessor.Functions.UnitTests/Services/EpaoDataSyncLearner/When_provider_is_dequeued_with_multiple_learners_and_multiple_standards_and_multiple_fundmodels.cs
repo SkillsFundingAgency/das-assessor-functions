@@ -5,6 +5,7 @@ using SFA.DAS.Assessor.Functions.Domain;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 {
@@ -46,9 +47,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
                 Times.Once);
         }
 
-        [TestCase(1, 1)]
-        [TestCase(2, 0)]
-        public async Task Then_subsequent_page_provider_is_queued(int pageNumber, int subsquentPageQueuedCount)
+        [TestCase(1, true)]
+        [TestCase(2, false)]
+        public async Task Then_subsequent_page_provider_is_queued(int pageNumber, bool subsequentPageQueued)
         {
             // Arrange
             var providerMessage = new EpaoDataSyncProviderMessage
@@ -59,12 +60,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             };
 
             // Act
-            await Sut.ProcessLearners(providerMessage);
+            var nextPageProviderMessage = await Sut.ProcessLearners(providerMessage);
 
             // Assert
-            EpaoServiceBusQueueService.Verify(
-                v => v.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == providerMessage.Ukprn && p.Source == providerMessage.Source)), 
-                Times.Exactly(subsquentPageQueuedCount));
+            nextPageProviderMessage.Should().Match(p => subsequentPageQueued && p != null || !subsequentPageQueued && p == null);
         }
 
         [Test]

@@ -4,6 +4,6 @@ namespace SFA.DAS.Assessor.Functions.Domain
 {
     public interface IEpaoDataSyncLearnerService
     {
-        Task ProcessLearners(EpaoDataSyncProviderMessage providerMessage);
+        Task<EpaoDataSyncProviderMessage> ProcessLearners(EpaoDataSyncProviderMessage providerMessage);
     }
 }

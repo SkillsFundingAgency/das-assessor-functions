@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain
 {
     public interface IEpaoDataSyncProviderService
     {
-        Task ProcessProviders();
+        Task<List<EpaoDataSyncProviderMessage>> ProcessProviders();
+        Task<DateTime> GetLastRunDateTime();
+        Task SetLastRunDateTime(DateTime nextRunDateTime);
     }
 }

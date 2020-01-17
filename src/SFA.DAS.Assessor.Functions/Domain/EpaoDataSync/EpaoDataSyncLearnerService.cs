@@ -4,7 +4,6 @@ using SFA.DAS.Assessor.Functions.Config;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,27 +16,25 @@ namespace SFA.DAS.Assessor.Functions.Domain
         private readonly IOptions<EpaoDataSync> _options;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
-        private readonly IEpaoServiceBusQueueService _epaoServiceBusQueueService;
         private readonly ILogger<EpaoDataSyncLearnerService> _logger;
 
         public EpaoDataSyncLearnerService(IOptions<EpaoDataSync> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
-            IAssessorServiceApiClient assessorServiceApiClient, IEpaoServiceBusQueueService epaoServiceBusQueueService, ILogger<EpaoDataSyncLearnerService> logger)
+            IAssessorServiceApiClient assessorServiceApiClient, ILogger<EpaoDataSyncLearnerService> logger)
         {
             _options = options;
             _dataCollectionServiceApiClient = dataCollectionServiceApiClient;
             _assessorServiceApiClient = assessorServiceApiClient;
-            _epaoServiceBusQueueService = epaoServiceBusQueueService;
             _logger = logger;
         }
 
-        public async Task ProcessLearners(EpaoDataSyncProviderMessage providerMessage)
+        public async Task<EpaoDataSyncProviderMessage> ProcessLearners(EpaoDataSyncProviderMessage providerMessage)
         {
             try
             {
                 _logger.LogDebug($"Using data collection api base address: {_dataCollectionServiceApiClient.BaseAddress()}");
                 _logger.LogDebug($"Using assessor api base address: {_assessorServiceApiClient.BaseAddress()}");
 
-                await ExportLearnerDetails(providerMessage);
+                return await ExportLearnerDetails(providerMessage);
             }
             catch (Exception ex)
             {
@@ -46,8 +43,10 @@ namespace SFA.DAS.Assessor.Functions.Domain
             }
         }
 
-        private async Task ExportLearnerDetails(EpaoDataSyncProviderMessage providerMessage)
+        private async Task<EpaoDataSyncProviderMessage> ExportLearnerDetails(EpaoDataSyncProviderMessage providerMessage)
         {
+            EpaoDataSyncProviderMessage nextPageProviderMessage = null;
+            
             var aimType = 1;
             var allStandards = -1;
             var fundModels = ConfigHelper.ConvertCsvValueToList<int>(_options.Value.LearnerFundModels);
@@ -59,13 +58,12 @@ namespace SFA.DAS.Assessor.Functions.Domain
                 if (learnersPage.PagingInfo.TotalPages > learnersPage.PagingInfo.PageNumber)
                 {
                     // queue a new message to process the next page
-                    await _epaoServiceBusQueueService.SerializeAndQueueMessage(
-                        new EpaoDataSyncProviderMessage 
-                        { 
-                            Ukprn = providerMessage.Ukprn, 
-                            Source = providerMessage.Source, 
-                            LearnerPageNumber = providerMessage.LearnerPageNumber + 1 
-                        });
+                    nextPageProviderMessage = new EpaoDataSyncProviderMessage
+                    {
+                        Ukprn = providerMessage.Ukprn,
+                        Source = providerMessage.Source,
+                        LearnerPageNumber = providerMessage.LearnerPageNumber + 1
+                    };
                 }
 
                 // the learners must be filtered to remove learning deliveries which do not match the filters as the 
@@ -89,6 +87,8 @@ namespace SFA.DAS.Assessor.Functions.Domain
                     });
                 }
             }
+
+            return nextPageProviderMessage;
         }
 
         private List<ImportLearnerDetail> FilterLearners(List<DataCollectionLearner> dataCollectionLearners, string source, int aimType, List<int> fundModels)

@@ -18,7 +18,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
         protected Mock<IOptions<EpaoDataSync>> Options;
         protected Mock<IDataCollectionServiceApiClient> DataCollectionServiceApiClient;
         protected Mock<IAssessorServiceApiClient> AssessorServiceApiClient;
-        protected Mock<IEpaoServiceBusQueueService> EpaoServiceBusQueueService;
         protected Mock<IDateTimeHelper> DateTimeHelper;
         protected Mock<ILogger<EpaoDataSyncProviderService>> Logger;
 
@@ -208,12 +207,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
             ArrangeEpaoDataSyncLastRunDate(EpaoDataSyncLastRunDate);
 
-            EpaoServiceBusQueueService = new Mock<IEpaoServiceBusQueueService>();
             DateTimeHelper = new Mock<IDateTimeHelper>();
             Logger = new Mock<ILogger<EpaoDataSyncProviderService>>();
 
-            Sut = new EpaoDataSyncProviderService(Options.Object, DataCollectionServiceApiClient.Object, AssessorServiceApiClient.Object, EpaoServiceBusQueueService.Object,
-                DateTimeHelper.Object, Logger.Object);
+            Sut = new EpaoDataSyncProviderService(Options.Object, DataCollectionServiceApiClient.Object, AssessorServiceApiClient.Object, Logger.Object);
         }
 
         protected void ArrangeEpaoDataSyncLastRunDate(string lastRunDateTime)

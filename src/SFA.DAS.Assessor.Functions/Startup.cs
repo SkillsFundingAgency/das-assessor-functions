@@ -79,10 +79,6 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
 
             builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
-            builder.Services.AddScoped<IEpaoServiceBusQueueService>(ss =>
-            {
-                return new EpaoServiceBusQueueService(Environment.GetEnvironmentVariable("EpaoServiceBusConnectionString"), QueueNames.EpaoDataSync);
-            });
             builder.Services.AddScoped<IEpaoDataSyncProviderService, EpaoDataSyncProviderService>();
             builder.Services.AddScoped<IEpaoDataSyncLearnerService, EpaoDataSyncLearnerService>();
             

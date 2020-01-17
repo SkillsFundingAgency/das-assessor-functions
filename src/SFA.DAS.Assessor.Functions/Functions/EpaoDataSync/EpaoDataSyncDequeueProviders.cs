@@ -5,6 +5,8 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.ServiceBus.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Queue;
+using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 
@@ -13,36 +15,29 @@ namespace SFA.DAS.Assessor.Functions.Epao
     public class EpaoDataSyncDequeueProviders
     {
         private readonly IEpaoDataSyncLearnerService _epaoDataSyncLearnerService;
-        private readonly IEpaoServiceBusQueueService _epaoServiceBusQueueService;
 
-        public EpaoDataSyncDequeueProviders(IEpaoDataSyncLearnerService epaoDataSyncLearnerService, IEpaoServiceBusQueueService storageQueueService)
+        public EpaoDataSyncDequeueProviders(IEpaoDataSyncLearnerService epaoDataSyncLearnerService)
         {
             _epaoDataSyncLearnerService = epaoDataSyncLearnerService;
-            _epaoServiceBusQueueService = storageQueueService;
         }
 
         [FunctionName("EpaoDataSyncDequeueProviders")]
         public async Task Run(
-            [ServiceBusTrigger(QueueNames.EpaoDataSync, Connection = "EpaoServiceBusConnectionString")] Message message, 
-            int deliveryCount,
+            [QueueTrigger(QueueNames.EpaoDataSync, Connection = "ConfigurationStorageConnectionString")]string message,
+            [Queue(QueueNames.EpaoDataSync, Connection = "ConfigurationStorageConnectionString")]CloudQueue epaoDataSyncQueue,
             ILogger logger)
         {
             try
             {
                 logger.LogDebug($"Epao data sync dequeue provider function triggered for: {message}");
 
-                if (Debugger.IsAttached && deliveryCount > 1)
+                var providerMessage = JsonConvert.DeserializeObject<EpaoDataSyncProviderMessage>(message);
+                var nextPageProviderMessage = await _epaoDataSyncLearnerService.ProcessLearners(providerMessage);
+                if (nextPageProviderMessage != null)
                 {
-                    // when debugging a message it is possible to take longer than the default 30 second lock 
-                    // duration to be processed and it will then be received again by the function; recommendation is
-                    // to set the default lock duration to the maximum of 5 minutes when creating the service bus queue
-                    // in the portal
-                    Debugger.Break();
+                    await epaoDataSyncQueue.AddMessageAsync(
+                        new CloudQueueMessage(JsonConvert.SerializeObject(nextPageProviderMessage)));
                 }
-
-                var providerMessage = _epaoServiceBusQueueService.DeserializeMessage(message);
-                await _epaoDataSyncLearnerService.ProcessLearners(providerMessage);
-
             }
             catch (Exception ex)
             {

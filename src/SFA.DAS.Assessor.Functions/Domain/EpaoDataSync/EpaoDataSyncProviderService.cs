@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
-using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,27 +13,24 @@ namespace SFA.DAS.Assessor.Functions.Domain
         private readonly IOptions<EpaoDataSync> _options;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorApiClient;
-        private readonly IEpaoServiceBusQueueService _epaoServiceBusQueueService;
-        private readonly IDateTimeHelper _dateTimeHelper;
+        
         private readonly ILogger<EpaoDataSyncProviderService> _logger;
 
         public EpaoDataSyncProviderService(IOptions<EpaoDataSync> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
-            IAssessorServiceApiClient assessorServiceApiClient, IEpaoServiceBusQueueService storageQueueService, IDateTimeHelper dateTimeHelper, ILogger<EpaoDataSyncProviderService> logger)
+            IAssessorServiceApiClient assessorServiceApiClient, ILogger<EpaoDataSyncProviderService> logger)
         {
             _options = options;
             _dataCollectionServiceApiClient = dataCollectionServiceApiClient;
             _assessorApiClient = assessorServiceApiClient;
-            _epaoServiceBusQueueService = storageQueueService;
-            _dateTimeHelper = dateTimeHelper;
             _logger = logger;
         }
 
-        public async Task ProcessProviders()
+        public async Task<List<EpaoDataSyncProviderMessage>> ProcessProviders()
         {
+            var providerMessagesToQueue = new List<EpaoDataSyncProviderMessage>();
             _logger.LogDebug($"Using data collection api base address: {_dataCollectionServiceApiClient.BaseAddress()}");
 
             var lastRunDateTime = await GetLastRunDateTime();
-            var nextRunDateTime = _dateTimeHelper.DateTimeNow;
 
             // the sources which are valid at the last run datetime are obtained to ensure that extended
             // periods of downtime do not result in missing updates for previous academic years
@@ -47,7 +42,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
                 {
                     try
                     {
-                        await QueueProviders(source, lastRunDateTime);
+                        providerMessagesToQueue.AddRange(await QueueProviders(source, lastRunDateTime));
                     }
                     catch (Exception ex)
                     {
@@ -61,11 +56,10 @@ namespace SFA.DAS.Assessor.Functions.Domain
                 }
             }
 
-            // when all sources were processed successfully store the date for the next run
-            await _assessorApiClient.SetAssessorSetting("EpaoDataSyncLastRunDate", nextRunDateTime.ToString("o"));
+            return providerMessagesToQueue;
         }
 
-        private async Task<DateTime> GetLastRunDateTime()
+        public async Task<DateTime> GetLastRunDateTime()
         {
             try
             {
@@ -82,6 +76,11 @@ namespace SFA.DAS.Assessor.Functions.Domain
             }
 
             return _options.Value.ProviderInitialRunDate;
+        }
+
+        public async Task SetLastRunDateTime(DateTime nextRunDateTime)
+        {
+            await _assessorApiClient.SetAssessorSetting("EpaoDataSyncLastRunDate", nextRunDateTime.ToString("o"));
         }
 
         private async Task<bool> ValidateAcademicYear(string source)
@@ -107,8 +106,9 @@ namespace SFA.DAS.Assessor.Functions.Domain
             return false;
         }
 
-        private async Task QueueProviders(string source, DateTime lastRunDateTime)
+        private async Task<List<EpaoDataSyncProviderMessage>> QueueProviders(string source, DateTime lastRunDateTime)
         {
+            var providerMessagesToQueue = new List<EpaoDataSyncProviderMessage>();
             var pageSize = _options.Value.ProviderPageSize;
 
             var providersPage = await _dataCollectionServiceApiClient.GetProviders(source, lastRunDateTime, pageSize, pageNumber: 1);
@@ -125,7 +125,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
                             LearnerPageNumber = 1
                         };
 
-                        await _epaoServiceBusQueueService.SerializeAndQueueMessage(message);
+                        providerMessagesToQueue.Add(message);
                     }
 
                     // each subsequent page will be retrieved; any data which has changed during paging which would be contained 
@@ -135,6 +135,8 @@ namespace SFA.DAS.Assessor.Functions.Domain
                 }
                 while (providersPage != null && providersPage.PagingInfo.PageNumber <= providersPage.PagingInfo.TotalPages);
             }
+
+            return providerMessagesToQueue;
         }
     }
 }

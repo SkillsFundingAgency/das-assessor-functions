@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain;
 using System;
@@ -62,10 +63,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
         public async Task Then_each_updated_provider_is_queued(int ukprn, string source)
         {
             // Act
-            await Sut.ProcessProviders();
+            var providerMessages = await Sut.ProcessProviders();
 
             // Assert
-            EpaoServiceBusQueueService.Verify(v => v.SerializeAndQueueMessage(It.Is<EpaoDataSyncProviderMessage>(p => p.Ukprn == ukprn && p.Source == source)), Times.Once);
+            providerMessages.Should().ContainSingle(p => p.Ukprn == ukprn && p.Source == source);
         }
     }
 }
