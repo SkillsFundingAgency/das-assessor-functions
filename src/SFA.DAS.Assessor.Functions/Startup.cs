@@ -1,16 +1,17 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using System.Net.Http;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
-using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
-using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
-using SFA.DAS.Assessor.Functions.Domain;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
+using SFA.DAS.Assessor.Functions.Domain;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
+using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
+using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
+using System.Net.Http;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -20,10 +21,6 @@ namespace SFA.DAS.Assessor.Functions
     {   
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            var sp = builder.Services.BuildServiceProvider();
-
-            var configuration = sp.GetService<IConfiguration>();
-
             var nLogConfiguration = new NLogConfiguration();
 
             builder.Services.AddLogging((options) =>
@@ -37,16 +34,15 @@ namespace SFA.DAS.Assessor.Functions
                 });
                 options.AddConsole();
 
-                nLogConfiguration.ConfigureNLog(configuration);
+                nLogConfiguration.ConfigureNLog();
             });
 
             var config = new ConfigurationBuilder()
-                .AddConfiguration(configuration)
                 .AddEnvironmentVariables()
                 .AddAzureTableStorageConfiguration(
-                    configuration["ConfigurationStorageConnectionString"],
-                    configuration["AppName"],
-                    configuration["EnvironmentName"],
+                    Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
+                    Environment.GetEnvironmentVariable("AppName"),
+                    Environment.GetEnvironmentVariable("EnvironmentName"),
                     "1.0", "SFA.DAS.AssessorFunctions")
                 .Build();
 
@@ -62,7 +58,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddHttpClient<IDataCollectionServiceApiClient, DataCollectionServiceApiClient>(client => { })
                 .ConfigurePrimaryHttpMessageHandler(() => {
                     var handler = new HttpClientHandler();
-                    if (string.Equals("LOCAL", ConfigurationHelper.GetEnvironmentName(configuration)))
+                    if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
                     {
                         handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
                     }
@@ -72,7 +68,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddHttpClient<IDataCollectionServiceAnonymousApiClient, DataCollectionServiceAnonymousApiClient>(client => {})
                 .ConfigurePrimaryHttpMessageHandler(() => {
                     var handler = new HttpClientHandler();
-                    if (string.Equals("LOCAL", ConfigurationHelper.GetEnvironmentName(configuration)))
+                    if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
                     {
                         handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
                     }
@@ -85,7 +81,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
             builder.Services.AddScoped<IEpaoServiceBusQueueService>(ss =>
             {
-                return new EpaoServiceBusQueueService(configuration["EpaoServiceBusConnectionString"], QueueNames.EpaoDataSync);
+                return new EpaoServiceBusQueueService(Environment.GetEnvironmentVariable("EpaoServiceBusConnectionString"), QueueNames.EpaoDataSync);
             });
             builder.Services.AddScoped<IEpaoDataSyncProviderService, EpaoDataSyncProviderService>();
             builder.Services.AddScoped<IEpaoDataSyncLearnerService, EpaoDataSyncLearnerService>();

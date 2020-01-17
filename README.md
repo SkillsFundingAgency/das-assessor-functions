@@ -11,7 +11,7 @@
 
 ### Configuration
 
-1) Create a local.setting.json file with the following contents
+1) Create a local.settings.json file (Copy to Output Directory = Copy always) with the following contents:
 
 ```json
 {
