@@ -24,7 +24,7 @@
         "EnvironmentName": "LOCAL",
         "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
 
-		"EpaoServiceBusConnectionString": ""
+        "EpaoServiceBusConnectionString": ""
     }
 }
 ```
