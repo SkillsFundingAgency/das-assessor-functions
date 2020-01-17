@@ -11,6 +11,24 @@
 
 ### Configuration
 
+1) Create a local.setting.json file with the following contents
+
+```json
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
+
+        "AppName": "das-assessor-functions",
+        "EnvironmentName": "LOCAL",
+        "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
+
+		"EpaoServiceBusConnectionString": ""
+    }
+}
+```
+
 1) Ensure that an instance of the SFA.DAS.AssessorService.Application.Api project is running in advance.
 	- this may be either locally or remotely however this will expose a database connection
 
@@ -22,8 +40,8 @@ instance of SFA.DAS.AssessorService.Application.Api project to which the local s
 ### Epao DataSync
 
 1) In the local.settings.json update the EpaoServiceBusConnectionString; for local development an azure account is required in which a service bus can
-be created, for a getting started guide see https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal; the EpaoProviderMessageQueueName
-in the local.settings.json file is the name of the service bus queue to create in the azure account.
+be created, for a getting started guide see https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-quickstart-portal; an existing queue
+should be created in the development azure account; the name of the queue is defined in [QueueNames.cs](src\SFA.DAS.Assessor.Functions\Infrastructure\QueueNames.cs).
 
 ### Opportunity Finder DataSync
 
