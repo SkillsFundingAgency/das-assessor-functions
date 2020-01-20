@@ -22,9 +22,7 @@
 
         "AppName": "das-assessor-functions",
         "EnvironmentName": "LOCAL",
-        "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
-
-        "EpaoServiceBusConnectionString": ""
+        "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true"
     }
 }
 ```
