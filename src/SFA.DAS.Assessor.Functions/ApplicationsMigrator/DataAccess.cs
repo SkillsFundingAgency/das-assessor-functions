@@ -231,7 +231,14 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             {
                 if (!ex.Message.Contains("UNIQUE KEY constraint"))
                 {
-                    throw ex;
+                    // update contact details
+                    assessorConnection.Execute(@"UPDATE Contacts SET OrganisationId = @OrganisationId, Status = 'Live', UpdatedAt =  GETUTCDATE()
+                    WHERE Id = @OldId",
+                    new
+                    {
+                        OldId = contact.Id,
+                        organisationId = organisationId
+                    });
                 }                
             }
         }
