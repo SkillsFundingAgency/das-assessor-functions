@@ -25,9 +25,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 
         public async Task<List<string>> GetAcademicYears(DateTime dateTimeUtc)
         {
-            // THIS DC API DOES NOT RETURN THE CORRECT RESULT - THE DC TEAM IS WORKING ON IT
-
-            /*var requestUri = $@"/api/v{ApiVersion}/ilr-data/academic-years?" +
+            var requestUri = $@"/api/v{ApiVersion}/academic-years?" +
                 $"dateTimeUtc={WebUtility.UrlEncode(dateTimeUtc.ToString("o"))}";
 
             using (var request = new HttpRequestMessage(HttpMethod.Get, requestUri))
@@ -37,14 +35,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<string>>(json, JsonSettings));
+                    var sources = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<string>>(json, JsonSettings));
+                    
+                    sources.Sort();
+                    return sources;
                 }
 
                 return default;
-            }*/
-
-            // HARDCODED TO CONTINUE DEVELOPMENT
-            return await Task.FromResult(new List<string> { "1920" });
+            }
         }
 
         public async Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize, int? pageNumber)

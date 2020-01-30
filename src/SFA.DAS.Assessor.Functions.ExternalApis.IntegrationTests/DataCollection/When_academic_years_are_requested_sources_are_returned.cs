@@ -67,14 +67,24 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.IntegrationTests.DataCollectio
                 DataCollectionOptions.Object, 
                 DataCollectionServiceApiClientLogger.Object);
         }
-
-        [TestCase("2019-10-10", "1920")]
-        [TestCase("01/02/2020", "1920")]
-        [TestCase("06/08/2020", "1920,2021")]
-        [TestCase("06/10/2010", "2021")]
-        [TestCase("01/03/2021", "2021")]
-        public async Task Then_learner_details_are_retrieved(string dateTimeString, string expectedSources)
+        
+        [TestCase("01/02/2019", "1819")]
+        [TestCase("22/08/2019", "1819")]
+        [TestCase("23/08/2019", "1819,1920")] // These rollover dates are known by experimentation but do not align with published period dates
+        [TestCase("17/10/2019", "1819,1920")]
+        [TestCase("18/10/2019", "1920")]
+        [TestCase("22/08/2020", "1920")]
+        [TestCase("23/08/2020", "1920,2021")] // These rollover dates are guessed based on previous values, currently they fail
+        [TestCase("17/10/2020", "1920,2021")]
+        [TestCase("18/10/2020", "2021")]
+        [TestCase("01/02/2021", "2021")]
+        public async Task Then_correct_sources_are_retrieved(string dateTimeString, string expectedSources)
         {
+            // NOTE: These tests were originally written under the assumption that the Academic Years were calculated
+            // based on examples of currently known period dates; but the DC API actually calculates them based on data 
+            // which may or may not be present; so it is expected that ones which currently pass may fail in the future
+            // at which point they could be removed or replaced with other examples of known period dates.
+
             // Arrange
             var dateTime = DateTime.Parse(dateTimeString);
 
