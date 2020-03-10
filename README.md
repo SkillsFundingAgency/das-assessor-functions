@@ -10,6 +10,8 @@
 | Func  | Opportunity Finder DataSync - Scheduled rebuild of standard summary |
 | Func  | Migrator - Migrates applications to the QnA API (redundant) |
 
+See [Support Site](https://skillsfundingagency.atlassian.net/wiki/spaces/NDL/pages/1721008420/Assessor+Functions+-+Developer+Overview) for EFSA developer details.
+
 ### Developer Setup
 
 #### Requirements
