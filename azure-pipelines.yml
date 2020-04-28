@@ -3,9 +3,7 @@ trigger:
   branches:
     include:
       - "*"
-
-pr: none
-
+      
 workspace:
     clean: all
 
