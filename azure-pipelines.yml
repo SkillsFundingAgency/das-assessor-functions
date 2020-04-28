@@ -13,7 +13,8 @@ variables:
   - group: "ESFA - SonarCloud"
   - name: sonarCloudProjectKey
     value: "SkillsFundingAgency_das-assessor-functions"
-  buildConfiguration: 'release'
+  - name: buildConfiguration
+    value: 'release'
 
 pool:
   name: 'DAS - Continuous Integration'
