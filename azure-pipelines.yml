@@ -3,7 +3,7 @@ trigger:
   branches:
     include:
       - "*"
-      
+
 workspace:
     clean: all
 
@@ -40,9 +40,6 @@ steps:
     scannerMode: 'MSBuild'
     projectName: "$(Build.DefinitionName)"
     projectKey: "$(sonarCloudProjectKey)"
-    extraProperties: |
-      sonar.pullrequest.provider=GitHub
-      sonar.pullrequest.github.repository=$(Build.Repository.Name)
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet restore'
