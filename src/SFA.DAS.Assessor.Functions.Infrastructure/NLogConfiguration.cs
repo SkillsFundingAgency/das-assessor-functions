@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.IO;
-using Microsoft.Extensions.Configuration;
 using NLog;
 using NLog.Common;
 using NLog.Config;
@@ -11,10 +10,10 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure
 {
     public class NLogConfiguration
     {
-        public void ConfigureNLog(IConfiguration configuration)
+        public void ConfigureNLog()
         {
-            var appName = configuration.GetConnectionStringOrSetting("AppName");
-            var env = configuration.GetConnectionStringOrSetting("EnvironmentName");
+            var appName = Environment.GetEnvironmentVariable("AppName");
+            var env = Environment.GetEnvironmentVariable("EnvironmentName");
             var config = new LoggingConfiguration();
 
             if (string.IsNullOrEmpty(env) || env.Equals("LOCAL", StringComparison.CurrentCultureIgnoreCase))
