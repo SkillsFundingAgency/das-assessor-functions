@@ -11,7 +11,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task UpdateStandardSummary();
         Task SetAssessorSetting(string name, string value);
         Task<string> GetAssessorSetting(string name);
-        Task<ImportLearnerDetailResponse> ImportLearnerDetails(ImportLearnerDetailRequest request);
         Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest);
         Task ChangeStatusToPrinted(int batchNumber, IEnumerable<CertificateResponse> responses);
         Task CompleteSchedule(Guid scheduleRunId);
