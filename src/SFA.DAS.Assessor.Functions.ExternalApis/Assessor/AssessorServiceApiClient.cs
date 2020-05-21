@@ -24,27 +24,27 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             Client.BaseAddress = new Uri(options?.Value.ApiBaseAddress);
         }
 
-        public Task UpdateStandardSummary()
+        public async Task UpdateStandardSummary()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
             {
-                return PostPutRequest(request);
+                await PostPutRequest(request);
             }
         }
 
-        public Task SetAssessorSetting(string name, string value)
+        public async Task SetAssessorSetting(string name, string value)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"api/v1/assessor-setting/{name}/{value}"))
             {
-               return PostPutRequest(request);
+               await PostPutRequest(request);
             }
         }
 
-        public Task<string> GetAssessorSetting(string name)
+        public async Task<string> GetAssessorSetting(string name)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/assessor-setting/{name}"))
             {
-                return GetAsync<string>(request);
+                return await GetAsync<string>(request);
             }
         }
 
@@ -53,11 +53,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             return Client.BaseAddress.ToString();
         }
 
-        public Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest)
+        public async Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/batches"))
             {
-                return PostPutRequestWithResponse<CreateBatchLogRequest, BatchLogResponse>(request, createBatchLogRequest);
+                return await PostPutRequestWithResponse<CreateBatchLogRequest, BatchLogResponse>(request, createBatchLogRequest);
             }
         }
 
@@ -96,11 +96,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public Task<IEnumerable<CertificateResponse>> GetCertificatesToBePrinted()
+        public async Task<IEnumerable<CertificateResponse>> GetCertificatesToBePrinted()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/certificates/tobeprinted"))
             {
-                return GetAsync<IEnumerable<CertificateResponse>>(request);
+                return await GetAsync<IEnumerable<CertificateResponse>>(request);
             }
         }
 
@@ -122,35 +122,35 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public Task<BatchLogResponse> GetGetBatchLogByBatchNumber(string batchNumber)
+        public async Task<BatchLogResponse> GetGetBatchLogByBatchNumber(string batchNumber)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/{batchNumber}"))
             {
-                return GetAsync<BatchLogResponse>(request);
+                return await GetAsync<BatchLogResponse>(request);
             }
         }
 
-        public Task<ScheduleRun> GetSchedule(ScheduleType scheduleType)
+        public async Task<ScheduleRun> GetSchedule(ScheduleType scheduleType)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/schedule/runnow?scheduleType={(int)scheduleType}"))
             {
-                return GetAsync<ScheduleRun>(request);
+                return await GetAsync<ScheduleRun>(request);
             }
         }
 
-        public Task UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData)
+        public async Task UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/update-batch-data"))
             {
-                return PostPutRequest(request, new { Id = batchId, BatchData = batchData });
+                await PostPutRequest(request, new { Id = batchId, BatchData = batchData });
             }
         }
 
-        public Task<EMailTemplate> GetEmailTemplate(string templateName)
+        public async Task<EMailTemplate> GetEmailTemplate(string templateName)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/emailTemplates/{templateName}"))
             {
-                return GetAsync<EMailTemplate>(request);
+                return await GetAsync<EMailTemplate>(request);
             }
         }
     }
