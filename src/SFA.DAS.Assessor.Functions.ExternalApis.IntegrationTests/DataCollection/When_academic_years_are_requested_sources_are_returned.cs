@@ -17,7 +17,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.IntegrationTests.DataCollectio
     public class When_academic_years_are_requested_sources_are_returned 
     {
         protected Mock<IOptions<DataCollectionApiAuthentication>> DataCollectionOptions;
-        protected Mock<ILogger<DataCollectionServiceAnonymousApiClient>> DataCollectionServiceAnonymousApiClientLogger;
         protected Mock<ILogger<DataCollectionServiceApiClient>> DataCollectionServiceApiClientLogger;
 
         protected DataCollectionServiceApiClient Sut;
@@ -41,14 +40,15 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.IntegrationTests.DataCollectio
             DataCollectionOptions = new Mock<IOptions<DataCollectionApiAuthentication>>();
             DataCollectionOptions.Setup(p => p.Value).Returns(new DataCollectionApiAuthentication
             {
-                Username = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.Username)],
-                Password = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.Password)],
+                TenantId = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.TenantId)],
+                ClientId = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.ClientId)],
+                ClientSecret = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.ClientSecret)],
+                Scope = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.Scope)],
                 Version = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.Version)],
                 ApiBaseAddress = dataCollectionApiAuthentication[nameof(DataCollectionApiAuthentication.ApiBaseAddress)],
             });
 
             DataCollectionServiceApiClientLogger = new Mock<ILogger<DataCollectionServiceApiClient>>();
-            DataCollectionServiceAnonymousApiClientLogger = new Mock<ILogger<DataCollectionServiceAnonymousApiClient>>();
 
             // remove ssl client certfication checks
             var handler = new HttpClientHandler
@@ -56,14 +56,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.IntegrationTests.DataCollectio
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }
             };
 
-            var dataCollectionServiceAnonymousApiClient = new DataCollectionServiceAnonymousApiClient(
-                new HttpClient(handler), 
-                DataCollectionOptions.Object, 
-                DataCollectionServiceAnonymousApiClientLogger.Object);
-
             Sut = new DataCollectionServiceApiClient(
                 new HttpClient(handler), 
-                new DataCollectionTokenService(dataCollectionServiceAnonymousApiClient, DataCollectionOptions.Object), 
+                new DataCollectionTokenService(DataCollectionOptions.Object), 
                 DataCollectionOptions.Object, 
                 DataCollectionServiceApiClientLogger.Object);
         }

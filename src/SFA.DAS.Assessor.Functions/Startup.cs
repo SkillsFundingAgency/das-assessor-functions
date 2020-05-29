@@ -65,16 +65,6 @@ namespace SFA.DAS.Assessor.Functions
                     return handler;
                 });
 
-            builder.Services.AddHttpClient<IDataCollectionServiceAnonymousApiClient, DataCollectionServiceAnonymousApiClient>(client => {})
-                .ConfigurePrimaryHttpMessageHandler(() => {
-                    var handler = new HttpClientHandler();
-                    if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-                    {
-                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
-                    }
-                    return handler;
-                });
-
             builder.Services.AddScoped<IDataCollectionTokenService, DataCollectionTokenService>();
             builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
 
