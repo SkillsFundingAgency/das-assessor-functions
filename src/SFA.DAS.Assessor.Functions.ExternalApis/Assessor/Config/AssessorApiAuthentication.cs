@@ -1,4 +1,4 @@
-namespace SFA.DAS.Assessor.Functions.Infrastructure
+﻿namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
 {
     public class AssessorApiAuthentication
     {
