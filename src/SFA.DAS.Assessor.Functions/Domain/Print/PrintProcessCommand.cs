@@ -135,28 +135,25 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 }
                 else
                 {
-                    var certificateFileName =
-                        $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.json";
-                    var excelFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime()}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
-
                     var batchLogRequest = new CreateBatchLogRequest
                     {
                         BatchNumber = batchNumber,
                         FileUploadStartTime = DateTime.UtcNow,
                         Period = DateTime.UtcNow.UtcToTimeZoneTime().ToString("MMyy"),
-                        BatchCreated = DateTime.UtcNow,
-                        CertificatesFileName = certificateFileName
+                        BatchCreated = DateTime.UtcNow
                     };
 
                     if (_options.Value.UseJson)
                     {
-                        _printingJsonCreator.Create(batchNumber, certificates, certificateFileName);
-                        await _notificationService.Send(batchNumber, certificates, certificateFileName);
+                        batchLogRequest.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.json";
+                        _printingJsonCreator.Create(batchNumber, certificates, batchLogRequest.CertificatesFileName);
+                        await _notificationService.Send(batchNumber, certificates, batchLogRequest.CertificatesFileName);
                     }
                     else
                     {
+                        batchLogRequest.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
                         _printingSpreadsheetCreator.Create(batchNumber, certificates);
-                        await _notificationService.Send(batchNumber, certificates, excelFileName);
+                        await _notificationService.Send(batchNumber, certificates, batchLogRequest.CertificatesFileName);
                     }
 
                     batchLogRequest.FileUploadEndTime = DateTime.UtcNow;
