@@ -151,7 +151,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     }
                     else
                     {
-                        batchLogRequest.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime()}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
+                        batchLogRequest.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
                         _printingSpreadsheetCreator.Create(batchNumber, certificates);
                         await _notificationService.Send(batchNumber, certificates, batchLogRequest.CertificatesFileName);
                     }
