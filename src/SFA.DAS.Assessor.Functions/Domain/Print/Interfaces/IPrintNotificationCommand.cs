@@ -1,7 +1,7 @@
 ﻿
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
-    public interface IPrintingSpreadsheetCreator : IPrintCreator
-    {
+    public interface IPrintNotificationCommand : ICommand
+    {     
     }
 }

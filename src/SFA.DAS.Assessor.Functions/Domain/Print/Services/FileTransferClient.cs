@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
@@ -25,10 +26,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             IOptions<SftpSettings> options)
         {
             _logger = logger;
-            _sftpSettings = options?.Value;
+            _sftpSettings = options?.Value;            
         }
 
-        public void Send(MemoryStream memoryStream, string fileName)
+        public void Send(MemoryStream memoryStream, string file)
         {
             lock (_lock)
             {
@@ -41,39 +42,25 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                     memoryStream.Position = 0; // ensure memory stream is set to begining of stream          
 
-                    _logger.Log(LogLevel.Information, $"Uploading file ... {_sftpSettings.UploadDirectory}/{fileName}");
-                    sftpClient.UploadFile(memoryStream, $"{_sftpSettings.UploadDirectory}/{fileName}");
+                    _logger.Log(LogLevel.Information, $"Uploading file ... {file}");
+                    sftpClient.UploadFile(memoryStream, file);
 
-                    _logger.Log(LogLevel.Information, $"Validating Upload length of file ... {_sftpSettings.UploadDirectory}/{fileName} = {memoryStream.Length}");
-                    ValidateUpload(sftpClient, fileName, memoryStream.Length);
+                    _logger.Log(LogLevel.Information, $"Validating Upload length of file ... {file} = {memoryStream.Length}");
+                    ValidateUpload(sftpClient, file, memoryStream.Length);
 
                     _logger.Log(LogLevel.Information, $"Validated the upload ...");
                 }
             }
         }
 
-        public async Task LogUploadDirectory()
+        public async Task<List<string>> GetFileNames(string directory, string pattern)
         {
-            using (var sftpClient = new SftpClient(_sftpSettings.RemoteHost,
-                Convert.ToInt32(_sftpSettings.Port),
-                _sftpSettings.Username,
-                _sftpSettings.Password))
-            {
-                sftpClient.Connect();
+            var fileList = await GetFileNames(directory);
 
-                var fileList = await sftpClient.ListDirectoryAsync($"{_sftpSettings.UploadDirectory}");
-                var fileDetails = new StringBuilder();
-                foreach (var file in fileList)
-                {
-                    fileDetails.Append(file + "\r\n");
-                }
-
-                if (fileDetails.Length > 0)
-                    _logger.Log(LogLevel.Information, $"Uploaded Files to {_sftpSettings.UploadDirectory} Contains\r\n{fileDetails}");
-            }
+            return fileList.Where(f => Regex.IsMatch(f, pattern)).ToList();
         }
 
-        public async Task<List<string>> GetListOfDownloadedFiles()
+        public async Task<List<string>> GetFileNames(string directory)
         {
             using (var sftpClient = new SftpClient(_sftpSettings.RemoteHost,
                 Convert.ToInt32(_sftpSettings.Port),
@@ -81,22 +68,19 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 _sftpSettings.Password))
             {
                 sftpClient.Connect();
-                var fileList = await sftpClient.ListDirectoryAsync($"{_sftpSettings.ProofDirectory}");
+                var fileList = await sftpClient.ListDirectoryAsync(directory);
                 return fileList.Where(f => !f.IsDirectory).Select(file => file.Name).ToList();
             }
         }
 
-        public string DownloadFile(string fileName)
+        public string DownloadFile(string file)
         {
             var fileContent = string.Empty;
-            var fileToDownload = $"{_sftpSettings.ProofDirectory}/{fileName}";
 
             _logger.Log(LogLevel.Information, $"Connection = {_sftpSettings.RemoteHost}");
             _logger.Log(LogLevel.Information, $"Port = {_sftpSettings.Port}");
             _logger.Log(LogLevel.Information, $"Username = {_sftpSettings.Username}");
-            _logger.Log(LogLevel.Information, $"Upload Directory = {_sftpSettings.UploadDirectory}");
-            _logger.Log(LogLevel.Information, $"Proof Directory = {_sftpSettings.ProofDirectory}");
-            _logger.Log(LogLevel.Information, $"FileName = {fileToDownload}");
+            _logger.Log(LogLevel.Information, $"FileName = {file}");
 
             lock (_lock)
             {
@@ -107,11 +91,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 {
                     sftpClient.Connect();
 
-                    _logger.Log(LogLevel.Information, $"Downloading file ... {fileToDownload}");
+                    _logger.Log(LogLevel.Information, $"Downloading file ... {file}");
 
                     using (var stream = new MemoryStream())
                     {
-                        sftpClient.DownloadFile(fileToDownload, stream);
+                        sftpClient.DownloadFile(file, stream);
                         stream.Position = 0;
                         using (var reader = new StreamReader(stream, Encoding.UTF8))
                         {
@@ -124,10 +108,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return fileContent;
         }
 
-        public void DeleteFile(string filename)
-        {
-            var fileToDelete = $"{_sftpSettings.ProofDirectory}/{filename}";
-            _logger.Log(LogLevel.Information, $"Deleting successfully processed file [{fileToDelete}]");
+        public void DeleteFile(string file)
+        {            
+            _logger.Log(LogLevel.Information, $"Deleting successfully processed file [{file}]");
 
             lock (_lock)
             {
@@ -137,28 +120,27 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     _sftpSettings.Password))
                 {
                     sftpClient.Connect();
-                    sftpClient.DeleteFile(fileToDelete);
+                    sftpClient.DeleteFile(file);
                     sftpClient.Disconnect();
-                    _logger.Log(LogLevel.Information, $"Deleted successfully processed file [{fileToDelete}]");
+                    _logger.Log(LogLevel.Information, $"Deleted successfully processed file [{file}]");
                 }
             }
         }
 
-        private void ValidateUpload(SftpClient sftpClient, string fileName, long length)
+        private void ValidateUpload(SftpClient sftpClient, string file, long length)
         {
             using (var memoryStreamBack = new MemoryStream())
             {
-                sftpClient.DownloadFile($"{_sftpSettings.UploadDirectory}/{fileName}",
-                    memoryStreamBack);
+                sftpClient.DownloadFile(file, memoryStreamBack);
                 memoryStreamBack.Position = 0;
 
                 if (memoryStreamBack.Length != length)
                 {
-                    _logger.Log(LogLevel.Information, $"There has been  problem with the sftp file transfer with file name {_sftpSettings.UploadDirectory}/{fileName}");
+                    _logger.Log(LogLevel.Information, $"There has been  problem with the sftp file transfer with file name {file}");
                     throw new ApplicationException(
-                        $"There has been  problem with the sftp file transfer with file name {_sftpSettings.UploadDirectory}/{fileName}");
+                        $"There has been  problem with the sftp file transfer with file name {file}");
                 }
             }
-        }
+        }        
     }
 }

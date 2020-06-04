@@ -17,6 +17,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return string.Empty;
         }
 
+        public Task<List<string>> GetFileNames(string directory)
+        {
+            return Task.FromResult(new List<string>());
+        }
+
+        public Task<List<string>> GetFileNames(string directory, string pattern)
+        {
+            return Task.FromResult(new List<string>());
+        }
+
         public Task<List<string>> GetListOfDownloadedFiles()
         {
             return Task.FromResult(new List<string>());
@@ -27,7 +37,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return Task.CompletedTask;
         }
 
-        public void Send(MemoryStream memoryStream, string fileName)
+        public void Send(MemoryStream memoryStream, string file)
         {
             return;
         }

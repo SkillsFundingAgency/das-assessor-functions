@@ -30,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _certificateDetails = options?.Value;
         }
 
-        public void Create(int batchNumber, List<CertificateResponse> certificates, string fileName)
+        public void Create(int batchNumber, IEnumerable<Certificate> certificates, string file)
         {
             var printOutput = new PrintOutput
             {
@@ -42,19 +42,19 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 PrintData = new List<PrintData>()
             };
 
-            printOutput.Batch.TotalCertificateCount = certificates.Count;
+            printOutput.Batch.TotalCertificateCount = certificates.Count();
 
             var groupedByRecipient = certificates.GroupBy(c =>
                 new
                 {
-                    c.CertificateData.ContactName,
-                    c.CertificateData.ContactOrganisation,
-                    c.CertificateData.Department,
-                    c.CertificateData.ContactAddLine1,
-                    c.CertificateData.ContactAddLine2,
-                    c.CertificateData.ContactAddLine3,
-                    c.CertificateData.ContactAddLine4,
-                    c.CertificateData.ContactPostCode
+                    c.ContactName,
+                    c.ContactOrganisation,
+                    c.Department,
+                    c.ContactAddLine1,
+                    c.ContactAddLine2,
+                    c.ContactAddLine3,
+                    c.ContactAddLine4,
+                    c.ContactPostCode
                 }).ToList();
 
             printOutput.Batch.PostalContactCount = groupedByRecipient.Count;
@@ -90,31 +90,31 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 g.ToList().ForEach(c =>
                 {
                     var learnerName =
-                        !string.IsNullOrEmpty(c.CertificateData.FullName)
-                            ? c.CertificateData.FullName
-                            : $"{c.CertificateData.LearnerGivenNames} {c.CertificateData.LearnerFamilyName}";
+                        !string.IsNullOrEmpty(c.FullName)
+                            ? c.FullName
+                            : $"{c.LearnerGivenNames} {c.LearnerFamilyName}";
 
                     var gradeText = string.Empty;
                     var grade = string.Empty;
 
-                    if (!string.IsNullOrWhiteSpace(c.CertificateData.OverallGrade) && c.CertificateData.OverallGrade != "No grade awarded")
+                    if (!string.IsNullOrWhiteSpace(c.OverallGrade) && c.OverallGrade != "No grade awarded")
                     {
                         gradeText = "Achieved grade ";
-                        grade = c.CertificateData.OverallGrade;
+                        grade = c.OverallGrade;
                     }
 
                     printData.Certificates.Add(new PrintCertificate
                     {
                         CertificateNumber = c.CertificateReference,
-                        ApprenticeName = $"{c.CertificateData.LearnerGivenNames.ProperCase()} {c.CertificateData.LearnerFamilyName.ProperCase(true)}",
+                        ApprenticeName = $"{c.LearnerGivenNames.ProperCase()} {c.LearnerFamilyName.ProperCase(true)}",
                         LearningDetails = new LearningDetails()
                         {
-                            StandardTitle = c.CertificateData.StandardName,
-                            Level = $"LEVEL {c.CertificateData.StandardLevel}",
-                            Option = string.IsNullOrWhiteSpace(c.CertificateData?.CourseOption) ? string.Empty : $"({c.CertificateData.CourseOption}):",
+                            StandardTitle = c.StandardName,
+                            Level = $"LEVEL {c.StandardLevel}",
+                            Option = string.IsNullOrWhiteSpace(c.CourseOption) ? string.Empty : $"({c.CourseOption}):",
                             GradeText = gradeText,
                             Grade = grade,
-                            AchievementDate = $"{c.CertificateData.AchievementDate.Value:dd MMMM yyyy}",
+                            AchievementDate = $"{c.AchievementDate.Value:dd MMMM yyyy}",
                         }
                     });
                 });
@@ -128,7 +128,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             using (var mystream = new MemoryStream(array))
             {
                 _logger.Log(LogLevel.Information, "Sending Certificates to print Json ....");
-                _fileTransferClient.Send(mystream, fileName);
+                _fileTransferClient.Send(mystream, file);
+            }
+
+            // update certificates status
+            foreach(var certificate in certificates)
+            {
+                certificate.Status = "Sent to Printer";
             }
         }
     }

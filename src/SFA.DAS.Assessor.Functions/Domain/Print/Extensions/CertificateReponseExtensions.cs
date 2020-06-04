@@ -1,39 +1,37 @@
 ﻿using Microsoft.Extensions.Logging;
-using SFA.DAS.Assessor.Functions.ApiClient.Types;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using System.Collections.Generic;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
 {
-    public static class CertificateReponseExtensions
+    public static class CertificateExtensions
     {
-        public static List<CertificateResponse> Sanitise(this List<CertificateResponse> certificateResponses, ILogger logger)
+        public static List<Certificate> Sanitise(this List<Certificate> certificates, ILogger logger)
         {
-            var sanitisedCertificateResponse = new List<CertificateResponse>();
+            var sanitisedCertificates = new List<Certificate>();
 
-            foreach (var certificateResponse in certificateResponses)
+            foreach (var certificate in certificates)
             {
                 var errorFlag = false;
 
-                logger.Log(LogLevel.Information, $"Sanitising Certificate - {certificateResponse.CertificateReference} ...");
+                logger.Log(LogLevel.Information, $"Sanitising Certificate - {certificate.CertificateReference} ...");
 
-                var certificateData = certificateResponse.CertificateData;
-                if (string.IsNullOrEmpty(certificateData.ContactAddLine1))
+                if (string.IsNullOrEmpty(certificate.ContactAddLine1))
                 {
                     errorFlag = true;
                 }
 
-                if (string.IsNullOrEmpty(certificateData.ContactPostCode))
+                if (string.IsNullOrEmpty(certificate.ContactPostCode))
                 {
                     errorFlag = true;
                 }
 
                 if (errorFlag)
                 {
-                    if (!string.IsNullOrEmpty(certificateData.LearnerGivenNames)
-                        && !string.IsNullOrEmpty(certificateData.LearnerFamilyName))
+                    if (!string.IsNullOrEmpty(certificate.LearnerGivenNames)
+                        && !string.IsNullOrEmpty(certificate.LearnerFamilyName))
                     {
-                        logger.Log(LogLevel.Information, $"Unprintable Certificate -> Given Names = {certificateData.LearnerGivenNames} Family Name = {certificateData.LearnerFamilyName} - Cannot be processed");
+                        logger.Log(LogLevel.Information, $"Unprintable Certificate -> Given Names = {certificate.LearnerGivenNames} Family Name = {certificate.LearnerFamilyName} - Cannot be processed");
                     }
                     else
                     {
@@ -42,11 +40,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
                 }
                 else
                 {
-                    sanitisedCertificateResponse.Add(certificateResponse);
+                    sanitisedCertificates.Add(certificate);
                 }
             }
 
-            return sanitisedCertificateResponse;
+            return sanitisedCertificates;
         }
     }
 }

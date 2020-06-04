@@ -57,15 +57,19 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
             builder.Services.Configure<NotificationsApiClientConfiguration>(config.GetSection("NotificationsApiClientConfiguration"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
-            builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
+            builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));          
 
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();
             builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
             builder.Services.AddTransient<IDataAccess, DataAccess>();
             builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            builder.Services.AddScoped<IBatchClient, BatchClient>();
+            builder.Services.AddScoped<ICertificateClient, CertificateClient>();
+            builder.Services.AddScoped<IScheduleClient, ScheduleClient>();
 
             if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
             {
+                //builder.Services.AddTransient<IFileTransferClient, FileTransferClient>();
                 builder.Services.AddTransient<IFileTransferClient, NullFileTransferClient>();
             }
             else
@@ -75,6 +79,8 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintingSpreadsheetCreator, PrintingSpreadsheetCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
+            builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
+            builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
 
             builder.Services.AddTransient((s) =>
             {

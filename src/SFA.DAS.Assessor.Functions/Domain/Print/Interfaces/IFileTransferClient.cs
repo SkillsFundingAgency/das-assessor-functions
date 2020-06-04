@@ -6,10 +6,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
     public interface IFileTransferClient
     {
-        void Send(MemoryStream memoryStream, string fileName);
-        Task LogUploadDirectory();
-        Task<List<string>> GetListOfDownloadedFiles();
-        string DownloadFile(string filename);
-        void DeleteFile(string filename);
+        void Send(MemoryStream memoryStream, string file);
+        Task<List<string>> GetFileNames(string directory);
+        Task<List<string>> GetFileNames(string directory, string pattern);
+        string DownloadFile(string file);
+        void DeleteFile(string file);
     }
 }
