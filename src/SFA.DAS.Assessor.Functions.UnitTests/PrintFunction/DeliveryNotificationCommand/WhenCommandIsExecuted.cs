@@ -5,11 +5,12 @@ using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificationCommand
@@ -24,9 +25,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         private Mock<IOptions<SftpSettings>> _mockSftpSettings;
 
         private int _batchNumber = 1;
-        private Guid _scheduleId = Guid.NewGuid();
         private List<string> _downloadedFiles;
-        private Guid _batchLogResponseId;
         private SftpSettings _sftpSettings;
 
         [SetUp]
@@ -118,18 +117,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
         }
 
-        //[Test]
-        //public async Task ThenItShouldProcessAndDeleteDeliveryNotificationFiles()
-        //{
-        //    // Arrange
+        [Test]
+        public async Task ThenItShouldProcessAndDeleteDeliveryNotificationFiles()
+        {
+            // Arrange
 
-        //    // Act
-        //    await _sut.Execute();
+            // Act
+            await _sut.Execute();
 
-        //    // Assert
-        //    _mockAssessorServiceApiClient.Verify(m => m.UpdateBatchDataInBatchLog(_batchLogResponseId, It.Is<BatchData>(b => b.BatchNumber.Equals(_batchNumber))), Times.Exactly(_downloadedFiles.Count));
-        //    _mockFileTransferClient.Verify(m => m.DeleteFile(It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
-        //}
-
+            // Assert
+            _mockCertificateClient.Verify(m => m.Save(It.Is<IEnumerable<Certificate>>(c => c.ToList().Where(i => i.BatchId == _batchNumber).Count().Equals(1))), Times.Exactly(_downloadedFiles.Count));
+            _mockFileTransferClient.Verify(m => m.DeleteFile(It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
+        }
     }
 }

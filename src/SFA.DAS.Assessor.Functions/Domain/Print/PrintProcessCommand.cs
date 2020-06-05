@@ -25,7 +25,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
 
-        public PrintProcessCommand(ILogger<PrintProcessCommand> logger,
+        public PrintProcessCommand(
+            ILogger<PrintProcessCommand> logger,
             IPrintingJsonCreator printingJsonCreator,
             IPrintingSpreadsheetCreator printingSpreadsheetCreator,
             IBatchClient batchClient,

@@ -24,7 +24,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         // printResponse-MMYY-XXXXXX.json where XXX = 001, 002... 999999 etc
         private const string LegacyFilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{4}-[0-9]{1,6}.json";
 
-        public PrintNotificationCommand(ILogger<PrintNotificationCommand> logger,
+        public PrintNotificationCommand(
+            ILogger<PrintNotificationCommand> logger,
             IBatchClient batchClient,
             IFileTransferClient fileTransferClient,
             IOptions<SftpSettings> options)
@@ -37,6 +38,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         public async Task Execute()
         {
+            _logger.Log(LogLevel.Information, "Print Response Notification Function Started");
+
             if (_sftpSettings.UseJson)
             {
                 await Process(_sftpSettings.PrintResponseDirectory, FilePattern, (f) => ProcessFile(f));
@@ -123,7 +126,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
             if (batch == null)
             {
-                throw new FileFormatValidationException($"Could not match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
+                throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
             }
 
             batch.BatchCreated = batchResponse.Batch.BatchDate;

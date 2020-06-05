@@ -21,7 +21,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
 
-        public DeliveryNotificationCommand(ILogger<DeliveryNotificationCommand> logger,
+        public DeliveryNotificationCommand(
+            ILogger<DeliveryNotificationCommand> logger,
             ICertificateClient certificateClient,
             IFileTransferClient fileTransferClient,
             IOptions<SftpSettings> options)
