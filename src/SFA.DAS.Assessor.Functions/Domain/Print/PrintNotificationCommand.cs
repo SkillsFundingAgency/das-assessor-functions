@@ -8,6 +8,7 @@ using System.Linq;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -17,6 +18,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IBatchClient _batchClient;
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
+
+        // PrintResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
+        private const string FilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{1,6}-[0-9]{10}.json";
+        // printResponse-MMYY-XXXXXX.json where XXX = 001, 002... 999999 etc
+        private const string LegacyFilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{4}-[0-9]{1,6}.json";
 
         public PrintNotificationCommand(ILogger<PrintNotificationCommand> logger,
             IBatchClient batchClient,
@@ -31,21 +37,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         public async Task Execute()
         {
-            string directoryName;
-            string filePattern;
             if (_sftpSettings.UseJson)
             {
-                directoryName = _sftpSettings.PrintResponseDirectory;
-                // PrintResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
-                filePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{1,6}-[0-9]{10}.json";
+                await Process(_sftpSettings.PrintResponseDirectory, FilePattern, (f) => ProcessFile(f));
             }
             else
             {
-                directoryName = _sftpSettings.ProofDirectory;
-                // printResponse-MMYY-XXXXXX.json where XXX = 001, 002... 999999 etc
-                filePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{4}-[0-9]{1,6}.json";
-            }
-            
+                await Process(_sftpSettings.ProofDirectory, LegacyFilePattern, (f) => ProcessLegacyFile(f));
+            }            
+        }
+
+        private async Task Process(string directoryName, string filePattern, Func<PrintNotificationFileInfo, Task<Batch>> processFile)
+        {
             var fileNames = await _fileTransferClient.GetFileNames(directoryName, filePattern);
 
             if (!fileNames.Any())
@@ -56,39 +59,40 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
             foreach (var fileName in fileNames)
             {
-                if (_sftpSettings.UseJson)
+                var fileInfo = new PrintNotificationFileInfo(_fileTransferClient.DownloadFile($"{directoryName}/{fileName}"), fileName);
+
+                try
                 {
-                    await ProcessFile(fileName);
+                    var batch = await processFile(fileInfo);
+                    await _batchClient.Save(batch);
+                    _fileTransferClient.DeleteFile($"{directoryName}/{fileName}");
                 }
-                else
+                catch (FileFormatValidationException ex)
                 {
-                    await ProcessLegacyFile(fileName);
+                    _logger.Log(LogLevel.Information,ex.Message);
                 }
             }
         }
 
-        private async Task ProcessFile(string fileName)
+        private async Task<Batch> ProcessFile(PrintNotificationFileInfo file)
         {
-            var printNotification = JsonConvert.DeserializeObject<PrintNotification>(_fileTransferClient.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{fileName}"));
+            var printNotification = JsonConvert.DeserializeObject<PrintNotification>(file.FileContent);
 
             if (printNotification?.Batch == null || printNotification.Batch.BatchDate == DateTime.MinValue)
             {
-                _logger.Log(LogLevel.Information, $"Could not process print notifications due to invalid file format [{fileName}]");
-                return;
+                throw new FileFormatValidationException($"Could not process print notifications due to invalid file format [{file.FileName}]");
             }
 
             if (!int.TryParse(printNotification.Batch.BatchNumber, out int batchNumberToInt))
             {
-                _logger.Log(LogLevel.Information, $"Could not process print notifications the Batch Number is not an integer [{printNotification.Batch.BatchNumber}]");
-                return;
+                throw new FileFormatValidationException($"Could not process print notifications the Batch Number is not an integer [{printNotification.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
             var batch = await _batchClient.Get(batchNumberToInt);
 
             if (batch == null)
             {
-                _logger.Log(LogLevel.Information, $"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{fileName}]");
-                return;
+                throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
             }
 
             batch.BatchCreated = printNotification.Batch.BatchDate;
@@ -98,35 +102,28 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             batch.DateOfResponse = DateTime.UtcNow;
             batch.Status = "Printed";
 
-            await _batchClient.Save(batch);
-
-            _fileTransferClient.DeleteFile($"{_sftpSettings.PrintResponseDirectory}/{fileName}");
+            return batch;
         }
 
-        private async Task ProcessLegacyFile(string fileName)
+        private async Task<Batch> ProcessLegacyFile(PrintNotificationFileInfo file)
         {
-            var stringBatchResponse = _fileTransferClient.DownloadFile($"{_sftpSettings.ProofDirectory}/{fileName}");
-
-            var batchResponse = JsonConvert.DeserializeObject<BatchResponse>(stringBatchResponse);
+            var batchResponse = JsonConvert.DeserializeObject<BatchResponse>(file.FileContent);
 
             if (batchResponse?.Batch == null || batchResponse.Batch.BatchDate == DateTime.MinValue)
             {
-                _logger.Log(LogLevel.Information, $"Could not process downloaded file due to invalid file format [{fileName}]");
-                return;
+                throw new FileFormatValidationException($"Could not process downloaded file due to invalid file format [{file.FileName}]");
             }
 
             if (!int.TryParse(batchResponse.Batch.BatchNumber, out int batchNumberToInt))
             {
-                _logger.Log(LogLevel.Information, $"The Batch Number is not an integer [{batchResponse.Batch.BatchNumber}]");
-                return;
+                throw new FileFormatValidationException($"The Batch Number is not an integer [{batchResponse.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
             var batch = await _batchClient.Get(batchNumberToInt);
 
             if (batch == null)
             {
-                _logger.Log(LogLevel.Information, $"Could not match an existing batch Log Batch Number [{batchNumberToInt}]");
-                return;
+                throw new FileFormatValidationException($"Could not match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
             }
 
             batch.BatchCreated = batchResponse.Batch.BatchDate;
@@ -137,9 +134,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             batch.DateOfResponse = DateTime.UtcNow;
             batch.Status = "Printed";
 
-            await _batchClient.Save(batch);
-
-            _fileTransferClient.DeleteFile($"{_sftpSettings.ProofDirectory}/{fileName}");
+            return batch;
         }
     }
 }
