@@ -15,7 +15,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     public class PrintNotificationCommand : IPrintNotificationCommand
     {
         private readonly ILogger<PrintNotificationCommand> _logger;
-        private readonly IBatchClient _batchClient;
+        private readonly IBatchService _batchService;
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
 
@@ -26,12 +26,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         public PrintNotificationCommand(
             ILogger<PrintNotificationCommand> logger,
-            IBatchClient batchClient,
+            IBatchService batchService,
             IFileTransferClient fileTransferClient,
             IOptions<SftpSettings> options)
         {
             _logger = logger;
-            _batchClient = batchClient;
+            _batchService = batchService;
             _fileTransferClient = fileTransferClient;
             _sftpSettings = options?.Value;
         }
@@ -67,7 +67,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 try
                 {
                     var batch = await processFile(fileInfo);
-                    await _batchClient.Save(batch);
+                    await _batchService.Save(batch);
                     _fileTransferClient.DeleteFile($"{directoryName}/{fileName}");
                 }
                 catch (FileFormatValidationException ex)
@@ -91,7 +91,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 throw new FileFormatValidationException($"Could not process print notifications the Batch Number is not an integer [{printNotification.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
-            var batch = await _batchClient.Get(batchNumberToInt);
+            var batch = await _batchService.Get(batchNumberToInt);
 
             if (batch == null)
             {
@@ -122,7 +122,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 throw new FileFormatValidationException($"The Batch Number is not an integer [{batchResponse.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
-            var batch = await _batchClient.Get(batchNumberToInt);
+            var batch = await _batchService.Get(batchNumberToInt);
 
             if (batch == null)
             {

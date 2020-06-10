@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class ScheduleClient : IScheduleClient
+    public class ScheduleService : IScheduleService
     {
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
 
-        public ScheduleClient(IAssessorServiceApiClient assessorServiceApiClient)
+        public ScheduleService(IAssessorServiceApiClient assessorServiceApiClient)
         {
             _assessorServiceApiClient = assessorServiceApiClient;
         }

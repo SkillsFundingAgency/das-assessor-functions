@@ -9,7 +9,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
         ToBePrinted
     }
 
-    public interface ICertificateClient
+    public interface ICertificateService
     {
         Task<IEnumerable<Certificate>> Get(CertificateStatus status);
         Task Save(IEnumerable<Certificate> certificates);

@@ -17,9 +17,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly ILogger<PrintProcessCommand> _logger;
         private readonly IPrintingSpreadsheetCreator _printingSpreadsheetCreator;
         private readonly IPrintingJsonCreator _printingJsonCreator;
-        private readonly IBatchClient _batchClient;
-        private readonly ICertificateClient _certificateClient;
-        private readonly IScheduleClient _scheduleClient;
+        private readonly IBatchService _batchService;
+        private readonly ICertificateService _certificateService;
+        private readonly IScheduleService _scheduleService;
         
         private readonly INotificationService _notificationService;
         private readonly IFileTransferClient _fileTransferClient;
@@ -29,9 +29,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             ILogger<PrintProcessCommand> logger,
             IPrintingJsonCreator printingJsonCreator,
             IPrintingSpreadsheetCreator printingSpreadsheetCreator,
-            IBatchClient batchClient,
-            ICertificateClient certificateClient,
-            IScheduleClient scheduleClient,
+            IBatchService batchService,
+            ICertificateService certificateService,
+            IScheduleService scheduleService,
             INotificationService notificationService,
             IFileTransferClient fileTransferClient,
             IOptions<SftpSettings> options)
@@ -39,9 +39,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _logger = logger;
             _printingJsonCreator = printingJsonCreator;
             _printingSpreadsheetCreator = printingSpreadsheetCreator;
-            _certificateClient = certificateClient;
-            _batchClient = batchClient;
-            _scheduleClient = scheduleClient;
+            _certificateService = certificateService;
+            _batchService = batchService;
+            _scheduleService = scheduleService;
             _notificationService = notificationService;
             _fileTransferClient = fileTransferClient;
             _sftpSettings = options?.Value;
@@ -53,15 +53,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             {
                 _logger.Log(LogLevel.Information, "Print Process Function Started");
 
-                var schedule = await _scheduleClient.Get();
+                var schedule = await _scheduleService.Get();
                 if (schedule == null)
                 {
                     _logger.Log(LogLevel.Information, "Print Function not scheduled to run at this time.");
                     return;
                 }
 
-                var batchNumber = await _batchClient.NextBatchId();
-                var certificates = (await _certificateClient.Get(Interfaces.CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
+                var batchNumber = await _batchService.NextBatchId();
+                var certificates = (await _certificateService.Get(Interfaces.CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
 
                 if (certificates.Count == 0)
                 {
@@ -104,9 +104,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     batch.NumberOfCoverLetters = 0;
 
                     LogUploadedFiles(uploadedFileNames, uploadDirectory);
-                    await _batchClient.Save(batch);
+                    await _batchService.Save(batch);
                 }
-                await _scheduleClient.Save(schedule);
+                await _scheduleService.Save(schedule);
             }
             catch (Exception e)
             {

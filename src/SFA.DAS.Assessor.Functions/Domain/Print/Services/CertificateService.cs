@@ -10,11 +10,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
 
 
-    public class CertificateClient : ICertificateClient
+    public class CertificateService : ICertificateService
     {
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
 
-        public CertificateClient(IAssessorServiceApiClient assessorServiceApiClient)
+        public CertificateService(IAssessorServiceApiClient assessorServiceApiClient)
         {
             _assessorServiceApiClient = assessorServiceApiClient;
         }
@@ -48,7 +48,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             var certificateResponses = await _assessorServiceApiClient.GetCertificatesToBePrinted();
 
-            return certificateResponses.Select(c => Map(c));
+            return certificateResponses.Select(Map);
         }
 
         private Certificate Map(CertificateResponse response)

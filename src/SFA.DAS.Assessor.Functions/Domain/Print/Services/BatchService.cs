@@ -8,11 +8,11 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class BatchClient : IBatchClient
+    public class BatchService : IBatchService
     {
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
 
-        public BatchClient(IAssessorServiceApiClient assessorServiceApiClient)
+        public BatchService(IAssessorServiceApiClient assessorServiceApiClient)
         {
             _assessorServiceApiClient = assessorServiceApiClient;
         }
@@ -47,6 +47,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             return response.BatchNumber + 1;
         }
+
         public async Task Save(Batch batch)
         {
             if (!batch.Id.HasValue) // is new

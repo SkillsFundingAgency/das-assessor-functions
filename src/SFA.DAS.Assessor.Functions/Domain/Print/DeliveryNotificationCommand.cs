@@ -17,18 +17,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         const string FilePattern = @"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn]-[0-9]{10}.json";
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
-        private readonly ICertificateClient _certificateClient;
+        private readonly ICertificateService _certificateService;
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
 
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
-            ICertificateClient certificateClient,
+            ICertificateService certificateService,
             IFileTransferClient fileTransferClient,
             IOptions<SftpSettings> options)
         {
             _logger = logger;
-            _certificateClient = certificateClient;
+            _certificateService = certificateService;
             _fileTransferClient = fileTransferClient;
             _sftpSettings = options?.Value;
         }
@@ -66,7 +66,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 return;
             }
 
-            await _certificateClient.Save(receipt.DeliveryNotifications.Select(n => new Certificate
+            await _certificateService.Save(receipt.DeliveryNotifications.Select(n => new Certificate
             {
                 BatchId = n.BatchID,
                 CertificateReference = n.CertificateNumber,

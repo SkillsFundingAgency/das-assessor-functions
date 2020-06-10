@@ -3,9 +3,10 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
-    public interface IScheduleClient
+    public interface IBatchService
     {
-        Task<Schedule> Get();
-        Task Save(Schedule schedule);
+        Task<Batch> Get(int batchNumber);
+        Task Save(Batch batch);
+        Task<int> NextBatchId();
     }
 }

@@ -63,13 +63,12 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
             builder.Services.AddTransient<IDataAccess, DataAccess>();
             builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
-            builder.Services.AddScoped<IBatchClient, BatchClient>();
-            builder.Services.AddScoped<ICertificateClient, CertificateClient>();
-            builder.Services.AddScoped<IScheduleClient, ScheduleClient>();
+            builder.Services.AddScoped<IBatchService, BatchService>();
+            builder.Services.AddScoped<ICertificateService, CertificateService>();
+            builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
             if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-            {
-                //builder.Services.AddTransient<IFileTransferClient, FileTransferClient>();
+            {                
                 builder.Services.AddTransient<IFileTransferClient, NullFileTransferClient>();
             }
             else

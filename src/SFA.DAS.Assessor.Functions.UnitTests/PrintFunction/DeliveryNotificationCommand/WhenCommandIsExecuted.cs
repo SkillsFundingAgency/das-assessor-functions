@@ -20,7 +20,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         private Domain.Print.DeliveryNotificationCommand _sut;
 
         private Mock<ILogger<Domain.Print.DeliveryNotificationCommand>> _mockLogger;
-        private Mock<ICertificateClient> _mockCertificateClient;
+        private Mock<ICertificateService> _mockCertificateService;
         private Mock<IFileTransferClient> _mockFileTransferClient;
         private Mock<IOptions<SftpSettings>> _mockSftpSettings;
 
@@ -32,7 +32,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger<Domain.Print.DeliveryNotificationCommand>>();
-            _mockCertificateClient = new Mock<ICertificateClient>();
+            _mockCertificateService = new Mock<ICertificateService>();
             _mockFileTransferClient = new Mock<IFileTransferClient>();
             _mockSftpSettings = new Mock<IOptions<SftpSettings>>();
 
@@ -60,7 +60,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
 
             _sut = new Domain.Print.DeliveryNotificationCommand(
                 _mockLogger.Object,
-                _mockCertificateClient.Object,
+                _mockCertificateService.Object,
                 _mockFileTransferClient.Object,
                 _mockSftpSettings.Object
                 );
@@ -126,7 +126,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             await _sut.Execute();
 
             // Assert
-            _mockCertificateClient.Verify(m => m.Save(It.Is<IEnumerable<Certificate>>(c => c.ToList().Where(i => i.BatchId == _batchNumber).Count().Equals(1))), Times.Exactly(_downloadedFiles.Count));
+            _mockCertificateService.Verify(m => m.Save(It.Is<IEnumerable<Certificate>>(c => c.ToList().Where(i => i.BatchId == _batchNumber).Count().Equals(1))), Times.Exactly(_downloadedFiles.Count));
             _mockFileTransferClient.Verify(m => m.DeleteFile(It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
         }
     }

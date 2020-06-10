@@ -19,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         private Domain.Print.PrintNotificationCommand _sut;
 
         private Mock<ILogger<Domain.Print.PrintNotificationCommand>> _mockLogger;
-        private Mock<IBatchClient> _mockBatchClient;
+        private Mock<IBatchService> _mockBatchService;
         private Mock<IFileTransferClient> _mockFileTransferClient;
         private Mock<IOptions<SftpSettings>> _mockSftpSettings;
 
@@ -31,7 +31,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger<Domain.Print.PrintNotificationCommand>>();
-            _mockBatchClient = new Mock<IBatchClient>();
+            _mockBatchService = new Mock<IBatchService>();
             _mockFileTransferClient = new Mock<IFileTransferClient>();
             _mockSftpSettings = new Mock<IOptions<SftpSettings>>();
 
@@ -64,13 +64,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(_downloadedFiles);
 
-            _mockBatchClient
+            _mockBatchService
                 .Setup(m => m.Get(_batchNumber))
                 .ReturnsAsync(new Batch { BatchNumber = _batchNumber });
 
             _sut = new Domain.Print.PrintNotificationCommand(
                 _mockLogger.Object,
-                _mockBatchClient.Object,
+                _mockBatchService.Object,
                 _mockFileTransferClient.Object,
                 _mockSftpSettings.Object
                 );
@@ -152,7 +152,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                    }
                }));
 
-            _mockBatchClient
+            _mockBatchService
                .Setup(m => m.Get(_batchNumber))
                .Returns(Task.FromResult<Batch>(null));
 
@@ -205,7 +205,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             await _sut.Execute();
 
             // Assert
-            _mockBatchClient.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
+            _mockBatchService.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
             _mockFileTransferClient.Verify(m => m.DeleteFile(It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
         }
     }
