@@ -44,18 +44,22 @@
             "metadata": {
                 "description": "PrintFunctionFlowFunction CRON Schedule e.g. 0 */15 * * * *"
             }
+			,
+            "defaultValue": "0 */15 * * * *"
         },
         "printNotificationFunctionSchedule": {
             "type": "string",
             "metadata": {
                 "description": "PrintNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
-            }
+            },
+            "defaultValue": "0 13 * * * *"
         },
         "deliveryNotificationFunctionFunctionSchedule": {
             "type": "string",
             "metadata": {
                 "description": "DeliveryNotificationFunctionFunction CRON Schedule e.g. 0 */15 * * * *"
-            }
+            },
+            "defaultValue": "0 15 * * * *"
         },
         "appServicePlanSize": {
             "type": "string",
