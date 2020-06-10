@@ -159,7 +159,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     batchLogRequest.FileUploadEndTime = DateTime.UtcNow;
                     batchLogRequest.NumberOfCertificates = certificates.Count;
                     batchLogRequest.NumberOfCoverLetters = 0;
-                    batchLogRequest.ScheduledDate = batchLogResponse.ScheduledDate;
+                    batchLogRequest.ScheduledDate = scheduleRun.RunTime;
 
                     await _fileTransferClient.LogUploadDirectory();
                     await _assessorServiceApi.CreateBatchLog(batchLogRequest);
