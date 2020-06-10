@@ -39,6 +39,24 @@
         "configurationStorageConnectionString": {
             "type": "securestring"
         },
+        "printFunctionFlowFunctionSchedule": {
+            "type": "string",
+            "metadata": {
+                "description": "PrintFunctionFlowFunction CRON Schedule e.g. 0 */15 * * * *"
+            }
+        },
+        "printNotificationFunctionSchedule": {
+            "type": "string",
+            "metadata": {
+                "description": "PrintNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
+            }
+        },
+        "deliveryNotificationFunctionFunctionSchedule": {
+            "type": "string",
+            "metadata": {
+                "description": "DeliveryNotificationFunctionFunction CRON Schedule e.g. 0 */15 * * * *"
+            }
+        },
         "appServicePlanSize": {
             "type": "string",
             "allowedValues": [
@@ -165,6 +183,18 @@
                             {
                                 "name": "FUNCTIONS_WORKER_RUNTIME",
                                 "value": "dotnet"
+                            },
+                            {
+                                "name": "PrintFunctionFlowFunctionSchedule",
+                                "value": "[parameters('printFunctionFlowFunctionSchedule')]"
+                            },
+                            {
+                                "name": "PrintNotificationFunctionSchedule",
+                                "value": "[parameters('PrintNotificationFunctionSchedule')]"
+                            },
+                            {
+                                "name": "DeliveryNotificationFunctionSchedule",
+                                "value": "[parameters('deliveryNotificationFunctionSchedule')]"
                             }
                         ]
                     }
