@@ -39,10 +39,10 @@
         "configurationStorageConnectionString": {
             "type": "securestring"
         },
-        "printFunctionFlowFunctionSchedule": {
+        "printFunctionFlowSchedule": {
             "type": "string",
             "metadata": {
-                "description": "PrintFunctionFlowFunction CRON Schedule e.g. 0 */15 * * * *"
+                "description": "PrintFunctionFlow CRON Schedule e.g. 0 */15 * * * *"
             }
 			,
             "defaultValue": "0 */15 * * * *"
@@ -189,8 +189,8 @@
                                 "value": "dotnet"
                             },
                             {
-                                "name": "PrintFunctionFlowFunctionSchedule",
-                                "value": "[parameters('printFunctionFlowFunctionSchedule')]"
+                                "name": "PrintFunctionFlowSchedule",
+                                "value": "[parameters('printFunctionFlowSchedule')]"
                             },
                             {
                                 "name": "PrintNotificationFunctionSchedule",
