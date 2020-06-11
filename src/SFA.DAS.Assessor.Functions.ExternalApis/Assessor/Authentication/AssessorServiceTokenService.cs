@@ -6,12 +6,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
 {
     public class AssessorServiceTokenService : IAssessorServiceTokenService
     {
-        private readonly AssessorApiAuthentication _assessorApiAuthenticationOptions;
         private readonly IConfiguration _configuration;
+        private readonly AssessorApiAuthentication _assessorApiAuthenticationOptions;
 
-        public AssessorServiceTokenService(AssessorApiAuthentication assessorApiAuthenticationOptions, IConfiguration configuaration)
+        public AssessorServiceTokenService(IOptions<AssessorApiAuthentication> options, IConfiguration configuaration)
         {
-            _assessorApiAuthenticationOptions = assessorApiAuthenticationOptions;
+            _assessorApiAuthenticationOptions = options?.Value;
             _configuration = configuaration;
         }
 

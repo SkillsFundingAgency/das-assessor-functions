@@ -215,8 +215,9 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             try {
 
             assessorConnection.Execute(@"INSERT INTO Contacts (Id, CreatedAt, DisplayName, Email, OrganisationId, Status, UpdatedAt, Username, GivenNames, FamilyName, SignInType, SignInId) 
-                    VALUES (NEWID(), @CreatedAt, @DisplayName, @Email, @OrganisationId, 'Live', GETUTCDATE(), @Email, @GivenNames, @FamilyName, 'AsLogin', @SignInId)", 
+                    VALUES (@OldId, @CreatedAt, @DisplayName, @Email, @OrganisationId, 'Live', GETUTCDATE(), @Email, @GivenNames, @FamilyName, 'AsLogin', @SignInId)", 
                 new {
+                    OldId = contact.Id,
                     CreatedAt = contact.CreatedAt,
                     DisplayName = contact.GivenNames + " " + contact.FamilyName,
                     Email = contact.Email,
@@ -230,7 +231,14 @@ namespace SFA.DAS.Assessor.Functions.ApplicationsMigrator
             {
                 if (!ex.Message.Contains("UNIQUE KEY constraint"))
                 {
-                    throw ex;
+                    // update contact details
+                    assessorConnection.Execute(@"UPDATE Contacts SET OrganisationId = @OrganisationId, Status = 'Live', UpdatedAt =  GETUTCDATE()
+                    WHERE Id = @OldId",
+                    new
+                    {
+                        OldId = contact.Id,
+                        organisationId = organisationId
+                    });
                 }                
             }
         }

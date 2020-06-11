@@ -1,0 +1,19 @@
+﻿namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants
+{
+    public static class CertificateStatus
+    {
+        public const string Draft = "Draft";
+        public const string Ready = "Ready";
+        public const string Submitted = "Submitted";
+        public const string ToBeApproved = "ToBeApproved";
+        public const string SentForApproval = "SentForApproval";
+        public const string Approved = "Approved";
+        public const string Rejected = "Rejected";
+        public const string Printed = "Printed";
+        public const string Cancelled = "Cancelled";
+        public const string NoCertificate = "NoCertificate";
+        public const string Deleted = "Deleted";
+        public const string Reprint = "Reprint";
+        public const string Error = "Error";
+    }
+}

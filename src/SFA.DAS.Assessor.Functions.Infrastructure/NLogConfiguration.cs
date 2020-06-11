@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.IO;
-using Microsoft.Extensions.Configuration;
 using NLog;
 using NLog.Common;
 using NLog.Config;
