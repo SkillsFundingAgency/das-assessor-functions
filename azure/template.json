@@ -54,10 +54,10 @@
             },
             "defaultValue": "0 13 * * *"
         },
-        "deliveryNotificationFunctionFunctionSchedule": {
+        "deliveryNotificationFunctionSchedule": {
             "type": "string",
             "metadata": {
-                "description": "DeliveryNotificationFunctionFunction CRON Schedule e.g. 0 */15 * * * *"
+                "description": "DeliveryNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
             },
             "defaultValue": "0 15 * * *"
         },
