@@ -9,6 +9,8 @@ using System.Text;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using Microsoft.Extensions.Options;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
@@ -16,13 +18,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
     {
         private readonly ILogger<PrintingJsonCreator> _logger;
         private readonly IFileTransferClient _fileTransferClient;
+        private readonly CertificateDetails _certificateDetails;
 
         public PrintingJsonCreator(
             ILogger<PrintingJsonCreator> logger,
-            IFileTransferClient fileTransferClient)
+            IFileTransferClient fileTransferClient,
+            IOptions<CertificateDetails> options)
         {
             _logger = logger;
             _fileTransferClient = fileTransferClient;
+            _certificateDetails = options?.Value;
         }
 
         public void Create(int batchNumber, List<CertificateResponse> certificates, string fileName)
@@ -76,8 +81,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     },
                     CoverLetter = new CoverLetter
                     {
-                        ChairName = "The Chair",
-                        ChairTitle = "Chair of the board"
+                        ChairName = _certificateDetails.ChairName,
+                        ChairTitle = _certificateDetails.ChairTitle
                     },
                     Certificates = new List<PrintCertificate>()
                 };
