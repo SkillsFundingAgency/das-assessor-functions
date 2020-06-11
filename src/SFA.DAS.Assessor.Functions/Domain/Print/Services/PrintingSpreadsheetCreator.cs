@@ -54,7 +54,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             // update certificates status
             foreach (var certificate in certificates)
             {
-                certificate.Status = "Sent to Printer";
+                certificate.Status = "SentToPrinter";
             }
 
             _logger.Log(LogLevel.Information, "Completed Excel Spreadsheet ....");

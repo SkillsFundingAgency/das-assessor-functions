@@ -75,7 +75,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     var batch = new Batch
                     {
                         BatchNumber = batchNumber,
-                        Status = "Sent to Printer",
+                        Status = "SentToPrinter",
                         FileUploadStartTime = DateTime.UtcNow,
                         Period = DateTime.UtcNow.UtcToTimeZoneTime().ToString("MMyy"),
                         BatchCreated = DateTime.UtcNow,
