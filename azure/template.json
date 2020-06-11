@@ -39,25 +39,25 @@
         "configurationStorageConnectionString": {
             "type": "securestring"
         },
-        "printFunctionFlowSchedule": {
+        "certificatePrintFunctionSchedule": {
             "type": "string",
             "metadata": {
-                "description": "PrintFunctionFlow CRON Schedule e.g. 0 */15 * * * *"
+                "description": "certificatePrintFunction CRON Schedule e.g. 0 */15 * * * *"
             }
 			,
             "defaultValue": "0 */15 * * * *"
         },
-        "printNotificationFunctionSchedule": {
+        "certificatePrintNotificationFunctionSchedule": {
             "type": "string",
             "metadata": {
-                "description": "PrintNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
+                "description": "CertificatePrintNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
             },
             "defaultValue": "0 13 * * *"
         },
-        "deliveryNotificationFunctionSchedule": {
+        "certificateDeliveryNotificationFunctionSchedule": {
             "type": "string",
             "metadata": {
-                "description": "DeliveryNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
+                "description": "certificateDeliveryNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
             },
             "defaultValue": "0 15 * * *"
         },
@@ -189,16 +189,16 @@
                                 "value": "dotnet"
                             },
                             {
-                                "name": "PrintFunctionFlowSchedule",
-                                "value": "[parameters('printFunctionFlowSchedule')]"
+                                "name": "CertificatePrintFunctionSchedule",
+                                "value": "[parameters('certificatePrintFunctionSchedule')]"
                             },
                             {
-                                "name": "PrintNotificationFunctionSchedule",
-                                "value": "[parameters('PrintNotificationFunctionSchedule')]"
+                                "name": "CertificatePrintNotificationFunctionSchedule",
+                                "value": "[parameters('certificatePrintNotificationFunctionSchedule')]"
                             },
                             {
-                                "name": "DeliveryNotificationFunctionSchedule",
-                                "value": "[parameters('deliveryNotificationFunctionSchedule')]"
+                                "name": "CertificateDeliveryNotificationFunctionSchedule",
+                                "value": "[parameters('certificateDeliveryNotificationFunctionSchedule')]"
                             }
                         ]
                     }

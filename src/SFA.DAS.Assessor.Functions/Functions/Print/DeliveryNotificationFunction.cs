@@ -15,8 +15,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("DeliveryNotificationFunction")]
-        public async Task Run([TimerTrigger("%DeliveryNotificationFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        [FunctionName("CertificateDeliveryNotificationFunction")]
+        public async Task Run([TimerTrigger("%CertificateDeliveryNotificationFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
