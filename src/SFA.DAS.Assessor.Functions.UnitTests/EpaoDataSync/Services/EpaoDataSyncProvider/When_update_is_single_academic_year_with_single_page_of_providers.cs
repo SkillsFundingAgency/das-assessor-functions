@@ -4,15 +4,15 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
+namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyncProvider
 {
-    public class When_update_is_single_academic_year_with_multiple_page_of_providers : EpaoDataSyncProviderTestBase
+    public class When_update_is_single_academic_year_with_single_page_of_providers : EpaoDataSyncProviderTestBase
     {
         [SetUp]
         public void Arrange()
         {
             BaseArrange();
-            ArrangeEpaoDataSyncLastRunDate(Period6Date1920.ToString("o"));
+            ArrangeEpaoDataSyncLastRunDate(Period4Date1920.ToString("o"));
         }
 
         [Test]
@@ -33,7 +33,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
             await Sut.ProcessProviders();
 
             // Assert
-            DataCollectionServiceApiClient.Verify(v => v.GetAcademicYears(Period6Date1920), Times.Once);
+            DataCollectionServiceApiClient.Verify(v => v.GetAcademicYears(Period4Date1920), Times.Once);
         }
 
 
@@ -51,9 +51,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
         [TestCase(111111, "1920")]
         [TestCase(222222, "1920")]
         [TestCase(333333, "1920")]
-        [TestCase(444444, "1920")]
-        [TestCase(555555, "1920")]
-        [TestCase(666666, "1920")]
         public async Task Then_each_updated_provider_is_queued(int ukprn, string source)
         {
             // Act

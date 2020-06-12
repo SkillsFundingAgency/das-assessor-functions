@@ -1,27 +1,29 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Config;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Types;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Interfaces;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Domain
+namespace SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services
 {
     public class EpaoDataSyncLearnerService : IEpaoDataSyncLearnerService
     {
-        private readonly IOptions<EpaoDataSync> _options;
+        private readonly EpaoDataSyncSettings _epaoDataSyncOptions;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
         private readonly ILogger<EpaoDataSyncLearnerService> _logger;
 
-        public EpaoDataSyncLearnerService(IOptions<EpaoDataSync> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
+        public EpaoDataSyncLearnerService(IOptions<EpaoDataSyncSettings> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
             IAssessorServiceApiClient assessorServiceApiClient, ILogger<EpaoDataSyncLearnerService> logger)
         {
-            _options = options;
+            _epaoDataSyncOptions = options?.Value;
             _dataCollectionServiceApiClient = dataCollectionServiceApiClient;
             _assessorServiceApiClient = assessorServiceApiClient;
             _logger = logger;
@@ -49,8 +51,8 @@ namespace SFA.DAS.Assessor.Functions.Domain
             
             var aimType = 1;
             var allStandards = -1;
-            var fundModels = ConfigHelper.ConvertCsvValueToList<int>(_options.Value.LearnerFundModels);
-            var pageSize = _options.Value.LearnerPageSize;
+            var fundModels = ConfigurationHelper.ConvertCsvValueToList<int>(_epaoDataSyncOptions.LearnerFundModels);
+            var pageSize = _epaoDataSyncOptions.LearnerPageSize;
 
             var learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, providerMessage.LearnerPageNumber);
             if (learnersPage != null)

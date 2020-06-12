@@ -1,22 +1,22 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using SFA.DAS.Assessor.Functions.Config;
-using SFA.DAS.Assessor.Functions.Domain;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
+namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyncLearner
 {
     public class EpaoDataSyncLearnerTestBase
     {
         protected EpaoDataSyncLearnerService Sut;
 
-        protected Mock<IOptions<EpaoDataSync>> Options;
+        protected Mock<IOptions<EpaoDataSyncSettings>> Options;
         protected Mock<IDataCollectionServiceApiClient> DataCollectionServiceApiClient;
         protected Mock<IAssessorServiceApiClient> AssessorServiceApiClient;
         protected Mock<ILogger<EpaoDataSyncLearnerService>> Logger;
@@ -160,8 +160,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 
         protected void BaseArrange()
         {
-            Options = new Mock<IOptions<EpaoDataSync>>();
-            Options.Setup(p => p.Value).Returns(new EpaoDataSync
+            Options = new Mock<IOptions<EpaoDataSyncSettings>>();
+            Options.Setup(p => p.Value).Returns(new EpaoDataSyncSettings
             {
                 ProviderPageSize = 1,
                 ProviderInitialRunDate = new DateTime(2019, 10, 10),
@@ -183,7 +183,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var importedLearners = new List<(int, int)>();
             var ignoredLearners = new List<(int?, int)>();
 
-            var optionsLearnerFundModels = ConfigHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
+            var optionsLearnerFundModels = ConfigurationHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
             foreach (var stdCode in learnerTestData.StdCodes)
             {
                 if (stdCode != null)

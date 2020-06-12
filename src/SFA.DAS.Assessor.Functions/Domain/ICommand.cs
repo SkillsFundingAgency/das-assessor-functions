@@ -1,7 +1,7 @@
 ﻿
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
+namespace SFA.DAS.Assessor.Functions.Domain.Interfaces
 {
     public interface ICommand
     {

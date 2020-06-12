@@ -1,25 +1,28 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Domain
+namespace SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services
 {
     public class EpaoDataSyncProviderService : IEpaoDataSyncProviderService
     {
-        private readonly IOptions<EpaoDataSync> _options;
+        private readonly EpaoDataSyncSettings _epaoDataSyncOptions;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorApiClient;
         
         private readonly ILogger<EpaoDataSyncProviderService> _logger;
 
-        public EpaoDataSyncProviderService(IOptions<EpaoDataSync> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
+        public EpaoDataSyncProviderService(IOptions<EpaoDataSyncSettings> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
             IAssessorServiceApiClient assessorServiceApiClient, ILogger<EpaoDataSyncProviderService> logger)
         {
-            _options = options;
+            _epaoDataSyncOptions = options?.Value;
             _dataCollectionServiceApiClient = dataCollectionServiceApiClient;
             _assessorApiClient = assessorServiceApiClient;
             _logger = logger;
@@ -72,10 +75,10 @@ namespace SFA.DAS.Assessor.Functions.Domain
             }
             catch
             {
-                _logger.LogInformation($"There is no EpaoDataSyncLastRunDate, using default last run date {_options.Value.ProviderInitialRunDate}");
+                _logger.LogInformation($"There is no EpaoDataSyncLastRunDate, using default last run date {_epaoDataSyncOptions.ProviderInitialRunDate}");
             }
 
-            return _options.Value.ProviderInitialRunDate;
+            return _epaoDataSyncOptions.ProviderInitialRunDate;
         }
 
         public async Task SetLastRunDateTime(DateTime nextRunDateTime)
@@ -109,7 +112,7 @@ namespace SFA.DAS.Assessor.Functions.Domain
         private async Task<List<EpaoDataSyncProviderMessage>> QueueProviders(string source, DateTime lastRunDateTime)
         {
             var providerMessagesToQueue = new List<EpaoDataSyncProviderMessage>();
-            var pageSize = _options.Value.ProviderPageSize;
+            var pageSize = _epaoDataSyncOptions.ProviderPageSize;
 
             var providersPage = await _dataCollectionServiceApiClient.GetProviders(source, lastRunDateTime, pageSize, pageNumber: 1);
             if (providersPage != null && providersPage.PagingInfo.TotalItems > 0)

@@ -1,4 +1,7 @@
-﻿using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+﻿using SFA.DAS.Assessor.Functions.ApiClient.Types;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor

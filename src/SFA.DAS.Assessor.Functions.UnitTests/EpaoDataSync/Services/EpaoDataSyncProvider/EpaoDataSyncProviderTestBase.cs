@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using SFA.DAS.Assessor.Functions.Domain;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
@@ -9,13 +9,13 @@ using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
+namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyncProvider
 {
     public class EpaoDataSyncProviderTestBase
     {
         protected EpaoDataSyncProviderService Sut;
 
-        protected Mock<IOptions<EpaoDataSync>> Options;
+        protected Mock<IOptions<EpaoDataSyncSettings>> Options;
         protected Mock<IDataCollectionServiceApiClient> DataCollectionServiceApiClient;
         protected Mock<IAssessorServiceApiClient> AssessorServiceApiClient;
         protected Mock<IDateTimeHelper> DateTimeHelper;
@@ -190,8 +190,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncProvider
 
         protected void BaseArrange()
         {
-            Options = new Mock<IOptions<EpaoDataSync>>();
-            Options.Setup(p => p.Value).Returns(new EpaoDataSync
+            Options = new Mock<IOptions<EpaoDataSyncSettings>>();
+            Options.Setup(p => p.Value).Returns(new EpaoDataSyncSettings
             {
                 ProviderPageSize = 1,
                 ProviderInitialRunDate = new DateTime(2019, 10, 10),

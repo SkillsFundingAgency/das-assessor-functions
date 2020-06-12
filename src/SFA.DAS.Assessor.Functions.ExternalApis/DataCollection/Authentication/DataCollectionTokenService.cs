@@ -6,22 +6,22 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication
 {
     public class DataCollectionTokenService : IDataCollectionTokenService
     {
-        private readonly IOptions<DataCollectionApiAuthentication> _dataCollectionApiAuthenticationOptions;
+        private readonly DataCollectionApiAuthentication _dataCollectionApiAuthenticationOptions;
                 
         public DataCollectionTokenService(IOptions<DataCollectionApiAuthentication> dataCollectionApiAuthenticationOptions)
         {
-            _dataCollectionApiAuthenticationOptions = dataCollectionApiAuthenticationOptions;    
+            _dataCollectionApiAuthenticationOptions = dataCollectionApiAuthenticationOptions?.Value;    
         }
 
         public string GetToken()
         {
-            var clientId = _dataCollectionApiAuthenticationOptions?.Value.ClientId;
-            var clientSecret = _dataCollectionApiAuthenticationOptions?.Value.ClientSecret;
-            var scope = _dataCollectionApiAuthenticationOptions?.Value.Scope;
+            var clientId = _dataCollectionApiAuthenticationOptions.ClientId;
+            var clientSecret = _dataCollectionApiAuthenticationOptions.ClientSecret;
+            var scope = _dataCollectionApiAuthenticationOptions.Scope;
 
             IConfidentialClientApplication app = ConfidentialClientApplicationBuilder.Create(clientId)
                     .WithClientSecret(clientSecret)
-                    .WithAuthority(new Uri(_dataCollectionApiAuthenticationOptions?.Value.Authority))
+                    .WithAuthority(new Uri(_dataCollectionApiAuthenticationOptions.Authority))
                     .Build();
 
             string[] scopes = new string[] { scope };

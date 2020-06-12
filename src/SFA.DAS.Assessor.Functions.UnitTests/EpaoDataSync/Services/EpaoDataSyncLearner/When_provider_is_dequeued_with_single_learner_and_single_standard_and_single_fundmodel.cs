@@ -1,14 +1,14 @@
 ﻿using Moq;
 using NUnit.Framework;
-using SFA.DAS.Assessor.Functions.Config;
-using SFA.DAS.Assessor.Functions.Domain;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
+namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyncLearner
 {
-    public class When_provider_is_dequeued_with_single_learner_and_no_standards : EpaoDataSyncLearnerTestBase
+    public class When_provider_is_dequeued_with_single_learner_and_single_standard_and_single_fundmodel : EpaoDataSyncLearnerTestBase
     {
         [SetUp]
         public void Arrange()
@@ -24,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var providerMessage = new EpaoDataSyncProviderMessage
             {
                 Source = "1920",
-                Ukprn = UkprnOne,
+                Ukprn = UkprnThree,
                 LearnerPageNumber = pageNumber
             };
 
@@ -33,11 +33,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             await Sut.ProcessLearners(providerMessage);
 
             // Assert            
-            var optionsLearnerFundModels = ConfigHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
+            var optionsLearnerFundModels = ConfigurationHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
             DataCollectionServiceApiClient.Verify(
                 v => v.GetLearners(
                     "1920",
-                    UkprnOne,
+                    UkprnThree,
                     1,
                     -1,
                     It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
@@ -53,7 +53,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var providerMessage = new EpaoDataSyncProviderMessage
             {
                 Source = "1920",
-                Ukprn = UkprnOne,
+                Ukprn = UkprnThree,
                 LearnerPageNumber = 1
             };
 
@@ -61,7 +61,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             await Sut.ProcessLearners(providerMessage);
 
             // Assert       
-            AssertLearnerDetailRequest(UkprnOneOne);
+            AssertLearnerDetailRequest(UkprnThreeOne);
         }
     }
 }

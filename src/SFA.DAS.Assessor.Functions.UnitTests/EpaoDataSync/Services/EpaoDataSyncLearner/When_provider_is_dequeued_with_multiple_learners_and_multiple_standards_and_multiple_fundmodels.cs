@@ -1,13 +1,13 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Moq;
 using NUnit.Framework;
-using SFA.DAS.Assessor.Functions.Config;
-using SFA.DAS.Assessor.Functions.Domain;
+using SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
+namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyncLearner
 {
     public class When_provider_is_dequeued_with_multiple_learners_and_multiple_standards_and_multiple_fundmodels : EpaoDataSyncLearnerTestBase
     {
@@ -34,7 +34,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             await Sut.ProcessLearners(providerMessage);
 
             // Assert            
-            var optionsLearnerFundModels = ConfigHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
+            var optionsLearnerFundModels = ConfigurationHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
             DataCollectionServiceApiClient.Verify(
                 v => v.GetLearners(
                     "1920",
@@ -49,7 +49,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
 
         [TestCase(1, true)]
         [TestCase(2, false)]
-        public async Task Then_subsequent_page_provider_is_queued(int pageNumber, bool subsequentPageQueued)
+        public async Task Then_subsequent_page_provider_is_returned(int pageNumber, bool subsequentPageReturned)
         {
             // Arrange
             var providerMessage = new EpaoDataSyncProviderMessage
@@ -63,7 +63,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Services.EpaoDataSyncLearner
             var nextPageProviderMessage = await Sut.ProcessLearners(providerMessage);
 
             // Assert
-            nextPageProviderMessage.Should().Match(p => subsequentPageQueued && p != null || !subsequentPageQueued && p == null);
+            nextPageProviderMessage.Should().Match(p => subsequentPageReturned && p != null || !subsequentPageReturned && p == null);
         }
 
         [Test]

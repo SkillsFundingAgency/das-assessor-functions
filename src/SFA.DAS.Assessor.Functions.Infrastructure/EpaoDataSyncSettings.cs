@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace SFA.DAS.Assessor.Functions
+namespace SFA.DAS.Assessor.Functions.Infrastructure
 {
-    public class EpaoDataSync
+    public class EpaoDataSyncSettings
     {
         public int ProviderPageSize { get; set; }
         public DateTime ProviderInitialRunDate { get; set; }
