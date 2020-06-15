@@ -102,6 +102,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     batch.FileUploadEndTime = DateTime.UtcNow;
                     batch.NumberOfCertificates = certificates.Count;
                     batch.NumberOfCoverLetters = 0;
+                    batch.ScheduledDate = schedule.RunTime;
 
                     LogUploadedFiles(uploadedFileNames, uploadDirectory);
                     await _batchService.Save(batch);

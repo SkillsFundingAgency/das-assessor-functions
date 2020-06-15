@@ -60,10 +60,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             var personalisation = new Dictionary<string, string>
             {
-                {"fileName", $"Certificates File Name:- {certificatesFileName}"},
+                {"fileName", $"{certificatesFileName}"},
                 {
                     "numberOfCertificatesToBePrinted",
-                    $"Number Of Certificates to be Printed:- {certificates.Count}"
+                    $"{certificates.Count}"
                 },
                 {"numberOfCoverLetters", ""}
             };
