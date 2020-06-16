@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,14 +10,13 @@ using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
 using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
-using SFA.DAS.Assessor.Functions.ExternalApis.Interfaces;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis
 {
     public abstract class ApiClientBase : IDisposable
     {
-        protected readonly HttpClient Client;
-        protected readonly ILogger<ApiClientBase> Logger;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<ApiClientBase> _logger;
         private readonly RetryPolicy<HttpResponseMessage> _retryPolicy;
 
         protected readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
@@ -27,24 +25,24 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        protected ApiClientBase(HttpClient httpClient, ITokenService tokenService, ILogger<ApiClientBase> logger)
-            : this(httpClient, logger)
+        protected ApiClientBase(HttpClient httpClient, Uri baseAddress, ILogger<ApiClientBase> logger)
         {
-            Client.DefaultRequestHeaders.Accept.Clear();
-            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenService.GetToken());
-            Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        }
-
-        protected ApiClientBase(HttpClient httpClient, ILogger<ApiClientBase> logger)
-        {
-            Client = httpClient;
-
-            Logger = logger;
-
+            _httpClient = httpClient;
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.BaseAddress = baseAddress;
+            
+            _logger = logger;
+            
             _retryPolicy = HttpPolicyExtensions.HandleTransientHttpError().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
-        protected static void RaiseResponseError(string message, string failedRequestUri, HttpResponseMessage failedResponse)
+        public string BaseAddress()
+        {
+            return _httpClient.BaseAddress.ToString();
+        }
+
+        private static void RaiseResponseError(string message, string failedRequestUri, HttpResponseMessage failedResponse)
         {
             if (failedResponse.StatusCode == HttpStatusCode.NotFound)
             {
@@ -54,7 +52,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             throw CreateRequestException(failedRequestUri, failedResponse);
         }
 
-        protected static void RaiseResponseError(string failedRequestUri, HttpResponseMessage failedResponse)
+        private static void RaiseResponseError(string failedRequestUri, HttpResponseMessage failedResponse)
         {
             throw CreateRequestException(failedRequestUri, failedResponse);
         }
@@ -92,7 +90,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 if (requestMessage.Method == HttpMethod.Get)
                 {
-                    return await Client.GetAsync(requestMessage.RequestUri);
+                    return await _httpClient.GetAsync(requestMessage.RequestUri);
                 }
 
                 return null;
@@ -133,7 +131,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             }
             else
             {
-                Logger.LogInformation($"HttpRequestException: Status Code: {response?.StatusCode} Body: {json}");
+                _logger.LogInformation($"HttpRequestException: Status Code: {response?.StatusCode} Body: {json}");
                 throw new HttpRequestException(json);
             }
         }
@@ -149,11 +147,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 if (requestMessage.Method == HttpMethod.Post)
                 {
-                    return await Client.PostAsJsonAsync(requestMessage.RequestUri, model);
+                    return await _httpClient.PostAsJsonAsync(requestMessage.RequestUri, model);
                 }
                 else if (requestMessage.Method == HttpMethod.Put)
                 {
-                    return await Client.PutAsJsonAsync(requestMessage.RequestUri, model);
+                    return await _httpClient.PutAsJsonAsync(requestMessage.RequestUri, model);
                 }
 
                 return null;
@@ -173,11 +171,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 if (requestMessage.Method == HttpMethod.Post)
                 {
-                    return await Client.PostAsJsonAsync(requestMessage.RequestUri, model);
+                    return await _httpClient.PostAsJsonAsync(requestMessage.RequestUri, model);
                 }
                 else if (requestMessage.Method == HttpMethod.Put)
                 {
-                    return await Client.PutAsJsonAsync(requestMessage.RequestUri, model);
+                    return await _httpClient.PutAsJsonAsync(requestMessage.RequestUri, model);
                 }
 
                 return null;
@@ -200,11 +198,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 if (requestMessage.Method == HttpMethod.Post)
                 {
-                    return await Client.PostAsync(requestMessage.RequestUri, null);
+                    return await _httpClient.PostAsync(requestMessage.RequestUri, null);
                 }
                 else if (requestMessage.Method == HttpMethod.Put)
                 {
-                    return await Client.PutAsync(requestMessage.RequestUri, null);
+                    return await _httpClient.PutAsync(requestMessage.RequestUri, null);
                 }
 
                 return null;
@@ -227,7 +225,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 if (requestMessage.Method == HttpMethod.Delete)
                 {
-                    return await Client.DeleteAsync(requestMessage.RequestUri);
+                    return await _httpClient.DeleteAsync(requestMessage.RequestUri);
                 }
 
                 return null;
@@ -241,8 +239,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
         public void Dispose()
         {
-            Client?.Dispose();
+            _httpClient?.Dispose();
         }
-
     }
 }

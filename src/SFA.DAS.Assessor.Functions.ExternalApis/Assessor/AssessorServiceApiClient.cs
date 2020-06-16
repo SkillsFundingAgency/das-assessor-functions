@@ -16,12 +16,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
     {
         public AssessorServiceApiClient(
             HttpClient httpClient, 
-            IAssessorServiceTokenService tokenService, 
             IOptions<AssessorApiAuthentication> options, 
             ILogger<AssessorServiceApiClient> logger)
-            : base(httpClient, tokenService, logger)
+            : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
         {
-            Client.BaseAddress = new Uri(options?.Value.ApiBaseAddress);
         }
 
         public async Task UpdateStandardSummary()
@@ -46,11 +44,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             {
                 return await GetAsync<string>(request);
             }
-        }
-
-        public string BaseAddress()
-        {
-            return Client.BaseAddress.ToString();
         }
 
         public async Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest)

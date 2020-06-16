@@ -57,12 +57,17 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
             builder.Services.Configure<NotificationsApiClientConfiguration>(config.GetSection("NotificationsApiClientConfiguration"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
-            builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));          
+            builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
 
-            builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();
+            builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            
+            builder.Services.AddScoped<AssessorTokenHandler>();
+            builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>()
+                .AddHttpMessageHandler<AssessorTokenHandler>();
+
             builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
             builder.Services.AddTransient<IDataAccess, DataAccess>();
-            builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            
             builder.Services.AddScoped<IBatchService, BatchService>();
             builder.Services.AddScoped<ICertificateService, CertificateService>();
             builder.Services.AddScoped<IScheduleService, ScheduleService>();

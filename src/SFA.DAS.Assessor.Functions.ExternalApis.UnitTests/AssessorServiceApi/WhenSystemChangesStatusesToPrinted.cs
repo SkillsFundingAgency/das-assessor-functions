@@ -27,13 +27,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         public void Arrange()
         {
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            _mockAssessorServiceTokenService = new Mock<IAssessorServiceTokenService>();
             _mockOptions = new Mock<IOptions<AssessorApiAuthentication>>();
             _mockLogger = new Mock<ILogger<AssessorServiceApiClient>>();
 
             _mockOptions.Setup(m => m.Value).Returns(new AssessorApiAuthentication { ApiBaseAddress = "http://localhost:8080" });
 
-            _sut = new AssessorServiceApiClient(new HttpClient(_mockHttpMessageHandler.Object), _mockAssessorServiceTokenService.Object, _mockOptions.Object, _mockLogger.Object);
+            _sut = new AssessorServiceApiClient(new HttpClient(_mockHttpMessageHandler.Object), _mockOptions.Object, _mockLogger.Object);
         }
 
         [TestCase(1, 1)]
