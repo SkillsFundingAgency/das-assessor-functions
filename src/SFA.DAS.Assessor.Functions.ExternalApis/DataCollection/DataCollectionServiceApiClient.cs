@@ -16,10 +16,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
     {
         public string ApiVersion { get; }
         
-        public DataCollectionServiceApiClient(HttpClient client, IDataCollectionTokenService tokenService, IOptions<DataCollectionApiAuthentication> options, ILogger<DataCollectionServiceApiClient> logger)
-            : base(client, tokenService, logger)
+        public DataCollectionServiceApiClient(HttpClient httpClient, IDataCollectionTokenService tokenService, IOptions<DataCollectionApiAuthentication> options, ILogger<DataCollectionServiceApiClient> logger)
+            : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
         {
-            Client.BaseAddress = new Uri(options?.Value.ApiBaseAddress);
             ApiVersion = options.Value?.Version;
         }
 
@@ -144,11 +143,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             }
 
             return null;
-        }
-
-        public string BaseAddress()
-        {
-            return Client.BaseAddress.ToString();
         }
     }
 }

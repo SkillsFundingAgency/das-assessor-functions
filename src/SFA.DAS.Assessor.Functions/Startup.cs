@@ -65,9 +65,16 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
 
-            builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();
-            
-            builder.Services.AddHttpClient<IDataCollectionServiceApiClient, DataCollectionServiceApiClient>(client => { })
+            builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
+
+            builder.Services.AddScoped<AssessorTokenHandler>();
+            builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>()
+                .AddHttpMessageHandler<AssessorTokenHandler>();
+
+            builder.Services.AddScoped<DataCollectionTokenHandler>();
+            builder.Services.AddHttpClient<IDataCollectionServiceApiClient, DataCollectionServiceApiClient>()
+                .AddHttpMessageHandler<DataCollectionTokenHandler>()
                 .ConfigurePrimaryHttpMessageHandler(() => {
                     var handler = new HttpClientHandler();
                     if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
@@ -76,9 +83,6 @@ namespace SFA.DAS.Assessor.Functions
                     }
                     return handler;
                 });
-
-            builder.Services.AddScoped<IDataCollectionTokenService, DataCollectionTokenService>();
-            builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
 
             builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
 
