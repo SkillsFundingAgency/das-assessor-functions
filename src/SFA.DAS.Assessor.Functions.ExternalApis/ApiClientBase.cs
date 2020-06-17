@@ -13,7 +13,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis
 {
-    public abstract class ApiClientBase : IDisposable
+    public abstract class ApiClientBase
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<ApiClientBase> _logger;
@@ -235,11 +235,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 throw new HttpRequestException();
             }
-        }
-
-        public void Dispose()
-        {
-            _httpClient?.Dispose();
         }
     }
 }
