@@ -23,6 +23,13 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             Client.BaseAddress = new Uri(options?.Value.ApiBaseAddress);
         }
+        public async Task UpdateStandards()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/ao/update-standards"))
+            {
+                await PostPutRequest(request);
+            }
+        }
 
         public async Task UpdateStandardSummary()
         {
