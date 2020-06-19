@@ -188,7 +188,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyn
             }
         };
 
-        protected void BaseArrange()
+        protected void BaseArrange(string lastRunDateTime)
         {
             Options = new Mock<IOptions<EpaoDataSyncSettings>>();
             Options.Setup(p => p.Value).Returns(new EpaoDataSyncSettings
@@ -205,12 +205,21 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyn
             DataCollectionServiceApiClient.Setup(v => v.GetProviders("2021", It.Is<DateTime>(p => Providers2021.ContainsKey(new Tuple<DateTime, int>(p, 1).ToValueTuple())), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers2021[(period, pageNumber.Value)]);
 
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
-            ArrangeEpaoDataSyncLastRunDate(EpaoDataSyncLastRunDate);
+            ArrangeEpaoDataSyncLastRunDate(lastRunDateTime);
 
+            // not checking for extended windowing since the last run time, so assume the
+            // current time is the same as the last run time
             DateTimeHelper = new Mock<IDateTimeHelper>();
+            DateTimeHelper.Setup(p => p.DateTimeNow).Returns(DateTime.Parse(lastRunDateTime));
+            
             Logger = new Mock<ILogger<EpaoDataSyncProviderService>>();
 
-            Sut = new EpaoDataSyncProviderService(Options.Object, DataCollectionServiceApiClient.Object, AssessorServiceApiClient.Object, Logger.Object);
+            Sut = new EpaoDataSyncProviderService(
+                Options.Object, 
+                DataCollectionServiceApiClient.Object, 
+                AssessorServiceApiClient.Object, 
+                DateTimeHelper.Object,
+                Logger.Object);
         }
 
         protected void ArrangeEpaoDataSyncLastRunDate(string lastRunDateTime)

@@ -23,12 +23,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.EpaoDataSync
         public async Task Execute()
         {
             var output = await _epaoDataSyncProviderService.ProcessProviders();
-            foreach (var message in output)
+            if (output != null)
             {
-                await StorageQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
-            }
+                foreach (var message in output)
+                {
+                    await StorageQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
+                }
 
-            await _epaoDataSyncProviderService.SetLastRunDateTime(_dateTimeHelper.DateTimeNow);
+                await _epaoDataSyncProviderService.SetLastRunDateTime(_dateTimeHelper.DateTimeNow);
+            }
         }
 
         public IStorageQueue StorageQueue { get; set; }

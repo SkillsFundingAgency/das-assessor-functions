@@ -7,6 +7,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services
@@ -16,32 +17,39 @@ namespace SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services
         private readonly EpaoDataSyncSettings _epaoDataSyncOptions;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorApiClient;
+        private readonly IDateTimeHelper _dateTimeHelper;
         
         private readonly ILogger<EpaoDataSyncProviderService> _logger;
 
         public EpaoDataSyncProviderService(IOptions<EpaoDataSyncSettings> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
-            IAssessorServiceApiClient assessorServiceApiClient, ILogger<EpaoDataSyncProviderService> logger)
+            IAssessorServiceApiClient assessorServiceApiClient, IDateTimeHelper dateTimeHelper, ILogger<EpaoDataSyncProviderService> logger)
         {
             _epaoDataSyncOptions = options?.Value;
             _dataCollectionServiceApiClient = dataCollectionServiceApiClient;
             _assessorApiClient = assessorServiceApiClient;
+            _dateTimeHelper = dateTimeHelper;
             _logger = logger;
         }
 
         public async Task<List<EpaoDataSyncProviderMessage>> ProcessProviders()
         {
-            var providerMessagesToQueue = new List<EpaoDataSyncProviderMessage>();
-            _logger.LogDebug($"Using data collection api base address: {_dataCollectionServiceApiClient.BaseAddress()}");
-
+            _logger.LogInformation($"Epao data sync using data collection api base address: {_dataCollectionServiceApiClient.BaseAddress()}");
+            
             var lastRunDateTime = await GetLastRunDateTime();
+            var currentDateTime = _dateTimeHelper.DateTimeNow;
 
-            // the sources which are valid at the last run datetime are obtained to ensure that extended
-            // periods of downtime do not result in missing updates for previous academic years
-            var sources = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
-            foreach (var source in sources ?? new List<string>())
+            // the sources that are valid either at the last run time or the current time are combined
+            // and validated; if they are ALL valid then the providers which have changed since the last
+            // run time will be queued for processing learner details
+            var validSources = await ValidateAllAcademicYears(lastRunDateTime, currentDateTime);
+            if (!validSources.Any())
             {
-                // process all the sources for which there is a valid endpoint in the data collection API
-                if (await ValidateAcademicYear(source))
+                _logger.LogError($"Epao data sync enqueue providers failed, invalid source or none between {lastRunDateTime} to {currentDateTime}");
+            }
+            else
+            {
+                var providerMessagesToQueue = new List<EpaoDataSyncProviderMessage>();
+                foreach (var source in validSources)
                 {
                     try
                     {
@@ -57,9 +65,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services
                         throw;
                     }
                 }
+                
+                return providerMessagesToQueue;
             }
 
-            return providerMessagesToQueue;
+            return null;
         }
 
         public async Task<DateTime> GetLastRunDateTime()
@@ -84,6 +94,25 @@ namespace SFA.DAS.Assessor.Functions.Domain.EpaoDataSync.Services
         public async Task SetLastRunDateTime(DateTime nextRunDateTime)
         {
             await _assessorApiClient.SetAssessorSetting("EpaoDataSyncLastRunDate", nextRunDateTime.ToString("o"));
+        }
+
+        private async Task<List<string>> ValidateAllAcademicYears(DateTime lastRunDateTime, DateTime currentRunDateTime)
+        {
+            var sourcesLast = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
+            var sourceCurrent = await _dataCollectionServiceApiClient.GetAcademicYears(currentRunDateTime);
+
+            var sources = sourcesLast
+                .Union(sourceCurrent)
+                .Distinct();
+
+            var sourceValidations = sources.Select(source => ValidateAcademicYear(source));
+            bool[] results = await Task.WhenAll(sourceValidations);
+            if(results.All(item => item))
+            {
+                return sources.ToList();
+            }
+
+            return new List<string>();
         }
 
         private async Task<bool> ValidateAcademicYear(string source)

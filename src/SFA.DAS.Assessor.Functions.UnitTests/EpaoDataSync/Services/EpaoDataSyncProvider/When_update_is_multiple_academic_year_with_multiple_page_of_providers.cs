@@ -12,8 +12,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyn
         [SetUp]
         public void Arrange()
         {
-            BaseArrange();
-            ArrangeEpaoDataSyncLastRunDate(Period14Date1920Period2Date2021.ToString("o"));
+            BaseArrange(Period14Date1920Period2Date2021.ToString("o"));
         }
 
         [Test]
@@ -28,13 +27,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.EpaoDataSync.Services.EpaoDataSyn
 
 
         [Test]
-        public async Task Then_sources_of_academic_year_are_retrieved_for_last_run_date()
+        public async Task Then_sources_of_academic_year_are_retrieved()
         {
             // Act
             await Sut.ProcessProviders();
 
             // Assert
-            DataCollectionServiceApiClient.Verify(v => v.GetAcademicYears(Period14Date1920Period2Date2021), Times.Once);
+            DataCollectionServiceApiClient.Verify(v => v.GetAcademicYears(Period14Date1920Period2Date2021), Times.Exactly(2));
         }
 
 
