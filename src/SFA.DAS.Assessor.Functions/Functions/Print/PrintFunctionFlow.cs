@@ -22,18 +22,20 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("Epao Importer PrintFunctionFlow timer trigger is running later than scheduled");
+                    log.LogInformation("PrintFunctionFlow has started later than scheduled");
                 }
-
-                log.LogInformation($"Epao Importer PrintFunctionFlow started");
+                else
+                {
+                    log.LogInformation($"PrintFunctionFlow has started");
+                }
 
                 await _command.Execute();
 
-                log.LogInformation("Epao Importer PrintFunctionFlow function completed");
+                log.LogInformation("PrintFunctionFlow has completed");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Epao Importer PrintFunctionFlow function failed");
+                log.LogError(ex, "PrintFunctionFlow has failed failed");
             }
         }
     }

@@ -2,6 +2,6 @@
 {
     public static class QueueNames
     {
-        public const string EpaoDataSync = "sfa-das-epao-data-sync";
+        public const string RefreshIlrs = "sfa-das-assessor-refresh-ilrs";
     }
 }

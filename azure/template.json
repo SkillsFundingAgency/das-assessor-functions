@@ -37,7 +37,14 @@
             "type": "securestring"
         },
         "configurationStorageConnectionString": {
-            "type": "securestring"
+          "type": "securestring"
+        },
+        "refreshIlrsEnqueueProvidersFunctionFlowSchedule": {
+            "type": "string",
+            "metadata": {
+              "description": "RefreshIlrsEnqueueFunctionFlow CRON Schedule e.g. default is 7:00 PM"
+            },
+            "defaultValue": "0 19 * * *"
         },
         "appServicePlanSize": {
             "type": "string",
@@ -157,6 +164,10 @@
                             {
                                 "name": "ConfigurationStorageConnectionString",
                                 "value": "[parameters('configurationStorageConnectionString')]"
+                            },
+                            {
+                                "name": "RefreshIlrsEnqueueProvidersFunctionFlowSchedule",
+                                "value": "[parameters('refreshIlrsEnqueueProvidersFunctionFlowSchedule')]"
                             },
                             {
                                 "name": "AppName",
