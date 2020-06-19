@@ -35,7 +35,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "PrintFunctionFlow has failed failed");
+                log.LogError(ex, "PrintFunctionFlow has failed");
             }
         }
     }
