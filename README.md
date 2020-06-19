@@ -22,7 +22,14 @@
 
         "AppName": "das-assessor-functions",
         "EnvironmentName": "LOCAL",
-        "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true"
+        "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
+
+        "CertificatePrintFunctionSchedule": "*/15 * * * *",
+        "CertificatePrintNotificationFunctionSchedule": "0 13 * * *",
+        "CertificateDeliveryNotificationFunctionSchedule": "0 15 * * *",
+        "StandardCollationImportFlowFunctionSchedule": "30 6 * * *",
+        "StandardSummaryUpdateFlowFunctionSchedule": "0 7 * * *",
+        "RefreshIlrsEnqueueProvidersFunctionFlowSchedule":  "0 19 * * *"
     }
 }
 ```
@@ -33,11 +40,11 @@
 2) The BaseAddress in the configuration table of the local Azure Storage account must be set to the base address of the running 
 instance of SFA.DAS.AssessorService.Application.Api project to which the local system should connect.
 
-3) The DC API requires a user name and password which can be obtained for a specific test environment from the DC team. 
+3) The DC API requires a ClientSecret which can be obtained for a specific test environment from the DC team. 
 
-### Epao DataSync
+### Refresh Ilrs
 
-1) When the EpaoDataSyncEnqueueProviders function starts and there are any providers updated in the DC API since the EpaoDataSyncLastRunDate
+1) When the RefreshIlrsEnqueueProviders function starts and there are any providers updated in the DC API since the RefreshIlrsLastRunDate
 in the assessor, a Azure Storage Queue will be created automatically; the name of the queue is defined in [QueueNames.cs](src\SFA.DAS.Assessor.Functions\Infrastructure\QueueNames.cs).
 
 ### Opportunity Finder DataSync
