@@ -46,7 +46,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 
         public async Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize, int? pageNumber)
         {
-            var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/providers?" +
+            var requestUri = $@"/api/v{ApiVersion}/ilr-data/providers/{source}?" +
                 $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}" +
                 (pageSize != null 
                     ? $"&pageSize={pageSize}" 
@@ -84,7 +84,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 
         public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
-            var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/learners?" +
+            var requestUri = $@"/api/v{ApiVersion}/ilr-data/learners/{source}?" +
                 $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}";
 
             return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
@@ -92,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
 
         public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
-            var requestUri = $@"/api/v{ApiVersion}/ilr-data/{source}/learners?" +
+            var requestUri = $@"/api/v{ApiVersion}/ilr-data/learners/{source}?" +
                 $"ukprn={ukprn}";
 
             return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
