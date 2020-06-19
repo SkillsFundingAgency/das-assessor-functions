@@ -4,7 +4,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 
-namespace SFA.DAS.Assessor.Functions.Standards
+namespace SFA.DAS.Assessor.Functions.Functions.Standards
 {
     public class StandardSummaryUpdateFlow
     {

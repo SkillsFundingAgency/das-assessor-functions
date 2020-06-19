@@ -25,9 +25,4 @@
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.ExternalApis\SFA.DAS.Assessor.Functions.ExternalApis.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions\SFA.DAS.Assessor.Functions.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Standards\StandardSummaryUpdateCommand\" />
-    <Folder Include="Standards\StandardCollationImportCommand\" />
-  </ItemGroup>
 </Project>

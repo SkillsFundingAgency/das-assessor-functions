@@ -42,16 +42,16 @@
         "standardCollationImportFlowFunctionSchedule": {
           "type": "string",
           "metadata": {
-            "description": "StandardCollationImportFlow CRON Schedule e.g. 0 30 6 * * *"
+            "description": "StandardCollationImportFlow CRON Schedule e.g. default is 6:30 am"
           },
-          "defaultValue": "0 30 6 * * *"
+          "defaultValue": "30 6 * * *"
         },
         "standardSummaryUpdateFlowFunctionSchedule": {
             "type": "string",
             "metadata": {
-                "description": "StandardSummaryUpdateFlow CRON Schedule e.g. 0 0 7 * * *"
+                "description": "StandardSummaryUpdateFlow CRON Schedule e.g. default is 7:00 am"
             },
-            "defaultValue": "0 0 7 * * *"
+            "defaultValue": "0 7 * * *"
         },
         "appServicePlanSize": {
             "type": "string",
