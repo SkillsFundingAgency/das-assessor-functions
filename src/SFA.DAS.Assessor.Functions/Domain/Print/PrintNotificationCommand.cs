@@ -19,8 +19,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
 
-        // PrintResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
-        private const string FilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{1,6}-[0-9]{10}.json";
+        // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
+        private const string FilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{1,6}-[0-9]{10}.json";
         // printResponse-MMYY-XXXXXX.json where XXX = 001, 002... 999999 etc
         private const string LegacyFilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{4}-[0-9]{1,6}.json";
 

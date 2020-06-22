@@ -86,7 +86,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     if (_sftpSettings.UseJson)
                     {
                         uploadDirectory = _sftpSettings.PrintRequestDirectory;
-                        batch.CertificatesFileName = $"PrintRequest-{batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
+                        batch.CertificatesFileName = $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
                         _printingJsonCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
                     }
                     else

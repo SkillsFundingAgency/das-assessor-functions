@@ -13,8 +13,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
     public class DeliveryNotificationCommand : IDeliveryNotificationCommand
     {
-        // DeliveryNotification-ddMMyyHHmm.json
-        const string FilePattern = @"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn]-[0-9]{10}.json";
+        // DeliveryNotifications-ddMMyyHHmm.json
+        const string FilePattern = @"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-[0-9]{10}.json";
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
