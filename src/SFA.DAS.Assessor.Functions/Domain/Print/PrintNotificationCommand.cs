@@ -1,14 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using System.Linq;
-using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
+using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
+using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -20,9 +22,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly SftpSettings _sftpSettings;
 
         // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
-        private const string FilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{1,6}-[0-9]{10}.json";
+        private static readonly string DateTimePattern = "[0-9]{10}";
+        private static readonly string FilePattern = $@"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{{1,6}}-{DateTimePattern}.json";
+
         // printResponse-MMYY-XXXXXX.json where XXX = 001, 002... 999999 etc
-        private const string LegacyFilePattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{4}-[0-9]{1,6}.json";
+        private static readonly string LegacyDateTimePattern = "[0-9]{4}";
+        private static readonly string LegacyFilePattern = $@"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-{LegacyDateTimePattern}-[0-9]{{1,6}}.json";
 
         public PrintNotificationCommand(
             ILogger<PrintNotificationCommand> logger,
@@ -42,15 +47,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
             if (_sftpSettings.UseJson)
             {
-                await Process(_sftpSettings.PrintResponseDirectory, FilePattern, (f) => ProcessFile(f));
+                await Process(_sftpSettings.PrintResponseDirectory, FilePattern, DateTimePattern, "ddMMyyHHmm", (f) => ProcessFile(f));
             }
             else
             {
-                await Process(_sftpSettings.ProofDirectory, LegacyFilePattern, (f) => ProcessLegacyFile(f));
+                await Process(_sftpSettings.ProofDirectory, LegacyFilePattern, LegacyDateTimePattern, "MMYY", (f) => ProcessLegacyFile(f));
             }            
         }
 
-        private async Task Process(string directoryName, string filePattern, Func<PrintNotificationFileInfo, Task<Batch>> processFile)
+        private async Task Process(string directoryName, string filePattern, string dateTimePattern, string dateTimeFormat, Func<PrintNotificationFileInfo, Task<Batch>> processFile)
         {
             var fileNames = await _fileTransferClient.GetFileNames(directoryName, filePattern);
 
@@ -60,7 +65,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 return;
             }
 
-            foreach (var fileName in fileNames)
+            var sortedFileNames = fileNames.ToList().SortByDateTimePattern(dateTimePattern, dateTimeFormat);
+            foreach (var fileName in sortedFileNames)
             {
                 var fileInfo = new PrintNotificationFileInfo(_fileTransferClient.DownloadFile($"{directoryName}/{fileName}"), fileName);
 

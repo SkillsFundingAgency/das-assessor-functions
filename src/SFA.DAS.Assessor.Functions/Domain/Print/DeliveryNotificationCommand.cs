@@ -1,20 +1,22 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using System.Linq;
+using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
-using System.Collections.Generic;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
     public class DeliveryNotificationCommand : IDeliveryNotificationCommand
     {
         // DeliveryNotifications-ddMMyyHHmm.json
-        const string FilePattern = @"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-[0-9]{10}.json";
+        private static readonly string DateTimePattern = "[0-9]{10}";
+        private static readonly string FilePattern = $@"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-{DateTimePattern}.json";
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
@@ -50,7 +52,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private async Task ProcessFiles(IEnumerable<string> fileNames)
         {
-            foreach (var fileName in fileNames)
+            var sortedFileNames = fileNames.ToList().SortByDateTimePattern(DateTimePattern, "ddMMyyHHmm");
+            foreach (var fileName in sortedFileNames)
             {
                 await ProcessFile(fileName);
             }
