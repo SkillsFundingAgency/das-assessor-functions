@@ -25,7 +25,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         }
         public async Task UpdateStandards()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/ao/update-standards"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/update-standards"))
             {
                 await PostPutRequest(request);
             }
