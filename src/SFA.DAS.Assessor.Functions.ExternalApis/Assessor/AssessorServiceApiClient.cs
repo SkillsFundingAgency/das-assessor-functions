@@ -27,7 +27,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/update-standards"))
             {
-                await PostPutRequest(request);
+                await PostPutRequest(request, new { });
             }
         }
 
@@ -35,7 +35,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
             {
-                await PostPutRequest(request);
+                await PostPutRequest(request, new { });
             }
         }
 
