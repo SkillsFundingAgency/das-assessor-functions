@@ -1,21 +1,23 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using NLog.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
-using SFA.DAS.Notifications.Api.Client.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLog.Extensions.Logging;
 using Renci.SshNet;
-using System;
+using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
+using SFA.DAS.Assessor.Functions.Domain.Print;
+using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
-using SFA.DAS.Assessor.Functions.Domain.Print;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using SFA.DAS.Assessor.Functions.Domain.Standards;
+using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.ExternalApis;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Notifications.Api.Client.Configuration;
+using System;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -80,11 +82,15 @@ namespace SFA.DAS.Assessor.Functions
             {
                 builder.Services.AddTransient<IFileTransferClient, FileTransferClient>();
             }
+            
             builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintingSpreadsheetCreator, PrintingSpreadsheetCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
+
+            builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
+            builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
 
             builder.Services.AddTransient((s) =>
             {

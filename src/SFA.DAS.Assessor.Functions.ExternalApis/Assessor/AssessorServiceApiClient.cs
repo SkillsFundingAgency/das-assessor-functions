@@ -21,12 +21,19 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
         {
         }
+        public async Task UpdateStandards()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/update-standards"))
+            {
+                await PostPutRequest(request, new { });
+            }
+        }
 
         public async Task UpdateStandardSummary()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
             {
-                await PostPutRequest(request);
+                await PostPutRequest(request, new { });
             }
         }
 
