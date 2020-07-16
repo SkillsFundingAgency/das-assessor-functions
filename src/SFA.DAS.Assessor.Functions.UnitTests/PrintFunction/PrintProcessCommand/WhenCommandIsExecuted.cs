@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
         private int _batchNumber = 1;
         private Guid _scheduleId = Guid.NewGuid();
-        private List<CertificateResponse> _certificateResponses;
+        private CertificatesToBePrintedResponse _certificatesToBePrintedResponse;
         private List<string> _downloadedFiles;
         private BatchLogResponse _batchLogResponse;
         private Guid _batchLogResponseId;
@@ -69,15 +69,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
                 .Setup(m => m.GetCurrentBatchLog())
                 .ReturnsAsync(new BatchLogResponse { Id = Guid.NewGuid(), BatchNumber = _batchNumber });
 
-            _certificateResponses = Builder<CertificateResponse>
+            _certificatesToBePrintedResponse = new CertificatesToBePrintedResponse()
+            {
+                Certificates = Builder<CertificateToBePrintedSummary>
                 .CreateListOfSize(10)
                 .All()
-                .With(o => o.CertificateData = Builder<CertificateDataResponse>.CreateNew().Build()) 
-                .Build() as List<CertificateResponse>;
+                .Build() as List<CertificateToBePrintedSummary>
+            };
 
             _mockAssessorServiceApiClient
                 .Setup(m => m.GetCertificatesToBePrinted())
-                .ReturnsAsync(_certificateResponses);
+                .ReturnsAsync(_certificatesToBePrintedResponse);
 
             _batchLogResponseId = Guid.NewGuid();
             _batchLogResponse = new BatchLogResponse { Id = _batchLogResponseId, BatchNumber = _batchNumber };
@@ -142,7 +144,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert
-            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<List<CertificateResponse>>(), It.IsAny<string>()), Times.Never);
+            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<List<CertificateToBePrintedSummary>>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -159,7 +161,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             // Assert            
             _mockAssessorServiceApiClient.Verify(m => m.UpdateBatchDataInBatchLog(It.IsNotIn(_batchLogResponseId), It.IsAny<BatchData>()), Times.Never);
             _mockAssessorServiceApiClient.Verify(m => m.CreateBatchLog(It.IsAny<CreateBatchLogRequest>()), Times.Never);
-            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(It.IsAny<int>(), It.IsAny<IEnumerable<CertificateResponse>>()), Times.Never);
+            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(It.IsAny<int>(), It.IsAny<IEnumerable<CertificateToBePrintedSummary>>()), Times.Never);
             _mockAssessorServiceApiClient.Verify(q => q.CompleteSchedule(It.IsAny<Guid>()), Times.Never());
         }
 
@@ -179,7 +181,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert            
-            _mockPrintingSpreadsheetCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<IEnumerable<CertificateResponse>>()), Times.Never);
+            _mockPrintingSpreadsheetCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<IEnumerable<CertificateToBePrintedSummary>>()), Times.Never);
         }
 
         [Test]
@@ -198,7 +200,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert            
-            _mockPrintingJsonCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<CertificateResponse>>(), It.IsAny<string>()), Times.Never);
+            _mockPrintingJsonCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<CertificateToBePrintedSummary>>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -209,7 +211,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
             _mockAssessorServiceApiClient
                 .Setup(m => m.GetCertificatesToBePrinted())
-                .ReturnsAsync(new List<CertificateResponse>());
+                .ReturnsAsync(
+                    new CertificatesToBePrintedResponse()
+                    {
+                        Certificates = new List<CertificateToBePrintedSummary>()
+                    });
 
             // Act
             await _sut.Execute();
@@ -224,7 +230,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             // Arrange
             _mockAssessorServiceApiClient
                .Setup(m => m.GetCertificatesToBePrinted())
-               .ReturnsAsync(new List<CertificateResponse>());
+               .ReturnsAsync(
+                    new CertificatesToBePrintedResponse()
+                    {
+                        Certificates = new List<CertificateToBePrintedSummary>()
+                    });
 
             // Act
             await _sut.Execute();
@@ -234,7 +244,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
             _mockAssessorServiceApiClient.Verify(m => m.UpdateBatchDataInBatchLog(It.IsNotIn(_batchLogResponseId), It.IsAny<BatchData>()), Times.Never);
             _mockAssessorServiceApiClient.Verify(m => m.CreateBatchLog(It.IsAny<CreateBatchLogRequest>()), Times.Never);
-            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(It.IsAny<int>(), It.IsAny<IEnumerable<CertificateResponse>>()), Times.Never);            
+            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(It.IsAny<int>(), It.IsAny<IEnumerable<CertificateToBePrintedSummary>>()), Times.Never);            
         }
 
         [Test]
@@ -266,7 +276,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert            
-            _mockPrintingSpreadsheetCreator.Verify(m => m.Create(_batchNumber + 1, _certificateResponses), Times.Once);
+            _mockPrintingSpreadsheetCreator.Verify(m => m.Create(_batchNumber + 1, _certificatesToBePrintedResponse.Certificates), Times.Once);
         }
 
         [Test]
@@ -281,11 +291,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert            
-            _mockPrintingJsonCreator.Verify(m => m.Create(_batchNumber + 1, _certificateResponses, It.IsAny<string>()), Times.Once);
-            _mockNotificationService.Verify(m => m.Send(_batchNumber + 1, _certificateResponses, It.IsAny<string>()), Times.Once);
+            _mockPrintingJsonCreator.Verify(m => m.Create(_batchNumber + 1, _certificatesToBePrintedResponse.Certificates, It.IsAny<string>()), Times.Once);
+            _mockNotificationService.Verify(m => m.Send(_batchNumber + 1, _certificatesToBePrintedResponse.Certificates, It.IsAny<string>()), Times.Once);
             _mockFileTransferClient.Verify(m => m.LogUploadDirectory(), Times.Once);
             _mockAssessorServiceApiClient.Verify(m => m.CreateBatchLog(It.Is<CreateBatchLogRequest>(r => r.BatchNumber.Equals(_batchNumber + 1))), Times.Once);
-            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(_batchNumber + 1, _certificateResponses), Times.Once);
+            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(_batchNumber + 1, _certificatesToBePrintedResponse.Certificates), Times.Once);
             _mockAssessorServiceApiClient.Verify(m => m.CompleteSchedule(_scheduleId), Times.Once);
         }
 
@@ -301,11 +311,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert            
-            _mockPrintingSpreadsheetCreator.Verify(m => m.Create(_batchNumber + 1, _certificateResponses), Times.Once);
-            _mockNotificationService.Verify(m => m.Send(_batchNumber + 1, _certificateResponses, It.IsAny<string>()), Times.Once);
+            _mockPrintingSpreadsheetCreator.Verify(m => m.Create(_batchNumber + 1, _certificatesToBePrintedResponse.Certificates), Times.Once);
+            _mockNotificationService.Verify(m => m.Send(_batchNumber + 1, _certificatesToBePrintedResponse.Certificates, It.IsAny<string>()), Times.Once);
             _mockFileTransferClient.Verify(m => m.LogUploadDirectory(), Times.Once);
             _mockAssessorServiceApiClient.Verify(m => m.CreateBatchLog(It.Is<CreateBatchLogRequest>(r => r.BatchNumber.Equals(_batchNumber + 1))), Times.Once);
-            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(_batchNumber + 1, _certificateResponses), Times.Once);
+            _mockAssessorServiceApiClient.Verify(m => m.ChangeStatusToPrinted(_batchNumber + 1, _certificatesToBePrintedResponse.Certificates), Times.Once);
             _mockAssessorServiceApiClient.Verify(m => m.CompleteSchedule(_scheduleId), Times.Once);
         }
 
