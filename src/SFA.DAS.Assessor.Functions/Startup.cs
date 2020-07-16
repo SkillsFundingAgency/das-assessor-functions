@@ -13,11 +13,13 @@ using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
+using SFA.DAS.Assessor.Functions.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
 using SFA.DAS.Notifications.Api.Client.Configuration;
 using System;
 using System.Net.Http;
@@ -46,14 +48,23 @@ namespace SFA.DAS.Assessor.Functions
                 nLogConfiguration.ConfigureNLog();
             });
 
-            var config = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddAzureTableStorageConfiguration(
-                    Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
-                    Environment.GetEnvironmentVariable("AppName"),
-                    Environment.GetEnvironmentVariable("EnvironmentName"),
-                    "1.0", "SFA.DAS.AssessorFunctions")
-                .Build();
+            builder.AddConfiguration((configBuilder) =>
+            {
+                var tempConfig = configBuilder
+                    .Build();
+
+                var configuration = configBuilder
+                    .AddAzureTableStorageConfiguration(
+                        tempConfig["ConfigurationStorageConnectionString"],
+                        "SFA.DAS.AssessorFunctions",
+                        tempConfig["EnvironmentName"],
+                        "1.0")
+                    .Build();
+
+                return configuration;
+            });
+
+            var config = builder.GetCurrentConfiguration();
 
             builder.Services.AddOptions();
             
