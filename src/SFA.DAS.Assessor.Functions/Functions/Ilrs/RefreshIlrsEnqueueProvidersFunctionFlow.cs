@@ -20,7 +20,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
         [FunctionName("RefreshIlrsEnqueueProviders")]
         public async Task Run([TimerTrigger("%RefreshIlrsEnqueueProvidersFunctionFlowSchedule%", RunOnStartup = true)]TimerInfo myTimer,
-            [Queue(QueueNames.RefreshIlrs, Connection = "ConfigurationStorageConnectionString")]CloudQueue refreshIlrsQueue,
+            [Queue(QueueNames.RefreshIlrs, Connection = "SharedStorageAccountConnectionString")]CloudQueue refreshIlrsQueue,
             ILogger logger)
         {
             try
