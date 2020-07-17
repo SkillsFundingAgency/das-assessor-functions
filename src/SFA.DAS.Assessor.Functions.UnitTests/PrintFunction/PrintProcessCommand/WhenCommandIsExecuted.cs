@@ -80,7 +80,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
             _certificates = Builder<Certificate>
                 .CreateListOfSize(10)
-                .All()                
+                .All()
                 .Build() as List<Certificate>;
 
             _mockCertificateService
@@ -234,8 +234,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             _mockScheduleService.Verify(q => q.Save(It.Is<Schedule>(s => s.Id ==_scheduleId)), Times.Once());
 
             _mockBatchService.Verify(m => m.Save(It.IsAny<Batch>()), Times.Never);
-            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);            
-        }        
+            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
+        }
 
         [Test]
         public async Task ThenItShouldCreateASpreadSheetIfConfiguredTo()

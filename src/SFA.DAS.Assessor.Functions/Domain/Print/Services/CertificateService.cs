@@ -8,8 +8,6 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-
-
     public class CertificateService : ICertificateService
     {
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
@@ -44,52 +42,40 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         private async Task<IEnumerable<Certificate>> ToBePrinted()
         {
-            var certificates = new List<Certificate>();
-
-            var certificateResponses = await _assessorServiceApiClient.GetCertificatesToBePrinted();
-
-            return certificateResponses.Select(Map);
+            var response = await _assessorServiceApiClient.GetCertificatesToBePrinted();
+            return response.Certificates.Select(Map);
         }
 
-        private Certificate Map(CertificateResponse response)
+        private Certificate Map(CertificateToBePrintedSummary certificateToBePrinted)
         {
-            var newCertificate = new Certificate
+            var certificate = new Certificate
             {
-                Uln = response.Uln,
-                StandardCode = response.StandardCode,
-                ProviderUkPrn = response.ProviderUkPrn,
-                EndPointAssessorOrganisationId = response.EndPointAssessorOrganisationId,
-                EndPointAssessorOrganisationName = response.EndPointAssessorOrganisationName,
-                CertificateReference = response.CertificateReference,
-                Status = response.Status
+                Uln = certificateToBePrinted.Uln,
+                StandardCode = certificateToBePrinted.StandardCode,
+                ProviderUkPrn = certificateToBePrinted.ProviderUkPrn,
+                EndPointAssessorOrganisationId = certificateToBePrinted.EndPointAssessorOrganisationId,
+                EndPointAssessorOrganisationName = certificateToBePrinted.EndPointAssessorOrganisationName,
+                CertificateReference = certificateToBePrinted.CertificateReference,
+                LearnerGivenNames = certificateToBePrinted.LearnerGivenNames,
+                LearnerFamilyName = certificateToBePrinted.LearnerFamilyName,
+                StandardName = certificateToBePrinted.StandardName,
+                StandardLevel = certificateToBePrinted.StandardLevel,
+                ContactName = certificateToBePrinted.ContactName,
+                ContactOrganisation = certificateToBePrinted.ContactOrganisation,
+                ContactAddLine1 = certificateToBePrinted.ContactAddLine1,
+                ContactAddLine2 = certificateToBePrinted.ContactAddLine2,
+                ContactAddLine3 = certificateToBePrinted.ContactAddLine3,
+                ContactAddLine4 = certificateToBePrinted.ContactAddLine4,
+                ContactPostCode = certificateToBePrinted.ContactPostCode,
+                AchievementDate = certificateToBePrinted.AchievementDate,
+                CourseOption = certificateToBePrinted.CourseOption,
+                OverallGrade = certificateToBePrinted.OverallGrade,
+                Department = certificateToBePrinted.Department,
+                FullName = certificateToBePrinted.FullName,
+                Status = certificateToBePrinted.Status
             };
 
-            if (response.CertificateData != null)
-            {
-                newCertificate.LearnerGivenNames = response.CertificateData.LearnerGivenNames;
-                newCertificate.LearnerFamilyName = response.CertificateData.LearnerFamilyName;
-                newCertificate.StandardReference = response.CertificateData.StandardReference;
-                newCertificate.StandardName = response.CertificateData.StandardName;
-                newCertificate.StandardLevel = response.CertificateData.StandardLevel;
-                newCertificate.StandardPublicationDate = response.CertificateData.StandardPublicationDate;
-                newCertificate.ContactName = response.CertificateData.ContactName;
-                newCertificate.ContactOrganisation = response.CertificateData.ContactOrganisation;
-                newCertificate.ContactAddLine1 = response.CertificateData.ContactAddLine1;
-                newCertificate.ContactAddLine2 = response.CertificateData.ContactAddLine2;
-                newCertificate.ContactAddLine3 = response.CertificateData.ContactAddLine3;
-                newCertificate.ContactAddLine4 = response.CertificateData.ContactAddLine4;
-                newCertificate.ContactPostCode = response.CertificateData.ContactPostCode;
-                newCertificate.Registration = response.CertificateData.Registration;
-                newCertificate.ProviderName = response.CertificateData.ProviderName;
-                newCertificate.LearningStartDate = response.CertificateData.LearningStartDate;
-                newCertificate.AchievementDate = response.CertificateData.AchievementDate;
-                newCertificate.CourseOption = response.CertificateData.CourseOption;
-                newCertificate.OverallGrade = response.CertificateData.OverallGrade;
-                newCertificate.Department = response.CertificateData.Department;
-                newCertificate.FullName = response.CertificateData.FullName;
-            }
-
-            return newCertificate;
+            return certificate;
         }
     }
 }

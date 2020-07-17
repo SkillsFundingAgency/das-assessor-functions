@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task<string> GetAssessorSetting(string name);
         Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest);
         Task CompleteSchedule(Guid scheduleRunId);
-        Task<IEnumerable<CertificateResponse>> GetCertificatesToBePrinted();
+        Task<CertificatesToBePrintedResponse> GetCertificatesToBePrinted();
         Task<BatchLogResponse> GetCurrentBatchLog();
         Task<BatchLogResponse> GetGetBatchLogByBatchNumber(string batchNumber);
         Task<ScheduleRun> GetSchedule(ScheduleType scheduleType);

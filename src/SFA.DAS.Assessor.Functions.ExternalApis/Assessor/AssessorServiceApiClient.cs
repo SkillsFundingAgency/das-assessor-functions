@@ -116,11 +116,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task<IEnumerable<CertificateResponse>> GetCertificatesToBePrinted()
+        public async Task<CertificatesToBePrintedResponse> GetCertificatesToBePrinted()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/certificates/tobeprinted"))
             {
-                return await GetAsync<IEnumerable<CertificateResponse>>(request);
+                return await GetAsync<CertificatesToBePrintedResponse>(request);
             }
         }
 
