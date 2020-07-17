@@ -13,6 +13,8 @@ using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
+using SFA.DAS.Assessor.Functions.Domain.Standards;
+using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
@@ -114,9 +116,13 @@ namespace SFA.DAS.Assessor.Functions
             {
                 builder.Services.AddTransient<IFileTransferClient, FileTransferClient>();
             }
+            
             builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintingSpreadsheetCreator, PrintingSpreadsheetCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
+
+            builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
+            builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
 
             builder.Services.AddTransient((s) =>
             {
