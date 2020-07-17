@@ -43,7 +43,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         public async Task ThenItShouldReturnAnEmailTemplate()
         {
             // Arrange
-            var certificateResponses = Builder<CertificateResponse>.CreateListOfSize(10).Build();
+            var certificatesToPrintedResponse = new CertificatesToBePrintedResponse()
+            {
+                Certificates = Builder<CertificateToBePrintedSummary>
+                    .CreateListOfSize(10)
+                    .Build() as List<CertificateToBePrintedSummary>
+            };
 
             _mockHttpMessageHandler
                 .Protected()
@@ -52,14 +57,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
                 ItExpr.Is<HttpRequestMessage>(r => r.RequestUri.AbsolutePath == $"/api/v1/certificates/tobeprinted" && r.Method == HttpMethod.Get),
                 ItExpr.IsAny<CancellationToken>()
                 )
-                .ReturnsAsync(new HttpResponseMessage { StatusCode = System.Net.HttpStatusCode.OK, Content = new StringContent(JsonConvert.SerializeObject(certificateResponses), Encoding.UTF8, "text/json") })
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = System.Net.HttpStatusCode.OK, Content = new StringContent(JsonConvert.SerializeObject(certificatesToPrintedResponse), Encoding.UTF8, "text/json") })
                 .Verifiable();
 
             // Act
             var result = await _sut.GetCertificatesToBePrinted();
 
             // Assert
-            result.Should().HaveCount(10);
+            result.Certificates.Should().HaveCount(10);
         }
     }
 }

@@ -68,12 +68,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task ChangeStatusToPrinted(int batchNumber, IEnumerable<CertificateResponse> responses)
+        public async Task ChangeStatusToPrinted(int batchNumber, IEnumerable<CertificateToBePrintedSummary> certificates)
         {
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
             const int chunkSize = 100;
 
-            var certificateStatuses = responses.Select(
+            var certificateStatuses = certificates.Select(
                 q => new CertificateStatus
                 {
                     CertificateReference = q.CertificateReference,
@@ -103,11 +103,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task<IEnumerable<CertificateResponse>> GetCertificatesToBePrinted()
+        public async Task<CertificatesToBePrintedResponse> GetCertificatesToBePrinted()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/certificates/tobeprinted"))
             {
-                return await GetAsync<IEnumerable<CertificateResponse>>(request);
+                return await GetAsync<CertificatesToBePrintedResponse>(request);
             }
         }
 
