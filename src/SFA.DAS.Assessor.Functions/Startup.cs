@@ -88,7 +88,7 @@ namespace SFA.DAS.Assessor.Functions
                 return new SftpClient(sftpSettings.RemoteHost, Convert.ToInt32(sftpSettings.Port), sftpSettings.Username, sftpSettings.Password);
             });
 
-            builder.Services.AddNotificationService();
+            //builder.Services.AddNotificationService();
         }
     }
 }

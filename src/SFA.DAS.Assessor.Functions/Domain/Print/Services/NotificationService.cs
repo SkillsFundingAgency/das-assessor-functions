@@ -15,45 +15,53 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly INotificationsApi _notificationsApi;
+        //private readonly INotificationsApi _notificationsApi;
         private readonly ILogger<NotificationService> _logger;
         private readonly SftpSettings _sftpSettings;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
 
-        public NotificationService(INotificationsApi notificationsApi,
+        public NotificationService(//INotificationsApi notificationsApi,
             ILogger<NotificationService> logger,
             IOptions<SftpSettings> options,
             IAssessorServiceApiClient assessorServiceApi)
         {
-            _notificationsApi = notificationsApi;
+            //_notificationsApi = notificationsApi;
             _logger = logger;
             _sftpSettings = options?.Value;
             _assessorServiceApi = assessorServiceApi;
         }
 
+        
         public async Task Send(int batchNumber, List<CertificateResponse> certificateResponses, string certificatesFileName)
         {
-            var emailTemplate = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
+            var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
 
-            var personalisation = CreatePersonalisationTokens(certificateResponses, certificatesFileName);
+            var recipients = emailTemplateSummary.Recipients.Split(';').Select(x => x.Trim());
+
+            var personalisationTokens = CreatePersonalisationTokens(certificateResponses, certificatesFileName);
 
             _logger.Log(LogLevel.Information, "Send Email");
 
-            var recipients = emailTemplate.Recipients.Split(';').Select(x => x.Trim());
             foreach (var recipient in recipients)
             {
-                var email = new Email
-                {
-                    RecipientsAddress = recipient,
-                    TemplateId = emailTemplate.TemplateId,
-                    ReplyToAddress = "jcoxhead@hotmail.com",
-                    Subject = "Test Subject",
-                    SystemId = "PrintAssessorCoverLetters",
-                    Tokens = personalisation
-                };
-
-                await _notificationsApi.SendEmail(email);
+                await _assessorServiceApi.SendEmailWithTemplate(new SendEmailRequest(recipient, emailTemplateSummary, personalisationTokens));
             }
+            
+            //var recipients = emailTemplate.Recipients.Split(';').Select(x => x.Trim());
+            //foreach (var recipient in recipients)
+            //{
+            //    var email = new Email
+            //    {
+            //        RecipientsAddress = recipient,
+            //        TemplateId = emailTemplate.TemplateId,
+            //        ReplyToAddress = "jcoxhead@hotmail.com",
+            //        Subject = "Test Subject",
+            //        SystemId = "PrintAssessorCoverLetters",
+            //        Tokens = personalisation
+            //    };
+
+            //    await _notificationsApi.SendEmail(email);
+            //}
         }
 
         private Dictionary<string, string> CreatePersonalisationTokens(List<CertificateResponse> certificateResponses, string certificatesFileName)

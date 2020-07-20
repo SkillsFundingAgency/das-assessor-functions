@@ -20,6 +20,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task<BatchLogResponse> GetGetBatchLogByBatchNumber(string batchNumber);
         Task<ScheduleRun> GetSchedule(ScheduleType scheduleType);
         Task UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData);
-        Task<EMailTemplate> GetEmailTemplate(string templateName);
+        Task<EmailTemplateSummary> GetEmailTemplate(string templateName);
+        Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest);
     }
 }
