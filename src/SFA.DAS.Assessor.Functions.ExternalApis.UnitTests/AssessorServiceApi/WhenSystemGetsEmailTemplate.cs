@@ -63,7 +63,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
             var result = await _sut.GetEmailTemplate(templateName);
 
             // Assert
-            result.Should().BeOfType<EMailTemplate>();
+            result.Should().BeOfType<EmailTemplateSummary>();
             (result as EmailTemplateSummary).TemplateName.Should().Be(emailTemplate.TemplateName);
         }
     }
