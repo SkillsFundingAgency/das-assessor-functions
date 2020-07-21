@@ -5,8 +5,6 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Notifications.Api.Client;
-using SFA.DAS.Notifications.Api.Types;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,18 +12,16 @@ using System.Threading.Tasks;
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
     public class NotificationService : INotificationService
-    {
-        //private readonly INotificationsApi _notificationsApi;
+    {        
         private readonly ILogger<NotificationService> _logger;
         private readonly SftpSettings _sftpSettings;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
 
-        public NotificationService(//INotificationsApi notificationsApi,
+        public NotificationService(
             ILogger<NotificationService> logger,
             IOptions<SftpSettings> options,
             IAssessorServiceApiClient assessorServiceApi)
-        {
-            //_notificationsApi = notificationsApi;
+        {            
             _logger = logger;
             _sftpSettings = options?.Value;
             _assessorServiceApi = assessorServiceApi;
@@ -46,22 +42,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             {
                 await _assessorServiceApi.SendEmailWithTemplate(new SendEmailRequest(recipient, emailTemplateSummary, personalisationTokens));
             }
-            
-            //var recipients = emailTemplate.Recipients.Split(';').Select(x => x.Trim());
-            //foreach (var recipient in recipients)
-            //{
-            //    var email = new Email
-            //    {
-            //        RecipientsAddress = recipient,
-            //        TemplateId = emailTemplate.TemplateId,
-            //        ReplyToAddress = "jcoxhead@hotmail.com",
-            //        Subject = "Test Subject",
-            //        SystemId = "PrintAssessorCoverLetters",
-            //        Tokens = personalisation
-            //    };
 
-            //    await _notificationsApi.SendEmail(email);
-            //}
         }
 
         private Dictionary<string, string> CreatePersonalisationTokens(List<CertificateResponse> certificateResponses, string certificatesFileName)
