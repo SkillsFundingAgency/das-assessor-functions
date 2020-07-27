@@ -31,7 +31,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _assessorServiceApi = assessorServiceApi;
         }
 
-        public async Task Send(int batchNumber, List<CertificateResponse> certificateResponses, string certificatesFileName)
+        public async Task Send(int batchNumber, List<CertificateToBePrintedSummary> certificateResponses, string certificatesFileName)
         {
             var emailTemplate = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
 
@@ -56,7 +56,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
         }
 
-        private Dictionary<string, string> CreatePersonalisationTokens(List<CertificateResponse> certificateResponses, string certificatesFileName)
+        private Dictionary<string, string> CreatePersonalisationTokens(List<CertificateToBePrintedSummary> certificateResponses, string certificatesFileName)
         {
             var personalisation = new Dictionary<string, string>
             {

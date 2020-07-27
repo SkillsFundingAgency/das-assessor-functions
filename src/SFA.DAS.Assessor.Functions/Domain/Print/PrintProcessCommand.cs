@@ -127,7 +127,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 var batchLogResponse = await _assessorServiceApi.GetCurrentBatchLog();
 
                 var batchNumber = batchLogResponse.BatchNumber + 1;
-                var certificates = (await _assessorServiceApi.GetCertificatesToBePrinted()).ToList().Sanitise(_logger);
+                var certificates = (await _assessorServiceApi.GetCertificatesToBePrinted()).Certificates.Sanitise(_logger);
 
                 if (certificates.Count == 0)
                 {

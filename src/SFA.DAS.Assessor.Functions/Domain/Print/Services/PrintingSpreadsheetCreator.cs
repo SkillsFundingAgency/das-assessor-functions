@@ -20,7 +20,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         private readonly ILogger<PrintingSpreadsheetCreator> _logger;
         private readonly IFileTransferClient _fileTransferClient;
         private readonly CertificateDetails _certificateDetails;
-        private IEnumerable<CertificateResponse> _certificates;
+        private IEnumerable<CertificateToBePrintedSummary> _certificates;
 
         public PrintingSpreadsheetCreator(
             ILogger<PrintingSpreadsheetCreator> logger,
@@ -32,14 +32,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _certificateDetails = options?.Value;
         }
 
-        public void Create(int batchNumber, IEnumerable<CertificateResponse> certificates)
+        public void Create(int batchNumber, IEnumerable<CertificateToBePrintedSummary> certificates)
         {
             _logger.Log(LogLevel.Information, "Creating Excel Spreadsheet ....");
 
             var memoryStream = new MemoryStream();
 
-            var certificateResponses = certificates as CertificateResponse[] ?? certificates.ToArray();
-            _certificates = certificateResponses;
+            _certificates = certificates as CertificateToBePrintedSummary[] ?? certificates.ToArray();
 
             var utcNow = DateTime.UtcNow;
             var gmtNow = utcNow.UtcToTimeZoneTime(TimezoneNames.GmtStandardTimeZone);
@@ -48,7 +47,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             using (var package = new ExcelPackage(memoryStream))
             {
                 CreateWorkBook(package);
-                CreateWorkSheet(batchNumber, package, certificateResponses);
+                CreateWorkSheet(batchNumber, package);
 
                 package.Save();
 
@@ -70,8 +69,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             workbook.View.ShowSheetTabs = true;
         }
 
-        private void CreateWorkSheet(int batchNumber, ExcelPackage package,
-            IEnumerable<CertificateResponse> certificates)
+        private void CreateWorkSheet(int batchNumber, ExcelPackage package)
         {
             var utcNow = DateTime.UtcNow;
             var gmtNow = utcNow.UtcToTimeZoneTime(TimezoneNames.GmtStandardTimeZone);
@@ -157,27 +155,26 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             foreach (var certificate in _certificates)
             {
-                var certificateData = certificate.CertificateData;
-                if (certificateData.AchievementDate.HasValue)
-                    worksheet.Cells[row, 1].Value = certificateData.AchievementDate.Value.ToString("dd MMMM yyyy");
+                if (certificate.AchievementDate.HasValue)
+                    worksheet.Cells[row, 1].Value = certificate.AchievementDate.Value.ToString("dd MMMM yyyy");
 
-                worksheet.Cells[row, 2].Value = $"{certificateData.LearnerGivenNames.ProperCase()} {certificateData.LearnerFamilyName.ProperCase(true)}";
+                worksheet.Cells[row, 2].Value = $"{certificate.LearnerGivenNames.ProperCase()} {certificate.LearnerFamilyName.ProperCase(true)}";
 
-                if (certificateData.StandardName != null)
-                    worksheet.Cells[row, 3].Value = certificateData.StandardName.ToUpper();
+                if (certificate.StandardName != null)
+                    worksheet.Cells[row, 3].Value = certificate.StandardName.ToUpper();
 
-                if (!string.IsNullOrWhiteSpace(certificateData.CourseOption))
-                    worksheet.Cells[row, 4].Value = "(" + certificateData.CourseOption.ToUpper() + "):";
+                if (!string.IsNullOrWhiteSpace(certificate.CourseOption))
+                    worksheet.Cells[row, 4].Value = "(" + certificate.CourseOption.ToUpper() + "):";
 
-                worksheet.Cells[row, 5].Value = $"Level {certificateData.StandardLevel}".ToUpper();
+                worksheet.Cells[row, 5].Value = $"Level {certificate.StandardLevel}".ToUpper();
 
-                if (certificateData.OverallGrade != null &&
-                    !certificateData.OverallGrade.ToLower().Contains("no grade awarded"))
+                if (certificate.OverallGrade != null &&
+                    !certificate.OverallGrade.ToLower().Contains("no grade awarded"))
                     worksheet.Cells[row, 6].Value = "Achieved grade ";
 
-                if (certificateData.OverallGrade != null &&
-                    !certificateData.OverallGrade.ToLower().Contains("no grade awarded"))
-                    worksheet.Cells[row, 7].Value = certificateData.OverallGrade.ToUpper();
+                if (certificate.OverallGrade != null &&
+                    !certificate.OverallGrade.ToLower().Contains("no grade awarded"))
+                    worksheet.Cells[row, 7].Value = certificate.OverallGrade.ToUpper();
 
                 if (certificate.CertificateReference != null)
                     worksheet.Cells[row, 8].Value = certificate.CertificateReference.PadLeft(8, '0');
@@ -185,29 +182,29 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 worksheet.Cells[row, 9].Value = _certificateDetails.ChairName;
                 worksheet.Cells[row, 10].Value = _certificateDetails.ChairTitle;
 
-                if (certificateData.ContactName != null)
-                    worksheet.Cells[row, 11].Value = certificateData.ContactName.Replace("\t", " ");
+                if (certificate.ContactName != null)
+                    worksheet.Cells[row, 11].Value = certificate.ContactName.Replace("\t", " ");
 
-                if (certificateData.ContactOrganisation != null)
-                    worksheet.Cells[row, 12].Value = certificateData.ContactOrganisation;
+                if (certificate.ContactOrganisation != null)
+                    worksheet.Cells[row, 12].Value = certificate.ContactOrganisation;
 
-                if (certificateData.Department != null)
-                    worksheet.Cells[row, 13].Value = certificateData.Department;
+                if (certificate.Department != null)
+                    worksheet.Cells[row, 13].Value = certificate.Department;
 
-                if (certificateData.ContactAddLine1 != null)
-                    worksheet.Cells[row, 14].Value = certificateData.ContactAddLine1;
+                if (certificate.ContactAddLine1 != null)
+                    worksheet.Cells[row, 14].Value = certificate.ContactAddLine1;
 
-                if (certificateData.ContactAddLine2 != null)
-                    worksheet.Cells[row, 15].Value = certificateData.ContactAddLine2;
+                if (certificate.ContactAddLine2 != null)
+                    worksheet.Cells[row, 15].Value = certificate.ContactAddLine2;
 
-                if (certificateData.ContactAddLine3 != null)
-                    worksheet.Cells[row, 16].Value = certificateData.ContactAddLine3;
+                if (certificate.ContactAddLine3 != null)
+                    worksheet.Cells[row, 16].Value = certificate.ContactAddLine3;
 
-                if (certificateData.ContactAddLine4 != null)
-                    worksheet.Cells[row, 17].Value = certificateData.ContactAddLine4;
+                if (certificate.ContactAddLine4 != null)
+                    worksheet.Cells[row, 17].Value = certificate.ContactAddLine4;
 
-                if (certificateData.ContactPostCode != null)
-                    worksheet.Cells[row, 18].Value = certificateData.ContactPostCode;
+                if (certificate.ContactPostCode != null)
+                    worksheet.Cells[row, 18].Value = certificate.ContactPostCode;
 
                 row++;
             }
