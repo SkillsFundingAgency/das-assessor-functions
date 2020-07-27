@@ -215,6 +215,10 @@
         "FunctionAppName": {
             "type": "string",
             "value": "[variables('functionAppName')]"
+        },
+        "StorageAccountConnectionString": {
+            "type": "string",
+            "value": "[reference('storage-account').outputs.storageConnectionString.value]"
         }
     }
 }
