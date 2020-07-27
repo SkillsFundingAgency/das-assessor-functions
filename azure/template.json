@@ -20,12 +20,6 @@
                 "description": "Short name of the service. Used for the name of resources created"
             }
         },
-        "sharedStorageAccountConnectionString": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Name of the connection string for shared storage account"
-            }
-        },
         "ipSecurityRestrictions": {
             "type": "array",
             "metadata": {
@@ -77,7 +71,8 @@
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'),'-asp')]",
-        "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]"
+        "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]",
+        "storageAccountName": "[concat('das',toLower(parameters('resourceEnvironmentName')),parameters('serviceName'),'str')]"
     },
     "resources": [
         {
@@ -150,7 +145,7 @@
                         "value": [
                             {
                                 "name": "AzureWebJobsStorage",
-                                "value": "[parameters('sharedStorageAccountConnectionString')]"
+                                "value": "[reference('storage-account').outputs.storageConnectionString.value]"
                             },
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -194,14 +189,36 @@
             },
             "dependsOn": [
                 "function-app-insights",
-                "worker-app-service-plan"
+                "worker-app-service-plan",
+                "storage-account"
             ]
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "storage-account",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
+                    }
+                }
+            }
         }
     ],
     "outputs": {
         "FunctionAppName": {
             "type": "string",
             "value": "[variables('functionAppName')]"
+        },
+        "StorageAccountConnectionString": {
+            "type": "string",
+            "value": "[reference('storage-account').outputs.storageConnectionString.value]"
         }
     }
 }
