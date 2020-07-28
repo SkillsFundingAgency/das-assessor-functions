@@ -7,6 +7,7 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +27,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         public void Arrange()
         {
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            _mockAssessorServiceTokenService = new Mock<IAssessorServiceTokenService>();
             _mockOptions = new Mock<IOptions<AssessorApiAuthentication>>();
             _mockLogger = new Mock<ILogger<AssessorServiceApiClient>>();
 
             _mockOptions.Setup(m => m.Value).Returns(new AssessorApiAuthentication { ApiBaseAddress = "http://localhost:8080" });
 
-            _sut = new AssessorServiceApiClient(new HttpClient(_mockHttpMessageHandler.Object), _mockAssessorServiceTokenService.Object, _mockOptions.Object, _mockLogger.Object);
+            _sut = new AssessorServiceApiClient(new HttpClient(_mockHttpMessageHandler.Object), _mockOptions.Object, _mockLogger.Object);
         }
 
         [TestCase(1, 1)]
@@ -54,7 +54,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         {
             // Arrange
             var batchNumber = 1;
-            var certificates = Builder<CertificateToBePrintedSummary>.CreateListOfSize(batchSize).Build();
+            var certificateResponses = new List<string>();
+            var generator = new RandomGenerator();
+            for (int i = 0; i < batchSize; i++)
+            {
+                certificateResponses.Add(generator.Phrase(15));
+            }
 
             _mockHttpMessageHandler
                 .Protected()
@@ -67,14 +72,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
                 .Verifiable();
 
             // Act
-            await _sut.ChangeStatusToPrinted(batchNumber, certificates);
+            await _sut.SaveSentToPrinter(batchNumber, certificateResponses);
 
             // Assert
             _mockHttpMessageHandler
                 .Protected()
                 .Verify("SendAsync",
                 Times.Exactly(chunksSent),
-                ItExpr.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Put && r.RequestUri.AbsolutePath == $"/api/v1/certificates/{batchNumber}"),
+                ItExpr.Is<HttpRequestMessage>(r => r.Method == HttpMethod.Put && r.RequestUri.AbsolutePath == $"/api/v1/batches/sent-to-printer"),
                 ItExpr.IsAny<CancellationToken>());
         }
     }

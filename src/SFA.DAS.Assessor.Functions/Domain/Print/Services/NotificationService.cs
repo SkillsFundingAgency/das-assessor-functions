@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Notifications.Api.Client;
 using SFA.DAS.Notifications.Api.Types;
@@ -31,11 +31,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _assessorServiceApi = assessorServiceApi;
         }
 
-        public async Task Send(int batchNumber, List<CertificateToBePrintedSummary> certificateResponses, string certificatesFileName)
+        public async Task Send(int batchNumber, List<Certificate> certificates, string certificatesFileName)
         {
             var emailTemplate = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
 
-            var personalisation = CreatePersonalisationTokens(certificateResponses, certificatesFileName);
+            var personalisation = CreatePersonalisationTokens(certificates, certificatesFileName);
 
             _logger.Log(LogLevel.Information, "Send Email");
 
@@ -56,19 +56,29 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
         }
 
-        private Dictionary<string, string> CreatePersonalisationTokens(List<CertificateToBePrintedSummary> certificateResponses, string certificatesFileName)
+        private Dictionary<string, string> CreatePersonalisationTokens(List<Certificate> certificates, string certificatesFileName)
         {
             var personalisation = new Dictionary<string, string>
             {
                 {"fileName", $"{certificatesFileName}"},
                 {
                     "numberOfCertificatesToBePrinted",
-                    $"{certificateResponses.Count}"
+                    $"{certificates.Count}"
                 },
-                {"numberOfCoverLetters", ""},
-                {"sftpUploadDirectory", $"{_sftpSettings.UploadDirectory}"},
-                {"proofDirectory", $"{_sftpSettings.ProofDirectory}"}
+                {"numberOfCoverLetters", ""}
             };
+
+            if (_sftpSettings.UseJson)
+            {
+                personalisation.Add("sftpUploadDirectory", _sftpSettings.PrintRequestDirectory);
+                personalisation.Add("proofDirectory", _sftpSettings.PrintResponseDirectory);
+            }
+            else
+            {
+                personalisation.Add("sftpUploadDirectory", _sftpSettings.UploadDirectory);
+                personalisation.Add("proofDirectory", _sftpSettings.ProofDirectory);
+            }
+
             return personalisation;
         }
     }
