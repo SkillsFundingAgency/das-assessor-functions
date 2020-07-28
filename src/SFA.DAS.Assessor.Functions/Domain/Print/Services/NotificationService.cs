@@ -30,19 +30,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         
         public async Task Send(int batchNumber, List<CertificateResponse> certificateResponses, string certificatesFileName)
         {
-            var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
-
-            var recipients = emailTemplateSummary.Recipients.Split(';').Select(x => x.Trim());
+            var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);            
 
             var personalisationTokens = CreatePersonalisationTokens(certificateResponses, certificatesFileName);
 
             _logger.Log(LogLevel.Information, "Send Email");
 
-            foreach (var recipient in recipients)
-            {
-                await _assessorServiceApi.SendEmailWithTemplate(new SendEmailRequest(recipient, emailTemplateSummary, personalisationTokens));
-            }
-
+            await _assessorServiceApi.SendEmailWithTemplate(new SendEmailRequest(string.Empty, emailTemplateSummary, personalisationTokens));
         }
 
         private Dictionary<string, string> CreatePersonalisationTokens(List<CertificateResponse> certificateResponses, string certificatesFileName)

@@ -56,8 +56,7 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddOptions();
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
-            builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
-            builder.Services.Configure<NotificationsApiClientConfiguration>(config.GetSection("NotificationsApiClientConfiguration"));
+            builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));            
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
 
