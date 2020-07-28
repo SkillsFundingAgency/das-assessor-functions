@@ -54,7 +54,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         {
             // Arrange
             var batchNumber = 1;
-            var certificateResponses = Builder<CertificateResponse>.CreateListOfSize(batchSize).Build();
+            var certificates = Builder<CertificateToBePrintedSummary>.CreateListOfSize(batchSize).Build();
 
             _mockHttpMessageHandler
                 .Protected()
@@ -67,7 +67,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
                 .Verifiable();
 
             // Act
-            await _sut.ChangeStatusToPrinted(batchNumber, certificateResponses);
+            await _sut.ChangeStatusToPrinted(batchNumber, certificates);
 
             // Assert
             _mockHttpMessageHandler

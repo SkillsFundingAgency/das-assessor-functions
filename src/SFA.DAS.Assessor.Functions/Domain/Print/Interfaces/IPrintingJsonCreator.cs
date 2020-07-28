@@ -5,6 +5,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
     public interface IPrintingJsonCreator
     {
-        void Create(int batchNumber, List<CertificateResponse> certificates, string certificatesFileName);
+        void Create(int batchNumber, List<CertificateToBePrintedSummary> certificates, string certificatesFileName);
     }
 }
