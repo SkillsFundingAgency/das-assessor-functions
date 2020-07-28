@@ -7,7 +7,6 @@ using NLog.Extensions.Logging;
 using Renci.SshNet;
 using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
 using SFA.DAS.Assessor.Functions.Domain.Print;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
@@ -16,7 +15,6 @@ using SFA.DAS.Assessor.Functions.ExternalApis;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Notifications.Api.Client.Configuration;
 using System;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
