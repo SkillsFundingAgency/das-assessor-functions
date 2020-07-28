@@ -22,20 +22,20 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
         public async Task Run(
             [QueueTrigger(QueueNames.RefreshIlrs, Connection = "StorageAccountConnectionString")]string message,
             [Queue(QueueNames.RefreshIlrs, Connection = "StorageAccountConnectionString")]CloudQueue refreshIlrsQueue,
-            ILogger logger)
+            ILogger log)
         {
             try
             {
-                logger.LogDebug($"RefreshIlrsDequeueProviders has started for {message}");
+                log.LogDebug($"RefreshIlrsDequeueProviders has started for {message}");
 
                 _command.StorageQueue = new StorageQueue(refreshIlrsQueue);
                 await _command.Execute(message);
 
-                logger.LogDebug($"RefreshIlrsDequeueProviders has completed for {message}");
+                log.LogDebug($"RefreshIlrsDequeueProviders has completed for {message}");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"RefreshIlrsDequeueProviders has failed for {message}");
+                log.LogError(ex, $"RefreshIlrsDequeueProviders has failed for {message}");
                 throw;
             }
         }

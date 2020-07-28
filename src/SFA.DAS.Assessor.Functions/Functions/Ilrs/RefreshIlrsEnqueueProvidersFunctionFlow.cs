@@ -21,27 +21,27 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
         [FunctionName("RefreshIlrsEnqueueProviders")]
         public async Task Run([TimerTrigger("%RefreshIlrsEnqueueProvidersFunctionFlowSchedule%", RunOnStartup = true)]TimerInfo myTimer,
             [Queue(QueueNames.RefreshIlrs, Connection = "StorageAccountConnectionString")]CloudQueue refreshIlrsQueue,
-            ILogger logger)
+            ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    logger.LogInformation("RefreshIlrsEnqueueProviders has started later than scheduled");
+                    log.LogInformation("RefreshIlrsEnqueueProviders has started later than scheduled");
                 }
                 else
                 {
-                    logger.LogInformation("RefreshIlrsEnqueueProviders has started");
+                    log.LogInformation("RefreshIlrsEnqueueProviders has started");
                 }
 
                 _command.StorageQueue = new StorageQueue(refreshIlrsQueue);
                 await _command.Execute();
 
-                logger.LogInformation("RefreshIlrsEnqueueProviders has completed");
+                log.LogInformation("RefreshIlrsEnqueueProviders has completed");
             }
             catch(Exception ex)
             {
-                logger.LogError(ex, "RefreshIlrsEnqueueProviders has failed");
+                log.LogError(ex, "RefreshIlrsEnqueueProviders has failed");
             }
         }
     }
