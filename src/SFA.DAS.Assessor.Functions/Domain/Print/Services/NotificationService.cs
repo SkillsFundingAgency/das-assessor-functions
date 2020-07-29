@@ -64,17 +64,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 {
                     "numberOfCertificatesToBePrinted",
                     $"{certificates.Count}"
-                },
-                {"numberOfCoverLetters", ""}
+                }
             };
 
             if (_sftpSettings.UseJson)
             {
-                personalisation.Add("sftpUploadDirectory", _sftpSettings.PrintRequestDirectory);
-                personalisation.Add("proofDirectory", _sftpSettings.PrintResponseDirectory);
+                personalisation.Add("SftpPrintRequestDirectory", _sftpSettings.PrintRequestDirectory);
+                personalisation.Add("SftpPrintResponseDirectory", _sftpSettings.PrintResponseDirectory);
+                personalisation.Add("SftpDeliveryNotificationDirectory", _sftpSettings.DeliveryNotificationDirectory);
             }
             else
             {
+                //these are compatible with the old template and need to be removed as part of tech debt.
                 personalisation.Add("sftpUploadDirectory", _sftpSettings.UploadDirectory);
                 personalisation.Add("proofDirectory", _sftpSettings.ProofDirectory);
             }
