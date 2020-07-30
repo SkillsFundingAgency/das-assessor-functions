@@ -110,9 +110,13 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
             builder.Services.AddTransient<IDataAccess, DataAccess>();
+            
+            builder.Services.AddScoped<IBatchService, BatchService>();
+            builder.Services.AddScoped<ICertificateService, CertificateService>();
+            builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
             if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-            {
+            {                
                 builder.Services.AddTransient<IFileTransferClient, NullFileTransferClient>();
             }
             else
@@ -123,6 +127,8 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintingSpreadsheetCreator, PrintingSpreadsheetCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
+            builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
+            builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
 
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();

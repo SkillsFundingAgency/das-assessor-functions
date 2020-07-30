@@ -55,39 +55,59 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/batches"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/batches/create"))
             {
                 return await PostPutRequestWithResponse<CreateBatchLogRequest, BatchLogResponse>(request, createBatchLogRequest);
             }
         }
 
-        public async Task ChangeStatusToPrinted(int batchNumber, IEnumerable<CertificateToBePrintedSummary> certificates)
+        public async Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences)
         {
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
             const int chunkSize = 100;
 
-            var certificateStatuses = certificates.Select(
-                q => new CertificateStatus
-                {
-                    CertificateReference = q.CertificateReference,
-                    Status = Assessor.Constants.CertificateStatus.Printed
-                }).ToList();
-
-            foreach (var certificateStatusesChunk in certificateStatuses.ChunkBy(chunkSize))
+            foreach (var certificateReferencesChunk in certificateReferences.ToList().ChunkBy(chunkSize))
             {
-                var updateCertificatesBatchToIndicatePrintedRequest = new UpdateCertificatesBatchToIndicatePrintedRequest
+                var updateBatchLogSentToPrinterRequest = new UpdateBatchLogSentToPrinterRequest
                 {
                     BatchNumber = batchNumber,
-                    CertificateStatuses = certificateStatusesChunk
+                    CertificateReferences = certificateReferencesChunk
                 };
 
-                using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/certificates/{batchNumber}"))
+                using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/sent-to-printer"))
                 {
-                    await PostPutRequest(request, updateCertificatesBatchToIndicatePrintedRequest);
+                    await PostPutRequest(request, updateBatchLogSentToPrinterRequest);
                 }
             }
         }
 
+        public async Task UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/printed "))
+            {
+                await PostPutRequest(request, new { batchNumber, printedAt = printedDateTime });
+            }
+        }
+
+        public async Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus)
+        {
+            // the certificate printed status be will updated in chunks to stay within the WAF message size limits
+            const int chunkSize = 100;
+
+            foreach (var certificatePrintStatusChunk in certificatePrintStatus.ToList().ChunkBy(chunkSize))
+            {
+                var updateCertificatesPrintStatusRequest = new UpdateCertificatesPrintStatusRequest
+                {
+                     CertificatePrintStatuses = certificatePrintStatusChunk
+                };
+
+                using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/certificates/update-print-status"))
+                {
+                    await PostPutRequest(request, updateCertificatesPrintStatusRequest);
+                }
+            }
+        }
+   
         public async Task CompleteSchedule(Guid scheduleRunId)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule?scheduleRunId={scheduleRunId}"))

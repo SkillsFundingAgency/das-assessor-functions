@@ -54,6 +54,28 @@
             },
             "defaultValue": "0 7 * * *"
         },
+        "certificatePrintFunctionSchedule": {
+            "type": "string",
+            "metadata": {
+                "description": "certificatePrintFunction CRON Schedule e.g. 0 */15 * * * *"
+            }
+			,
+            "defaultValue": "0 */15 * * * *"
+        },
+        "certificatePrintNotificationFunctionSchedule": {
+            "type": "string",
+            "metadata": {
+                "description": "CertificatePrintNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
+            },
+            "defaultValue": "0 13 * * *"
+        },
+        "certificateDeliveryNotificationFunctionSchedule": {
+            "type": "string",
+            "metadata": {
+                "description": "certificateDeliveryNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
+            },
+            "defaultValue": "0 15 * * *"
+        },
         "appServicePlanSize": {
             "type": "string",
             "allowedValues": [
@@ -193,6 +215,18 @@
                             {
                                 "name": "FUNCTIONS_WORKER_RUNTIME",
                                 "value": "dotnet"
+                            },
+                            {
+                                "name": "CertificatePrintFunctionSchedule",
+                                "value": "[parameters('certificatePrintFunctionSchedule')]"
+                            },
+                            {
+                                "name": "CertificatePrintNotificationFunctionSchedule",
+                                "value": "[parameters('certificatePrintNotificationFunctionSchedule')]"
+                            },
+                            {
+                                "name": "CertificateDeliveryNotificationFunctionSchedule",
+                                "value": "[parameters('certificateDeliveryNotificationFunctionSchedule')]"
                             }
                         ]
                     }
