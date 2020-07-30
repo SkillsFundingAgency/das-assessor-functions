@@ -26,16 +26,16 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
         {
             try
             {
-                log.LogDebug($"RefreshIlrsDequeueProviders has started for {message}");
+                log.LogDebug($"Epao RefreshIlrsDequeueProviders has started for {message}");
 
                 _command.StorageQueue = new StorageQueue(refreshIlrsQueue);
                 await _command.Execute(message);
 
-                log.LogDebug($"RefreshIlrsDequeueProviders has completed for {message}");
+                log.LogDebug($"Epao RefreshIlrsDequeueProviders has completed for {message}");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, $"RefreshIlrsDequeueProviders has failed for {message}");
+                log.LogError(ex, $"Epao RefreshIlrsDequeueProviders has failed for {message}");
                 throw;
             }
         }

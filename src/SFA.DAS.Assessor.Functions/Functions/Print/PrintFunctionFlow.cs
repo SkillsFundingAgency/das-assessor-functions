@@ -22,20 +22,20 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("PrintFunctionFlow has started later than scheduled");
+                    log.LogInformation("Epao CertificatePrintFunction has started later than scheduled");
                 }
                 else
                 {
-                    log.LogInformation($"PrintFunctionFlow has started");
+                    log.LogInformation($"Epao CertificatePrintFunction has started");
                 }
 
                 await _command.Execute();
 
-                log.LogInformation("PrintFunctionFlow has completed");
+                log.LogInformation("Epao CertificatePrintFunction has completed");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "PrintFunctionFlow has failed");
+                log.LogError(ex, "Epao CertificatePrintFunction has failed");
             }
         }
     }

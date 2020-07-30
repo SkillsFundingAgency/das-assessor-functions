@@ -27,21 +27,21 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("RefreshIlrsEnqueueProviders has started later than scheduled");
+                    log.LogInformation("Epao RefreshIlrsEnqueueProviders has started later than scheduled");
                 }
                 else
                 {
-                    log.LogInformation("RefreshIlrsEnqueueProviders has started");
+                    log.LogInformation("Epao RefreshIlrsEnqueueProviders has started");
                 }
 
                 _command.StorageQueue = new StorageQueue(refreshIlrsQueue);
                 await _command.Execute();
 
-                log.LogInformation("RefreshIlrsEnqueueProviders has completed");
+                log.LogInformation("Epao RefreshIlrsEnqueueProviders has completed");
             }
             catch(Exception ex)
             {
-                log.LogError(ex, "RefreshIlrsEnqueueProviders has failed");
+                log.LogError(ex, "Epao RefreshIlrsEnqueueProviders has failed");
             }
         }
     }
