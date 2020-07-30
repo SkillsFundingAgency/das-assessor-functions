@@ -92,6 +92,9 @@ namespace SFA.DAS.Assessor.Functions
                     var handler = new HttpClientHandler();
                     if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
                     {
+                        // this will disable SSL certificate validation for the LOCAL environment, alternatively obtain a certificate
+                        // and install it in the Trusted Root Certificate Authorities for the local machine and then remove this
+                        // override to test that a SSL call can be validated correctly by a client certificate
                         handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
                     }
                     return handler;
