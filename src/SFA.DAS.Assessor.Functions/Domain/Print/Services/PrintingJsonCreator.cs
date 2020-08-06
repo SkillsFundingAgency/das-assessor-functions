@@ -30,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _certificateDetails = options?.Value;
         }
 
-        public void Create(int batchNumber, List<CertificateToBePrintedSummary> certificates, string fileName)
+        public void Create(int batchNumber, IEnumerable<Certificate> certificates, string file)
         {
             var printOutput = new PrintOutput
             {
@@ -42,7 +42,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 PrintData = new List<PrintData>()
             };
 
-            printOutput.Batch.TotalCertificateCount = certificates.Count;
+            printOutput.Batch.TotalCertificateCount = certificates.Count();
 
             var groupedByRecipient = certificates.GroupBy(c =>
                 new
@@ -114,7 +114,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                             Option = string.IsNullOrWhiteSpace(c.CourseOption) ? string.Empty : $"({c.CourseOption}):",
                             GradeText = gradeText,
                             Grade = grade,
-                            AchievementDate = $"{c.AchievementDate.Value:dd MMMM yyyy}",
+                            AchievementDate = !c.AchievementDate.HasValue ? string.Empty : $"{c.AchievementDate.Value:dd MMMM yyyy}"
                         }
                     });
                 });
@@ -128,7 +128,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             using (var mystream = new MemoryStream(array))
             {
                 _logger.Log(LogLevel.Information, "Sending Certificates to print Json ....");
-                _fileTransferClient.Send(mystream, fileName);
+                _fileTransferClient.Send(mystream, file);
+            }
+
+            // update certificates status
+            foreach(var certificate in certificates)
+            {
+                certificate.Status = "SentToPrinter";
             }
         }
     }

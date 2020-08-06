@@ -5,7 +5,6 @@ using OfficeOpenXml.Style;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -20,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         private readonly ILogger<PrintingSpreadsheetCreator> _logger;
         private readonly IFileTransferClient _fileTransferClient;
         private readonly CertificateDetails _certificateDetails;
-        private IEnumerable<CertificateToBePrintedSummary> _certificates;
+        private IEnumerable<Certificate> _certificates;
 
         public PrintingSpreadsheetCreator(
             ILogger<PrintingSpreadsheetCreator> logger,
@@ -32,17 +31,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _certificateDetails = options?.Value;
         }
 
-        public void Create(int batchNumber, IEnumerable<CertificateToBePrintedSummary> certificates)
+        public void Create(int batchNumber, IEnumerable<Certificate> certificates, string file)
         {
             _logger.Log(LogLevel.Information, "Creating Excel Spreadsheet ....");
 
             var memoryStream = new MemoryStream();
 
-            _certificates = certificates as CertificateToBePrintedSummary[] ?? certificates.ToArray();
-
-            var utcNow = DateTime.UtcNow;
-            var gmtNow = utcNow.UtcToTimeZoneTime(TimezoneNames.GmtStandardTimeZone);
-            var fileName = $"IFA-Certificate-{gmtNow:MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
+            _certificates = certificates as Certificate[] ?? certificates.ToArray();
 
             using (var package = new ExcelPackage(memoryStream))
             {
@@ -51,9 +46,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                 package.Save();
 
-                _fileTransferClient.Send(memoryStream, fileName);
+                _fileTransferClient.Send(memoryStream, file);
 
                 memoryStream.Close();
+            }
+
+            // update certificates status
+            foreach (var certificate in certificates)
+            {
+                certificate.Status = "SentToPrinter";
             }
 
             _logger.Log(LogLevel.Information, "Completed Excel Spreadsheet ....");

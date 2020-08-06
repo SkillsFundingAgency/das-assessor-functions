@@ -1,16 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using System.Linq;
-using System.Text.RegularExpressions;
-using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
+using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -19,15 +17,21 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly ILogger<PrintProcessCommand> _logger;
         private readonly IPrintingSpreadsheetCreator _printingSpreadsheetCreator;
         private readonly IPrintingJsonCreator _printingJsonCreator;
-        private readonly IAssessorServiceApiClient _assessorServiceApi;
+        private readonly IBatchService _batchService;
+        private readonly ICertificateService _certificateService;
+        private readonly IScheduleService _scheduleService;
+        
         private readonly INotificationService _notificationService;
         private readonly IFileTransferClient _fileTransferClient;
-        private readonly IOptions<SftpSettings> _options;
+        private readonly SftpSettings _sftpSettings;
 
-        public PrintProcessCommand(ILogger<PrintProcessCommand> logger,
+        public PrintProcessCommand(
+            ILogger<PrintProcessCommand> logger,
             IPrintingJsonCreator printingJsonCreator,
             IPrintingSpreadsheetCreator printingSpreadsheetCreator,
-            IAssessorServiceApiClient assessorServiceApi,
+            IBatchService batchService,
+            ICertificateService certificateService,
+            IScheduleService scheduleService,
             INotificationService notificationService,
             IFileTransferClient fileTransferClient,
             IOptions<SftpSettings> options)
@@ -35,99 +39,29 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _logger = logger;
             _printingJsonCreator = printingJsonCreator;
             _printingSpreadsheetCreator = printingSpreadsheetCreator;
-            _assessorServiceApi = assessorServiceApi;
+            _certificateService = certificateService;
+            _batchService = batchService;
+            _scheduleService = scheduleService;
             _notificationService = notificationService;
             _fileTransferClient = fileTransferClient;
-            _options = options;
+            _sftpSettings = options?.Value;
         }
 
         public async Task Execute()
-        {
-            await UploadCertificateDetailsToPinter();
-            await DownloadAndDeleteCertificatePrinterResponses();
-        }
-
-        private async Task DownloadAndDeleteCertificatePrinterResponses()
-        {
-            var fileList = await _fileTransferClient.GetListOfDownloadedFiles();
-
-            // printResponse-MMYY-XXXXXX.json where XXX = 001, 002... 999999 etc
-            const string pattern = @"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{4}-[0-9]{1,6}.json";
-
-            var certificateResponseFiles = fileList.Where(f => Regex.IsMatch(f, pattern));
-            var filesToProcesses = certificateResponseFiles as string[] ?? certificateResponseFiles.ToArray();
-            if (!filesToProcesses.Any())
-            {
-                _logger.Log(LogLevel.Information, "No certificate responses to process");
-                return;
-            }
-
-            foreach (var fileToProcess in filesToProcesses)
-            {
-                await ProcessEachFileToUploadThenDelete(fileToProcess);
-            }
-        }
-
-        private async Task ProcessEachFileToUploadThenDelete(string fileToProcess)
-        {
-            var stringBatchResponse = _fileTransferClient.DownloadFile(fileToProcess);
-            var batchResponse = JsonConvert.DeserializeObject<BatchResponse>(stringBatchResponse);
-
-            if (batchResponse?.Batch == null || batchResponse.Batch.BatchDate == DateTime.MinValue)
-            {
-                _logger.Log(LogLevel.Information, $"Could not process downloaded file to correct format [{fileToProcess}]");
-                return;
-            }
-
-            batchResponse.Batch.DateOfResponse = DateTime.UtcNow;
-            var batchNumber = batchResponse.Batch.BatchNumber;
-
-            var batchLogResponse = await _assessorServiceApi.GetGetBatchLogByBatchNumber(batchNumber);
-
-            if (batchLogResponse?.Id == null)
-            {
-                _logger.Log(LogLevel.Information, $"Could not match an existing batch Log Batch Number [{batchNumber}]");
-                return;
-            }
-
-            if (!int.TryParse(batchNumber, out int batchNumberToInt))
-            {
-                _logger.Log(LogLevel.Information, $"The Batch Number is not an integer [{batchNumber}]");
-                return;
-            }
-
-            var batch = new BatchData
-            {
-                BatchNumber = batchNumberToInt,
-                BatchDate = batchResponse.Batch.BatchDate,
-                PostalContactCount = batchResponse.Batch.PostalContactCount,
-                TotalCertificateCount = batchResponse.Batch.TotalCertificateCount,
-                PrintedDate = batchResponse.Batch.PrintedDate,
-                PostedDate = batchResponse.Batch.PostedDate,
-                DateOfResponse = batchResponse.Batch.DateOfResponse
-            };
-
-            await _assessorServiceApi.UpdateBatchDataInBatchLog((Guid)batchLogResponse.Id, batch);
-            _fileTransferClient.DeleteFile(fileToProcess);
-        }
-
-        private async Task UploadCertificateDetailsToPinter()
         {
             try
             {
                 _logger.Log(LogLevel.Information, "Print Process Function Started");
 
-                var scheduleRun = await _assessorServiceApi.GetSchedule(ScheduleType.PrintRun);
-                if (scheduleRun == null)
+                var schedule = await _scheduleService.Get();
+                if (schedule == null)
                 {
                     _logger.Log(LogLevel.Information, "Print Function not scheduled to run at this time.");
                     return;
                 }
 
-                var batchLogResponse = await _assessorServiceApi.GetCurrentBatchLog();
-
-                var batchNumber = batchLogResponse.BatchNumber + 1;
-                var certificates = (await _assessorServiceApi.GetCertificatesToBePrinted()).Certificates.Sanitise(_logger);
+                var batchNumber = await _batchService.NextBatchId();
+                var certificates = (await _certificateService.Get(CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
 
                 if (certificates.Count == 0)
                 {
@@ -135,42 +69,64 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 }
                 else
                 {
-                    var batchLogRequest = new CreateBatchLogRequest
+                    var uploadedFileNames = new List<string>();
+                    string uploadDirectory = "";
+
+                    var batch = new Batch
                     {
                         BatchNumber = batchNumber,
+                        Status = "SentToPrinter",
                         FileUploadStartTime = DateTime.UtcNow,
                         Period = DateTime.UtcNow.UtcToTimeZoneTime().ToString("MMyy"),
-                        BatchCreated = DateTime.UtcNow
+                        BatchCreated = DateTime.UtcNow,
+                        ScheduledDate = schedule.RunTime,
+                        Certificates = certificates
                     };
 
-                    if (_options.Value.UseJson)
+                    if (_sftpSettings.UseJson)
                     {
-                        batchLogRequest.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.json";
-                        _printingJsonCreator.Create(batchNumber, certificates, batchLogRequest.CertificatesFileName);
-                        await _notificationService.Send(batchNumber, certificates, batchLogRequest.CertificatesFileName);
+                        uploadDirectory = _sftpSettings.PrintRequestDirectory;
+                        batch.CertificatesFileName = $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
+                        _printingJsonCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
                     }
                     else
                     {
-                        batchLogRequest.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
-                        _printingSpreadsheetCreator.Create(batchNumber, certificates);
-                        await _notificationService.Send(batchNumber, certificates, batchLogRequest.CertificatesFileName);
+                        uploadDirectory = _sftpSettings.UploadDirectory;
+                        batch.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
+                        _printingSpreadsheetCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
                     }
 
-                    batchLogRequest.FileUploadEndTime = DateTime.UtcNow;
-                    batchLogRequest.NumberOfCertificates = certificates.Count;
-                    batchLogRequest.NumberOfCoverLetters = 0;
-                    batchLogRequest.ScheduledDate = scheduleRun.RunTime;
+                    await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
+                    uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory);
 
-                    await _fileTransferClient.LogUploadDirectory();
-                    await _assessorServiceApi.CreateBatchLog(batchLogRequest);
-                    await _assessorServiceApi.ChangeStatusToPrinted(batchNumber, certificates);
+                    batch.FileUploadEndTime = DateTime.UtcNow;
+                    batch.NumberOfCertificates = certificates.Count;
+                    batch.NumberOfCoverLetters = 0;
+                    batch.ScheduledDate = schedule.RunTime;
+
+                    LogUploadedFiles(uploadedFileNames, uploadDirectory);
+                    await _batchService.Save(batch);
                 }
-                await _assessorServiceApi.CompleteSchedule(scheduleRun.Id);
+                await _scheduleService.Save(schedule);
             }
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, "Function Errored", e);
                 throw;
+            }
+        }
+
+        private void LogUploadedFiles(List<string> fileNames, string directory)
+        {
+            var fileDetails = new StringBuilder();
+            foreach (var file in fileNames)
+            {
+                fileDetails.Append(file + "\r\n");
+            }
+
+            if (fileDetails.Length > 0)
+            {
+                _logger.Log(LogLevel.Information, $"Uploaded Files to {directory} Contains\r\n{fileDetails}");
             }
         }
     }
