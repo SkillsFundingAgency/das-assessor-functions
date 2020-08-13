@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
 {
-    public class WhenSystemChangesStatusesToPrinted
+    public class WhenSystemChangesStatusesToSentToPrinter
     {
         private AssessorServiceApiClient _sut;
 
@@ -36,20 +36,20 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         }
 
         [TestCase(1, 1)]
-        [TestCase(99, 1)]
-        [TestCase(100, 1)]
-        [TestCase(101, 2)]
-        [TestCase(199, 2)]
-        [TestCase(200, 2)]
-        [TestCase(201, 3)]
-        [TestCase(299, 3)]
-        [TestCase(300, 3)]
-        [TestCase(301, 4)]
-        [TestCase(399, 4)]
-        [TestCase(400, 4)]
-        [TestCase(401, 5)]
-        [TestCase(499, 5)]
-        [TestCase(500, 5)]
+        [TestCase(99, 5)]
+        [TestCase(100, 5)]
+        [TestCase(101, 6)]
+        [TestCase(199, 10)]
+        [TestCase(200, 10)]
+        [TestCase(201, 11)]
+        [TestCase(299, 15)]
+        [TestCase(300, 15)]
+        [TestCase(301, 16)]
+        [TestCase(399, 20)]
+        [TestCase(400, 20)]
+        [TestCase(401, 21)]
+        [TestCase(499, 25)]
+        [TestCase(500, 25)]
         public async Task ThenItShouldUpdateCertificatesInChunksOf100(int batchSize, int chunksSent)
         {
             // Arrange
