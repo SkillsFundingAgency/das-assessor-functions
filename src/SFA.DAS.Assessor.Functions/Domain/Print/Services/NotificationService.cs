@@ -4,6 +4,7 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);            
 
-            var personalisation = CreatePersonalisationTokens(certificates, certificatesFileName);
+            var personalisationTokens = CreatePersonalisationTokens(certificates, certificatesFileName);
 
             _logger.Log(LogLevel.Information, "Send Email");
 

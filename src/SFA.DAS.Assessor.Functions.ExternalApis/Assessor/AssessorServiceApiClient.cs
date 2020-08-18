@@ -180,7 +180,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             {                
                 await PostPutRequest(request, sendEmailRequest);
             }
-          
         }
     }
 }
