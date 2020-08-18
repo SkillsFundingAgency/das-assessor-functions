@@ -1,10 +1,6 @@
-﻿using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
-using System.Collections.Generic;
-
-namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
+﻿namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
-    public interface IPrintingJsonCreator
+    public interface IPrintingJsonCreator : IPrintCreator
     {
-        void Create(int batchNumber, List<CertificateToBePrintedSummary> certificates, string certificatesFileName);
     }
 }

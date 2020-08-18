@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Renci.SshNet;
-using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
 using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
@@ -25,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            var sp = builder.Services.BuildServiceProvider();
+            builder.Services.BuildServiceProvider();
 
             var nLogConfiguration = new NLogConfiguration();
 
@@ -54,17 +53,23 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddOptions();
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
-            builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));            
+            builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
+            builder.Services.Configure<NotificationsApiClientConfiguration>(config.GetSection("NotificationsApiClientConfiguration"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
 
-            builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>();
-            builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
-            builder.Services.AddTransient<IDataAccess, DataAccess>();
-            builder.Services.AddScoped<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            
+            builder.Services.AddScoped<AssessorTokenHandler>();
+            builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>()
+                .AddHttpMessageHandler<AssessorTokenHandler>();
+
+            builder.Services.AddScoped<IBatchService, BatchService>();
+            builder.Services.AddScoped<ICertificateService, CertificateService>();
+            builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
             if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-            {
+            {                
                 builder.Services.AddTransient<IFileTransferClient, NullFileTransferClient>();
             }
             else
@@ -75,6 +80,8 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintingSpreadsheetCreator, PrintingSpreadsheetCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
+            builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
+            builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
 
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();

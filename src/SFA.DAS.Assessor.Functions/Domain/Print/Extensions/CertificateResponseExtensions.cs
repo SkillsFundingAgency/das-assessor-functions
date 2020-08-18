@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using System.Collections.Generic;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
 {
-    public static class CertificateResponseExtensions
+    public static class CertificateExtensions
     {
-        public static List<CertificateToBePrintedSummary> Sanitise(this List<CertificateToBePrintedSummary> certificates, ILogger logger)
+        public static List<Certificate> Sanitise(this List<Certificate> certificates, ILogger logger)
         {
-            var sanitisedCertificates = new List<CertificateToBePrintedSummary>();
+            var sanitisedCertificates = new List<Certificate>();
 
             foreach (var certificate in certificates)
             {

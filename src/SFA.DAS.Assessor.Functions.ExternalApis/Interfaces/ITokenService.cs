@@ -1,7 +1,10 @@
-﻿namespace SFA.DAS.Assessor.Functions.ExternalApis.Interfaces
+﻿using System.Threading.Tasks;
+
+namespace SFA.DAS.Assessor.Functions.ExternalApis.Interfaces
 {
     public interface ITokenService
     {
-        string GetToken();
+        Task<string> GetToken();
+        Task<string> RefreshToken();
     }
 }

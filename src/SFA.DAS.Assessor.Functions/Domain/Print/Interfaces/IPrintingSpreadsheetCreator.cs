@@ -1,10 +1,6 @@
-﻿using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
-using System.Collections.Generic;
-
-namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
+﻿namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
-    public interface IPrintingSpreadsheetCreator
+    public interface IPrintingSpreadsheetCreator : IPrintCreator
     {
-        void Create(int batchNumber, IEnumerable<CertificateToBePrintedSummary> certificates);
     }
 }

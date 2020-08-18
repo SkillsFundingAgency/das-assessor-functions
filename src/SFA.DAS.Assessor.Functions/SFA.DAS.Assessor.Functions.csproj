@@ -44,4 +44,7 @@
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.ExternalApis\SFA.DAS.Assessor.Functions.ExternalApis.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.QnATypes\SFA.DAS.Assessor.Functions.QnATypes.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ApplicationsMigrator\" />
+  </ItemGroup>
 </Project>
