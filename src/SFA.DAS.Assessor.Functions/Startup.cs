@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Renci.SshNet;
-using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
 using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
@@ -27,7 +26,7 @@ namespace SFA.DAS.Assessor.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            var sp = builder.Services.BuildServiceProvider();
+            builder.Services.BuildServiceProvider();
 
             var nLogConfiguration = new NLogConfiguration();
 
@@ -56,7 +55,6 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddOptions();
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
-            builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
             builder.Services.Configure<NotificationsApiClientConfiguration>(config.GetSection("NotificationsApiClientConfiguration"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
@@ -67,9 +65,6 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>()
                 .AddHttpMessageHandler<AssessorTokenHandler>();
 
-            builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
-            builder.Services.AddTransient<IDataAccess, DataAccess>();
-            
             builder.Services.AddScoped<IBatchService, BatchService>();
             builder.Services.AddScoped<ICertificateService, CertificateService>();
             builder.Services.AddScoped<IScheduleService, ScheduleService>();
