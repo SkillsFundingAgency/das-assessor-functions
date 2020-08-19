@@ -30,6 +30,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public async Task Send(int batchNumber, List<Certificate> certificates, string certificatesFileName)
         {
+            _logger.Log(LogLevel.Information, $"Inside NotificationService certificatesFileName :: {certificatesFileName}  CertificatesCount :: {certificates.Count()} ");
+
             var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
 
             _logger.Log(LogLevel.Information, $"emailTemplateSummary.TemplateId :: {emailTemplateSummary.TemplateId}  emailTemplateSummary.TemplateName :: {emailTemplateSummary.TemplateName} ");
