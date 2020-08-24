@@ -32,9 +32,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             _logger.Log(LogLevel.Information, $"Inside NotificationService certificatesFileName :: {certificatesFileName}  CertificatesCount :: {certificates.Count()} ");
 
-            var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
-
-            _logger.Log(LogLevel.Information, $"emailTemplateSummary.TemplateId :: {emailTemplateSummary.TemplateId}  emailTemplateSummary.TemplateName :: {emailTemplateSummary.TemplateName} ");
+            var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);            
             
             var personalisationTokens = CreatePersonalisationTokens(certificates, certificatesFileName);
 
@@ -45,8 +43,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         private Dictionary<string, string> CreatePersonalisationTokens(List<Certificate> certificates, string certificatesFileName)
         {
-            _logger.Log(LogLevel.Information, $"certificatesFileName :: {certificatesFileName}  certificates :: {certificates.Count()} ");
-
             var personalisation = new Dictionary<string, string>
             {
                 {"fileName", $"{certificatesFileName}"},
@@ -58,21 +54,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             if (_sftpSettings.UseJson)
             {
-                _logger.Log(LogLevel.Information, $"SftpPrintRequestDirectory :: {_sftpSettings.PrintRequestDirectory}   SftpPrintResponseDirectory ::  {_sftpSettings.PrintResponseDirectory} SftpDeliveryNotificationDirectory :: {_sftpSettings.DeliveryNotificationDirectory} ");
-
                 personalisation.Add("SftpPrintRequestDirectory", _sftpSettings.PrintRequestDirectory);
                 personalisation.Add("SftpPrintResponseDirectory", _sftpSettings.PrintResponseDirectory);
                 personalisation.Add("SftpDeliveryNotificationDirectory", _sftpSettings.DeliveryNotificationDirectory);
             }
             else
             {
-                _logger.Log(LogLevel.Information, $"sftpUploadDirectory :: {_sftpSettings.UploadDirectory}  proofDirectory :: {_sftpSettings.ProofDirectory}  ");
                 //these are compatible with the old template and need to be removed as part of tech debt.
                 personalisation.Add("sftpUploadDirectory", _sftpSettings.UploadDirectory);
                 personalisation.Add("proofDirectory", _sftpSettings.ProofDirectory);
             }
-
-            _logger.Log(LogLevel.Information, $"personalisation :: {personalisation}");
 
             return personalisation;
         }

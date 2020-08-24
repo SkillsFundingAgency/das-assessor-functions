@@ -60,8 +60,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     return;
                 }
 
-                var batchNumber = await _batchService.NextBatchId();
-                _logger.Log(LogLevel.Information, $"BatchNumber : {batchNumber}");
+                var batchNumber = await _batchService.NextBatchId();                
                 var certificates = (await _certificateService.Get(CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
 
                 if (certificates.Count == 0)
@@ -96,12 +95,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         batch.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
                         _printingSpreadsheetCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
                     }
-
-                    _logger.Log(LogLevel.Information, "Calling Notification Service");
+                    
                     await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
-                    uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory);
-
-                    _logger.Log(LogLevel.Information, $"uploadedFileNames :: {uploadedFileNames.Count()}");
+                    uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory);                    
 
                     batch.FileUploadEndTime = DateTime.UtcNow;
                     batch.NumberOfCertificates = certificates.Count;

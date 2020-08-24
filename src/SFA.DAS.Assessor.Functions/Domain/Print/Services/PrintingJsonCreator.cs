@@ -133,10 +133,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             // update certificates status
             foreach(var certificate in certificates)
-            {
-                _logger.Log(LogLevel.Information, $" BEFORE certificate BatchId:: { certificate.BatchId}  Status :: {certificate.Status} ");
-                certificate.Status = "SentToPrinter";
-                _logger.Log(LogLevel.Information, $" AFTER certificate BatchId:: { certificate.BatchId}  Status :: {certificate.Status} ");
+            {                
+                certificate.Status = "SentToPrinter";                
             }
         }
     }
