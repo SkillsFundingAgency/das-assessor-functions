@@ -166,12 +166,21 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task<EMailTemplate> GetEmailTemplate(string templateName)
+        public async Task<EmailTemplateSummary> GetEmailTemplate(string templateName)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/emailTemplates/{templateName}"))
             {
-                return await GetAsync<EMailTemplate>(request);
+                return await GetAsync<EmailTemplateSummary>(request);
             }
-        }        
+        }
+
+        public async Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/emailTemplates"))
+            {                
+                await PostPutRequest(request, sendEmailRequest);
+            }
+        }
     }
 }
+    

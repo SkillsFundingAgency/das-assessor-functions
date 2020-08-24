@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Renci.SshNet;
 using SFA.DAS.Assessor.Functions.Domain.Print;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
@@ -15,7 +14,6 @@ using SFA.DAS.Assessor.Functions.ExternalApis;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Notifications.Api.Client.Configuration;
 using System;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
@@ -54,8 +52,7 @@ namespace SFA.DAS.Assessor.Functions
                 .Build();
 
             builder.Services.AddOptions();
-            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
-            builder.Services.Configure<NotificationsApiClientConfiguration>(config.GetSection("NotificationsApiClientConfiguration"));
+            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));            
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
 
@@ -93,7 +90,7 @@ namespace SFA.DAS.Assessor.Functions
                 return new SftpClient(sftpSettings.RemoteHost, Convert.ToInt32(sftpSettings.Port), sftpSettings.Username, sftpSettings.Password);
             });
 
-            builder.Services.AddNotificationService();
+            builder.Services.AddTransient<INotificationService, NotificationService>();
         }
     }
 }
