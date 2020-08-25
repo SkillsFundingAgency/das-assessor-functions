@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions", "SFA.DAS.Assessor.Functions\SFA.DAS.Assessor.Functions.csproj", "{F5BA754A-C1A6-4902-8833-CE1C525DF74B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.QnATypes", "SFA.DAS.Assessor.Functions.QnATypes\SFA.DAS.Assessor.Functions.QnATypes.csproj", "{BED9E5C1-04B6-4153-9870-45433B146695}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.UnitTests", "SFA.DAS.Assessor.Functions.UnitTests\SFA.DAS.Assessor.Functions.UnitTests.csproj", "{44ED0206-F81D-4AA7-9817-5B949F4DC8CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{7B24B539-1335-4DBC-A306-F176231B4A0B}"

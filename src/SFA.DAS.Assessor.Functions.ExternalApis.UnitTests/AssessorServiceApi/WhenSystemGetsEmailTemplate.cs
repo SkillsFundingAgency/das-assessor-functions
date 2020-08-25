@@ -10,6 +10,7 @@ using SFA.DAS.Assessor.Functions.ApiClient.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -44,7 +45,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         public async Task ThenItShouldReturnAnEmailTemplate()
         {
             // Arrange
-            var emailTemplate = Builder<EMailTemplate>.CreateNew().Build();
+            var emailTemplate = Builder<EmailTemplateSummary>.CreateNew().Build();
             var templateName = EMailTemplateNames.PrintAssessorCoverLetters;
 
             _mockHttpMessageHandler
@@ -61,8 +62,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
             var result = await _sut.GetEmailTemplate(templateName);
 
             // Assert
-            result.Should().BeOfType<EMailTemplate>();
-            (result as EMailTemplate).TemplateName.Should().Be(emailTemplate.TemplateName);
+            result.Should().BeOfType<EmailTemplateSummary>();
+            (result as EmailTemplateSummary).TemplateName.Should().Be(emailTemplate.TemplateName);
         }
     }
 }

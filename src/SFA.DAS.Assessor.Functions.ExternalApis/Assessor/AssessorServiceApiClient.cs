@@ -64,7 +64,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         public async Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences)
         {
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
-            const int chunkSize = 100;
+            const int chunkSize = 20;
 
             foreach (var certificateReferencesChunk in certificateReferences.ToList().ChunkBy(chunkSize))
             {
@@ -92,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         public async Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus)
         {
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
-            const int chunkSize = 100;
+            const int chunkSize = 20;
 
             foreach (var certificatePrintStatusChunk in certificatePrintStatus.ToList().ChunkBy(chunkSize))
             {
@@ -166,11 +166,19 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task<EMailTemplate> GetEmailTemplate(string templateName)
+        public async Task<EmailTemplateSummary> GetEmailTemplate(string templateName)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/emailTemplates/{templateName}"))
             {
-                return await GetAsync<EMailTemplate>(request);
+                return await GetAsync<EmailTemplateSummary>(request);
+            }
+        }
+
+        public async Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/emailTemplates"))
+            {                
+                await PostPutRequest(request, sendEmailRequest);
             }
         }
 
@@ -184,3 +192,4 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         }
     }
 }
+    

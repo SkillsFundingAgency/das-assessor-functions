@@ -5,12 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
 using Renci.SshNet;
-using SFA.DAS.Assessor.Functions.ApplicationsMigrator;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Services;
 using SFA.DAS.Assessor.Functions.Domain.Print;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
@@ -22,7 +20,6 @@ using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
-using SFA.DAS.Notifications.Api.Client.Configuration;
 using System;
 using System.Net.Http;
 
@@ -73,8 +70,6 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection("DataCollectionApiAuthentication"));
             builder.Services.Configure<RefreshIlrsSettings>(config.GetSection("RefreshIlrs"));
-            builder.Services.Configure<SqlConnectionStrings>(config.GetSection("SqlConnectionStrings"));
-            builder.Services.Configure<NotificationsApiClientConfiguration>(config.GetSection("NotificationsApiClientConfiguration"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
 
@@ -108,9 +103,6 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IRefreshIlrsDequeueProvidersCommand, RefreshIlrsDequeueProvidersCommand>();
             builder.Services.AddTransient<IRefreshIlrsEnqueueProvidersCommand, RefreshIlrsEnqueueProvidersCommand>();
 
-            builder.Services.AddTransient<IQnaDataTranslator, QnaDataTranslator>();
-            builder.Services.AddTransient<IDataAccess, DataAccess>();
-            
             builder.Services.AddScoped<IBatchService, BatchService>();
             builder.Services.AddScoped<ICertificateService, CertificateService>();
             builder.Services.AddScoped<IScheduleService, ScheduleService>();
@@ -139,7 +131,7 @@ namespace SFA.DAS.Assessor.Functions
                 return new SftpClient(sftpSettings.RemoteHost, Convert.ToInt32(sftpSettings.Port), sftpSettings.Username, sftpSettings.Password);
             });
 
-            builder.Services.AddNotificationService();
+            builder.Services.AddTransient<INotificationService, NotificationService>();
         }
     }
 }

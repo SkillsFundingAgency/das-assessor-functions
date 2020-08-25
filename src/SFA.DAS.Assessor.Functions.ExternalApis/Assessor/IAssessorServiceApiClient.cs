@@ -22,7 +22,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences);
         Task UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime);
         Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus);        
-        Task<EMailTemplate> GetEmailTemplate(string templateName);
+        Task<EmailTemplateSummary> GetEmailTemplate(string templateName);
+        Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest);
         Task<ImportLearnerDetailResponse> ImportLearnerDetails(ImportLearnerDetailRequest request);
     }
 }

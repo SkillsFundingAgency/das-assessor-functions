@@ -114,7 +114,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                             Option = string.IsNullOrWhiteSpace(c.CourseOption) ? string.Empty : $"({c.CourseOption}):",
                             GradeText = gradeText,
                             Grade = grade,
-                            AchievementDate = $"{c.AchievementDate.Value:dd MMMM yyyy}",
+                            AchievementDate = !c.AchievementDate.HasValue ? string.Empty : $"{c.AchievementDate.Value:dd MMMM yyyy}"
                         }
                     });
                 });
@@ -133,8 +133,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             // update certificates status
             foreach(var certificate in certificates)
-            {
-                certificate.Status = "SentToPrinter";
+            {                
+                certificate.Status = "SentToPrinter";                
             }
         }
     }
