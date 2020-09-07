@@ -36,21 +36,21 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         }
 
         [TestCase(1, 1)]
-        [TestCase(99, 5)]
-        [TestCase(100, 5)]
-        [TestCase(101, 6)]
-        [TestCase(199, 10)]
-        [TestCase(200, 10)]
-        [TestCase(201, 11)]
-        [TestCase(299, 15)]
-        [TestCase(300, 15)]
-        [TestCase(301, 16)]
-        [TestCase(399, 20)]
-        [TestCase(400, 20)]
-        [TestCase(401, 21)]
-        [TestCase(499, 25)]
-        [TestCase(500, 25)]
-        public async Task ThenItShouldUpdateCertificatesInChunksOf100(int batchSize, int chunksSent)
+        [TestCase(99, 20)]
+        [TestCase(100, 20)]
+        [TestCase(101, 21)]
+        [TestCase(199, 40)]
+        [TestCase(200, 40)]
+        [TestCase(201, 41)]
+        [TestCase(299, 60)]
+        [TestCase(300, 60)]
+        [TestCase(301, 61)]
+        [TestCase(399, 80)]
+        [TestCase(400, 80)]
+        [TestCase(401, 81)]
+        [TestCase(499, 100)]
+        [TestCase(500, 100)]
+        public async Task ThenItShouldUpdateCertificatesInChunksOf5(int batchSize, int chunksSent)
         {
             // Arrange
             var batchNumber = 1;

@@ -64,7 +64,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         public async Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences)
         {
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
-            const int chunkSize = 20;
+            // which is currently 100, however this has been reduced to 5 as a workaround for current database performance
+            const int chunkSize = 5;
 
             foreach (var certificateReferencesChunk in certificateReferences.ToList().ChunkBy(chunkSize))
             {
@@ -92,7 +93,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         public async Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus)
         {
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
-            const int chunkSize = 20;
+            // which is currently 100, however this has been reduced to 5 as a workaround for current database performance
+            const int chunkSize = 5;
 
             foreach (var certificatePrintStatusChunk in certificatePrintStatus.ToList().ChunkBy(chunkSize))
             {
