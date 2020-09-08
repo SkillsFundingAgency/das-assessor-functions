@@ -66,15 +66,15 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddScoped<ICertificateService, CertificateService>();
             builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
-            //if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-            //{                
-            //    builder.Services.AddTransient<IFileTransferClient, NullFileTransferClient>();
-            //}
-            //else
-            //{
+            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
+            {
+                builder.Services.AddTransient<IFileTransferClient, NullFileTransferClient>();
+            }
+            else
+            {
                 builder.Services.AddTransient<IFileTransferClient, FileTransferClient>();
-            //}
-            
+            }
+
             builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintingSpreadsheetCreator, PrintingSpreadsheetCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
