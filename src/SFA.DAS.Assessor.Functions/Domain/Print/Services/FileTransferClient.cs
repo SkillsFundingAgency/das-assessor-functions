@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Renci.SshNet.Sftp;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
@@ -18,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
     {
         private readonly ILogger<FileTransferClient> _logger;
         private readonly SftpSettings _sftpSettings;
-        
+
         private readonly Object _lock = new Object();
 
         public FileTransferClient(
@@ -26,7 +27,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             IOptions<SftpSettings> options)
         {
             _logger = logger;
-            _sftpSettings = options?.Value;            
+            _sftpSettings = options?.Value;
         }
 
         public void Send(MemoryStream memoryStream, string file)
@@ -51,6 +52,53 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     _logger.Log(LogLevel.Information, $"Validated the upload ...");
                 }
             }
+        }
+
+        public void MoveFolderToArchive(string sourceDirectory, string destinationDirectory, string fileName)
+        {
+            lock (_lock)
+            {
+                using (var sftpClient = new SftpClient(_sftpSettings.RemoteHost,
+                    Convert.ToInt32(_sftpSettings.Port),
+                    _sftpSettings.Username,
+                    _sftpSettings.Password))
+                {
+                    sftpClient.Connect();
+                    //Get first file in the Directory 
+                    _logger.Log(LogLevel.Information, $"Listing Directory ... {sourceDirectory}");
+                    SftpFile eachRemoteFile = sftpClient.ListDirectory(sourceDirectory).First();
+                    _logger.Log(LogLevel.Information, $"First Remotefile ... {eachRemoteFile}");
+                    //Move only file
+                    if (eachRemoteFile.IsRegularFile)
+                    {
+                        bool eachFileExistsInArchive = CheckIfRemoteFileExists(sftpClient, destinationDirectory, eachRemoteFile.Name);
+
+                        //MoveTo will result in error if filename already exists in the target folder. Prevent that error by checking if File name exists
+                        string eachFileNameInArchive = eachRemoteFile.Name;
+
+                        if (eachFileExistsInArchive)
+                        {
+                            //Change file name if the file already exists
+                            eachFileNameInArchive = eachFileNameInArchive + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss");
+                        }
+                        eachRemoteFile.MoveTo(destinationDirectory + eachFileNameInArchive);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if Remote folder contains the given file name
+        /// </summary>
+        public bool CheckIfRemoteFileExists(SftpClient sftpClient, string remoteFolderName, string remotefileName)
+        {
+            bool isFileExists = sftpClient
+                .ListDirectory(remoteFolderName)
+                .Any(
+                    f => f.IsRegularFile &&
+                         f.Name.ToLower() == remotefileName.ToLower()
+                );
+            return isFileExists;
         }
 
         public async Task<List<string>> GetFileNames(string directory, string pattern)
@@ -109,7 +157,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         }
 
         public void DeleteFile(string file)
-        {            
+        {
             _logger.Log(LogLevel.Information, $"Deleting successfully processed file [{file}]");
 
             lock (_lock)
@@ -141,6 +189,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                         $"There has been  problem with the sftp file transfer with file name {file}");
                 }
             }
-        }        
+        }
     }
 }
