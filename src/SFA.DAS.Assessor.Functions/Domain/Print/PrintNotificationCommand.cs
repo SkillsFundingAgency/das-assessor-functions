@@ -52,13 +52,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             else
             {
                 await Process(_sftpSettings.ProofDirectory, LegacyFilePattern, LegacyDateTimePattern, "MMYY", (f) => ProcessLegacyFile(f));
-            }            
+            }
         }
 
         private async Task Process(string directoryName, string filePattern, string dateTimePattern, string dateTimeFormat, Func<PrintNotificationFileInfo, Task<Batch>> processFile)
         {
             var fileNames = await _fileTransferClient.GetFileNames(directoryName, filePattern);
-
             if (!fileNames.Any())
             {
                 _logger.Log(LogLevel.Information, "There are no certificate print notifications from the printer to process");
@@ -74,11 +73,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 {
                     var batch = await processFile(fileInfo);
                     await _batchService.Save(batch);
-                    _fileTransferClient.DeleteFile($"{directoryName}/{fileName}");
+                    _fileTransferClient.MoveFileToArchive($"{directoryName}/{fileName}", _sftpSettings.ArchivePrintResponseDirectory);
                 }
                 catch (FileFormatValidationException ex)
                 {
-                    _logger.Log(LogLevel.Information,ex.Message);
+                    _logger.Log(LogLevel.Information, ex.Message);
                 }
             }
         }

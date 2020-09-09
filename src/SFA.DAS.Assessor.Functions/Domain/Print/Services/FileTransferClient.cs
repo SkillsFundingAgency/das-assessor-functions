@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Renci.SshNet.Sftp;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
@@ -54,7 +53,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
         }
 
-        public void MoveFolderToArchive(string sourceDirectory, string destinationDirectory, string fileName)
+        /// <summary>
+        /// Move Processed file to archive folder
+        /// </summary>
+        /// <param name="remotefileName"></param>
+        /// <param name="destinationDirectory"></param>
+        public void MoveFileToArchive(string remotefileName, string destinationDirectory)
         {
             lock (_lock)
             {
@@ -64,24 +68,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     _sftpSettings.Password))
                 {
                     sftpClient.Connect();
-                    //Get first file in the Directory 
-                    _logger.Log(LogLevel.Information, $"Listing Directory ... {sourceDirectory}");
-                    SftpFile eachRemoteFile = sftpClient.ListDirectory(sourceDirectory).First();
-                    _logger.Log(LogLevel.Information, $"First Remotefile ... {eachRemoteFile}");
-                    //Move only file
-                    if (eachRemoteFile.IsRegularFile)
+                    _logger.Log(LogLevel.Information, $"Listing Directory ... {remotefileName}");
+                    var sftpFile = sftpClient.Get(remotefileName);
+                    if (sftpFile != null && sftpFile.IsRegularFile)
                     {
-                        bool eachFileExistsInArchive = CheckIfRemoteFileExists(sftpClient, destinationDirectory, eachRemoteFile.Name);
-
-                        //MoveTo will result in error if filename already exists in the target folder. Prevent that error by checking if File name exists
-                        string eachFileNameInArchive = eachRemoteFile.Name;
-
+                        _logger.Log(LogLevel.Information, $"Listing Directory ... {remotefileName}");
+                        bool eachFileExistsInArchive = CheckIfRemoteFileExists(sftpClient,
+                            destinationDirectory, sftpFile.Name);
+                        string sftpFileName = sftpFile.Name;
                         if (eachFileExistsInArchive)
                         {
-                            //Change file name if the file already exists
-                            eachFileNameInArchive = eachFileNameInArchive + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss");
+                            _logger.Log(LogLevel.Information, $"Sftpfile already exists in the archive directory ... {sftpFileName}");
+                            sftpFileName = sftpFileName + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss");
                         }
-                        eachRemoteFile.MoveTo(destinationDirectory + eachFileNameInArchive);
+                        _logger.Log(LogLevel.Information, $"Begin moving of file to archive folder ... {sftpFileName}");
+                        sftpFile.MoveTo($"{destinationDirectory}/{sftpFileName}");
+                        _logger.Log(LogLevel.Information, $"Moved file to archive folder ... {sftpFileName}");
                     }
                 }
             }

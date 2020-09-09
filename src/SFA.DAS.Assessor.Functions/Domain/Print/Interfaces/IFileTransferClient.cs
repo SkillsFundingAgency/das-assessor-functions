@@ -11,5 +11,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
         Task<List<string>> GetFileNames(string directory, string pattern);
         string DownloadFile(string file);
         void DeleteFile(string file);
+        void MoveFileToArchive(string remotefileName, string destinationDirectory);
     }
 }

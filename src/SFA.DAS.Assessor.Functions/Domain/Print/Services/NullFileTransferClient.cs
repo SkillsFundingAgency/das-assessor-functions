@@ -12,6 +12,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return;
         }
 
+        public void MoveFileToArchive(string sourceDirectory, string destinationDirectory)
+        {
+            return;
+        }
+
         public string DownloadFile(string filename)
         {
             return string.Empty;

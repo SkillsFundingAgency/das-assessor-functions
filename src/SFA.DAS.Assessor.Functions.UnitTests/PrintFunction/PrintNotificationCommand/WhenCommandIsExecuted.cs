@@ -197,7 +197,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         }
 
         [Test]
-        public async Task ThenItShouldProcessAndDeletePrintNotificationFiles()
+        public async Task ThenItShouldProcessAndArchivePrintNotificationFiles()
         {
             // Arrange
 
@@ -206,7 +206,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
 
             // Assert
             _mockBatchService.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
-            _mockFileTransferClient.Verify(m => m.DeleteFile(It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
+            _mockFileTransferClient.Verify(m => m.MoveFileToArchive(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
         }
     }
 }

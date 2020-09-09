@@ -118,7 +118,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         }
 
         [Test]
-        public async Task ThenItShouldProcessAndDeleteDeliveryNotificationFiles()
+        public async Task ThenItShouldProcessAndArchiveDeliveryNotificationFiles()
         {
             // Arrange
 
@@ -127,7 +127,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
 
             // Assert
             _mockCertificateService.Verify(m => m.Save(It.Is<IEnumerable<Certificate>>(c => c.ToList().Where(i => i.BatchId == _batchNumber).Count().Equals(1))), Times.Exactly(_downloadedFiles.Count));
-            _mockFileTransferClient.Verify(m => m.DeleteFile(It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
+            _mockFileTransferClient.Verify(m => m.MoveFileToArchive(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
         }
     }
 }
