@@ -73,7 +73,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 {
                     var batch = await processFile(fileInfo);
                     await _batchService.Save(batch);
-                    _fileTransferClient.MoveFileToArchive($"{directoryName}/{fileName}", _sftpSettings.ArchivePrintResponseDirectory);
+                    _fileTransferClient.MoveFile($"{directoryName}/{fileName}", _sftpSettings.ArchivePrintResponseDirectory);
                 }
                 catch (FileFormatValidationException ex)
                 {

@@ -58,7 +58,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         /// </summary>
         /// <param name="remotefileName"></param>
         /// <param name="destinationDirectory"></param>
-        public void MoveFileToArchive(string remotefileName, string destinationDirectory)
+        public void MoveFile(string remotefileName, string destinationDirectory)
         {
             lock (_lock)
             {
@@ -73,10 +73,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     if (sftpFile != null && sftpFile.IsRegularFile)
                     {
                         _logger.Log(LogLevel.Information, $"Listing Directory ... {remotefileName}");
-                        bool eachFileExistsInArchive = CheckIfRemoteFileExists(sftpClient,
+                        bool fileExistsInArchive = CheckIfRemoteFileExists(sftpClient,
                             destinationDirectory, sftpFile.Name);
                         string sftpFileName = sftpFile.Name;
-                        if (eachFileExistsInArchive)
+                        if (fileExistsInArchive)
                         {
                             _logger.Log(LogLevel.Information, $"Sftpfile already exists in the archive directory ... {sftpFileName}");
                             sftpFileName = sftpFileName + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss");
