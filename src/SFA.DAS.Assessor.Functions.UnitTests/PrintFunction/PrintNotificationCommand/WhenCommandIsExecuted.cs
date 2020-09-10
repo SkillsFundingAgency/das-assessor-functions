@@ -35,7 +35,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             _mockFileTransferClient = new Mock<IFileTransferClient>();
             _mockSftpSettings = new Mock<IOptions<SftpSettings>>();
 
-            _sftpSettings = new SftpSettings { UseJson = true, PrintResponseDirectory = "TestNotification" };
+            _sftpSettings = new SftpSettings { UseJson = true, PrintResponseDirectory = "TestNotification",
+                ArchivePrintResponseDirectory = "ArchivePrintResponseTestPrint" };
 
             _mockSftpSettings
                 .Setup(m => m.Value)
@@ -206,7 +207,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
 
             // Assert
             _mockBatchService.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
-            _mockFileTransferClient.Verify(m => m.MoveFile(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
+            _mockFileTransferClient.Verify(m => m.MoveFile(It.IsAny<string>(), _sftpSettings.ArchivePrintResponseDirectory), Times.Exactly(_downloadedFiles.Count));
         }
     }
 }

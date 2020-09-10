@@ -36,7 +36,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             _mockFileTransferClient = new Mock<IFileTransferClient>();
             _mockSftpSettings = new Mock<IOptions<SftpSettings>>();
 
-            _sftpSettings = new SftpSettings { UseJson = true, DeliveryNotificationDirectory = "TestDelivery" };
+            _sftpSettings = new SftpSettings { UseJson = true, 
+                DeliveryNotificationDirectory = "TestDelivery",
+                ArchiveDeliveryNotificationDirectory = "ArchiveTestDelivery"
+            };
 
             _mockSftpSettings
                 .Setup(m => m.Value)
@@ -51,7 +54,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
 
                 _mockFileTransferClient
                     .Setup(m => m.DownloadFile($"{_sftpSettings.DeliveryNotificationDirectory}/{filename}"))
-                    .Returns(JsonConvert.SerializeObject(new DeliveryReceipt { DeliveryNotifications = new List<DeliveryNotification> { new DeliveryNotification { BatchID = _batchNumber } } }));
+                    .Returns(JsonConvert.SerializeObject(new DeliveryReceipt { DeliveryNotifications = new List<DeliveryNotification> 
+                        { new DeliveryNotification { BatchID = _batchNumber } } }));
             };
 
             _mockFileTransferClient
@@ -127,7 +131,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
 
             // Assert
             _mockCertificateService.Verify(m => m.Save(It.Is<IEnumerable<Certificate>>(c => c.ToList().Where(i => i.BatchId == _batchNumber).Count().Equals(1))), Times.Exactly(_downloadedFiles.Count));
-            _mockFileTransferClient.Verify(m => m.MoveFile(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(_downloadedFiles.Count));
+            _mockFileTransferClient.Verify(m => m.MoveFile(It.IsAny<string>(), _sftpSettings.ArchiveDeliveryNotificationDirectory), Times.Exactly(_downloadedFiles.Count));
         }
     }
 }

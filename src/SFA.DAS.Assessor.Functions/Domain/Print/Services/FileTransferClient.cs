@@ -68,22 +68,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     _sftpSettings.Password))
                 {
                     sftpClient.Connect();
-                    _logger.Log(LogLevel.Information, $"Listing Directory ... {remotefileName}");
+                    _logger.Log(LogLevel.Information, $"Listing Directory:{remotefileName}");
                     var sftpFile = sftpClient.Get(remotefileName);
                     if (sftpFile != null && sftpFile.IsRegularFile)
                     {
-                        _logger.Log(LogLevel.Information, $"Listing Directory ... {remotefileName}");
-                        bool fileExistsInArchive = CheckIfRemoteFileExists(sftpClient,
+                        _logger.Log(LogLevel.Information, $"Listing Directory:{remotefileName}");
+                        bool fileExists = CheckIfRemoteFileExists(sftpClient,
                             destinationDirectory, sftpFile.Name);
                         string sftpFileName = sftpFile.Name;
-                        if (fileExistsInArchive)
+                        if (fileExists)
                         {
-                            _logger.Log(LogLevel.Information, $"Sftpfile already exists in the archive directory ... {sftpFileName}");
+                            _logger.Log(LogLevel.Information, $"Sftpfile already exists in the directory : {sftpFileName}");
                             sftpFileName = sftpFileName + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss");
                         }
-                        _logger.Log(LogLevel.Information, $"Begin moving of file to archive folder ... {sftpFileName}");
+                        _logger.Log(LogLevel.Information, $"Begin moving of file:{sftpFileName}");
                         sftpFile.MoveTo($"{destinationDirectory}/{sftpFileName}");
-                        _logger.Log(LogLevel.Information, $"Moved file to archive folder ... {sftpFileName}");
+                        _logger.Log(LogLevel.Information, $"File:{sftpFileName} moved");
                     }
                 }
             }
