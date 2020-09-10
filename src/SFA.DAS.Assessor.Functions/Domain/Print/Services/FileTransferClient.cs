@@ -54,7 +54,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         }
 
         /// <summary>
-        /// Move Processed file to archive folder
+        /// Move Processed file to destination folder
         /// </summary>
         /// <param name="remotefileName"></param>
         /// <param name="destinationDirectory"></param>
