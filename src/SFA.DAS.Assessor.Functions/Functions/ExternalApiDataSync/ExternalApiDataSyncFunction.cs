@@ -16,24 +16,24 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
         }
 
         [FunctionName("ExternalApiDataSyncFunction")]
-        public async Task Run([TimerTrigger("%ExternalApiDataSyncFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log, ExecutionContext context)
+        public async Task Run([TimerTrigger("%ExternalApiDataSyncFunction%", RunOnStartup = true)]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("Epao ExternalApiDataSyncFunctionSchedule timer trigger is running later than scheduled");
+                    log.LogInformation("Epao ExternalApiDataSyncFunction timer trigger is running later than scheduled");
                 }
 
-                log.LogInformation($"Epao ExternalApiDataSyncFunctionSchedule started");
+                log.LogInformation($"Epao ExternalApiDataSyncFunction started");
 
                 await _command.Execute();
 
-                log.LogInformation("Epao ExternalApiDataSyncFunctionSchedule function completed");
+                log.LogInformation("Epao ExternalApiDataSyncFunction function completed");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Epao Importer DeliveryNotificationFunction function failed");
+                log.LogError(ex, "Epao ExternalApiDataSyncFunction function failed");
             }
         }
     }

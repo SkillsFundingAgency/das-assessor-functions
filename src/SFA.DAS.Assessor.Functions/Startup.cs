@@ -57,7 +57,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));            
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
-            builder.Services.Configure<ExternalApiDataSyncConfig>(config.GetSection("ExternalApiDataSyncConfig"));
+            builder.Services.Configure<ExternalApiDataSyncConfig>(config.GetSection("ExternalApiDataSync"));
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             
             builder.Services.AddScoped<AssessorTokenHandler>();
