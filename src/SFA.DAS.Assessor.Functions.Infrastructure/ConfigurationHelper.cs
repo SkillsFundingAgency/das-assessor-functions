@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.Assessor.Functions.Infrastructure
 {
-    public static class ConfigurationHelper
+    public class ConfigurationHelper
     {
         public static string GetEnvironmentName(IConfiguration configuration)
         {

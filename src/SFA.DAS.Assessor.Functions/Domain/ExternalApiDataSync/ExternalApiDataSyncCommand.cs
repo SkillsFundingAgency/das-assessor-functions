@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Dapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 
@@ -14,17 +15,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
     public class ExternalApiDataSyncCommand : IExternalApiDataSyncCommand
     {
         private readonly ILogger<ExternalApiDataSyncCommand> _logger;
-        private readonly bool _allowDataSync;
-        private readonly string _sourceConnectionString;
-        private readonly string _destinationConnectionString;
-        private readonly SqlBulkCopyOptions _bulkCopyOptions;     
+        private readonly SqlBulkCopyOptions _bulkCopyOptions;
+        private readonly ExternalApiDataSyncConfig _config;
 
-        public ExternalApiDataSyncCommand(IWebConfiguration config, ILogger<ExternalApiDataSyncCommand> logger)
+        public ExternalApiDataSyncCommand(ILogger<ExternalApiDataSyncCommand> logger, IOptions<ExternalApiDataSyncConfig> options)
         {
             _logger = logger;
-            _allowDataSync = config.ExternalApiDataSync.IsEnabled;
-            _sourceConnectionString = config.SqlConnectionString;
-            _destinationConnectionString = config.SandboxSqlConnectionString;
+            _config = options?.Value;
             _bulkCopyOptions = SqlBulkCopyOptions.KeepIdentity | SqlBulkCopyOptions.KeepNulls | SqlBulkCopyOptions.TableLock;
         }
 
@@ -33,13 +30,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
             _logger.LogInformation("External Api Data Sync Function Started");
             _logger.LogInformation($"Process Environment = {EnvironmentVariableTarget.Process}");
 
-            if (_allowDataSync)
+            if (_config.ExternalApiDataSync.IsEnabled)
             {
                 try
                 {
                     _logger.LogInformation("Proceeding with External Api Data Sync...");
 
-                    using (var destinationSqlConnection = new SqlConnection(_destinationConnectionString))
+                    using (var destinationSqlConnection = new SqlConnection(_config.SandboxSqlConnectionString))
                     {
                         if (!destinationSqlConnection.State.HasFlag(ConnectionState.Open)) destinationSqlConnection.Open();
 
@@ -225,7 +222,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
             if (transaction is null) throw new ArgumentNullException(nameof(transaction));
             if (tablesToCopy is null) throw new ArgumentNullException(nameof(tablesToCopy));
 
-            using (var sourceSqlConnection = new SqlConnection(_sourceConnectionString))
+            using (var sourceSqlConnection = new SqlConnection(_config.SqlConnectionString))
             {
                 if (!sourceSqlConnection.State.HasFlag(ConnectionState.Open)) sourceSqlConnection.Open();
 
