@@ -5,29 +5,23 @@ using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Transactions;
 using Dapper;
+using Microsoft.Extensions.Logging;
+using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Assessor.Functions.Logger;
 
 namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
 {
-    public interface ICommand
+    public class ExternalApiDataSyncCommand : IExternalApiDataSyncCommand
     {
-        Task Execute();
-    }
-
-    public class ExternalApiDataSyncCommand : ICommand
-    {
-        private readonly IAggregateLogger _aggregateLogger;
+        private readonly ILogger<ExternalApiDataSyncCommand> _logger;
         private readonly bool _allowDataSync;
         private readonly string _sourceConnectionString;
         private readonly string _destinationConnectionString;
-
         private readonly SqlBulkCopyOptions _bulkCopyOptions;     
 
-        public ExternalApiDataSyncCommand(IWebConfiguration config, IAggregateLogger aggregateLogger)
+        public ExternalApiDataSyncCommand(IWebConfiguration config, ILogger<ExternalApiDataSyncCommand> logger)
         {
-            _aggregateLogger = aggregateLogger;
-
+            _logger = logger;
             _allowDataSync = config.ExternalApiDataSync.IsEnabled;
             _sourceConnectionString = config.SqlConnectionString;
             _destinationConnectionString = config.SandboxSqlConnectionString;
@@ -36,14 +30,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
 
         public async Task Execute()
         {
-            _aggregateLogger.LogInformation("External Api Data Sync Function Started");
-            _aggregateLogger.LogInformation($"Process Environment = {EnvironmentVariableTarget.Process}");
+            _logger.LogInformation("External Api Data Sync Function Started");
+            _logger.LogInformation($"Process Environment = {EnvironmentVariableTarget.Process}");
 
             if (_allowDataSync)
             {
                 try
                 {
-                    _aggregateLogger.LogInformation("Proceeding with External Api Data Sync...");
+                    _logger.LogInformation("Proceeding with External Api Data Sync...");
 
                     using (var destinationSqlConnection = new SqlConnection(_destinationConnectionString))
                     {
@@ -63,24 +57,24 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
                         }
                     }
 
-                    _aggregateLogger.LogInformation("External Api Data Sync completed");
+                    _logger.LogInformation("External Api Data Sync completed");
                 }
                 catch (TransactionAbortedException ex)
                 {
-                    _aggregateLogger.LogError(ex, "Transaction was aborted during External Api Data Sync");
+                    _logger.LogError(ex, "Transaction was aborted during External Api Data Sync");
                 }
                 catch (SqlException ex)
                 {
-                    _aggregateLogger.LogError(ex, "SqlException occurred during External Api Data Sync");
+                    _logger.LogError(ex, "SqlException occurred during External Api Data Sync");
                 }
                 catch (Exception ex)
                 {
-                    _aggregateLogger.LogError(ex, "Unknown Error occurred during External Api Data Sync");
+                    _logger.LogError(ex, "Unknown Error occurred during External Api Data Sync");
                 }
             }
             else
             {
-                _aggregateLogger.LogInformation("External Api Data Sync is disabled at this time");
+                _logger.LogInformation("External Api Data Sync is disabled at this time");
             }
 
             await Task.CompletedTask;
@@ -88,7 +82,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
 
         private void Step0_TearDown_Database(SqlTransaction transaction)
         {
-            _aggregateLogger.LogInformation("Step 0: Tear Down Database");
+            _logger.LogInformation("Step 0: Tear Down Database");
 
             // repopulated in Step 6
             transaction.Connection.Execute(
@@ -123,40 +117,40 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
                             DELETE FROM OrganisationType;
                             DBCC CHECKIDENT('OrganisationType', RESEED, 1);", transaction: transaction);
 
-            _aggregateLogger.LogInformation("Step 0: Tear Down Completed");
+            _logger.LogInformation("Step 0: Tear Down Completed");
         }
 
         private void Step1_Organisation_Data(SqlTransaction transaction)
         {
-            _aggregateLogger.LogInformation("Step 1: Syncing Organisation Data");
+            _logger.LogInformation("Step 1: Syncing Organisation Data");
             BulkCopyData(transaction, new List<string> { "OrganisationType", "Organisations" });
-            _aggregateLogger.LogInformation("Step 1: Completed");
+            _logger.LogInformation("Step 1: Completed");
         }
 
         private void Step2_Contacts_Data(SqlTransaction transaction)
         {
-            _aggregateLogger.LogInformation("Step 2: Syncing Contacts");
+            _logger.LogInformation("Step 2: Syncing Contacts");
             BulkCopyData(transaction, new List<string> { "Contacts" });
-            _aggregateLogger.LogInformation("Step 2: Completed");
+            _logger.LogInformation("Step 2: Completed");
         }
 
         private void Step3_Standard_Data(SqlTransaction transaction)
         {
-            _aggregateLogger.LogInformation("Step 3: Syncing Standard Data");
+            _logger.LogInformation("Step 3: Syncing Standard Data");
             BulkCopyData(transaction, new List<string> { "StandardCollation", "Options" });
-            _aggregateLogger.LogInformation("Step 3: Completed");
+            _logger.LogInformation("Step 3: Completed");
         }
 
         private void Step4_OrganisationStandard_Data(SqlTransaction transaction)
         {
-            _aggregateLogger.LogInformation("Step 4: Syncing Organisation Standard Data");
+            _logger.LogInformation("Step 4: Syncing Organisation Standard Data");
             BulkCopyData(transaction, new List<string> { "DeliveryArea", "OrganisationStandard", "OrganisationStandardDeliveryArea" });
-            _aggregateLogger.LogInformation("Step 4: Completed");
+            _logger.LogInformation("Step 4: Completed");
         }
 
         private void Step5_Obfuscate_Personal_Data(SqlTransaction transaction)
         {
-            _aggregateLogger.LogInformation("Step 5: Obfuscate Personal Data");
+            _logger.LogInformation("Step 5: Obfuscate Personal Data");
 
             transaction.Connection.Execute(@" UPDATE Contacts
                                     SET GivenNames = ISNULL(EndPointAssessorOrganisationId, 'UNKNOWN')
@@ -172,12 +166,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
                                     SET PrimaryContact = NULL
                                         , ApiUser = NULL;", transaction: transaction);
 
-            _aggregateLogger.LogInformation("Step 5: Completed");
+            _logger.LogInformation("Step 5: Completed");
         }
 
         private void Step6_Generate_Test_Data(SqlTransaction transaction)
         {
-            _aggregateLogger.LogInformation("Step 6: Generating Test Data");
+            _logger.LogInformation("Step 6: Generating Test Data");
 
             transaction.Connection.Execute(
                 @"WITH CTE AS (
@@ -222,7 +216,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
                         ) ab1
                         ORDER BY Uln, EndPointAssessorOrganisationId, StandardCode, Number", transaction: transaction);
 
-            _aggregateLogger.LogInformation("Step 6: Completed");
+            _logger.LogInformation("Step 6: Completed");
         }
 
         private void BulkCopyData(SqlTransaction transaction, List<string> tablesToCopy)
@@ -237,7 +231,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
 
                 foreach (var table in tablesToCopy)
                 {
-                    _aggregateLogger.LogDebug($"\tSyncing table: {table}");
+                    _logger.LogDebug($"\tSyncing table: {table}");
                     using (var commandSourceData = new SqlCommand($"SELECT * FROM {table} ORDER BY [Id]", sourceSqlConnection))
                     {
                         using (var reader = commandSourceData.ExecuteReader())
