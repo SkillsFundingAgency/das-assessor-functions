@@ -4,6 +4,6 @@
     {
         public string SqlConnectionString { get; set; }
         public string SandboxSqlConnectionString { get; set; }
-        public Settings.ExternalApiDataSync ExternalApiDataSync { get; set; }
+        public bool ExternalApiDataSyncEnabled { get; set; }
     }
 }

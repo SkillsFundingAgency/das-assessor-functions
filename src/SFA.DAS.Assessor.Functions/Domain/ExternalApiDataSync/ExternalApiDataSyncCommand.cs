@@ -30,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
             _logger.LogInformation("External Api Data Sync Function Started");
             _logger.LogInformation($"Process Environment = {EnvironmentVariableTarget.Process}");
 
-            if (_config.ExternalApiDataSync.IsEnabled)
+            if (_config.ExternalApiDataSyncEnabled)
             {
                 try
                 {
