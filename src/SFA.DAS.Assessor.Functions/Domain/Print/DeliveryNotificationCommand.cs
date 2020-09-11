@@ -24,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly SftpSettings _sftpSettings;
         public const string Delivered = "Delivered";
         public const string NotDelivered = "NotDelivered";
-        public static string[] PrintNotificationStatus = new[] { Delivered, NotDelivered };
+        public static string[] DeliveryNotificationStatus = new[] { Delivered, NotDelivered };
 
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
@@ -72,16 +72,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 return;
             }
 
-            var invalidPrintStatuses = receipt.DeliveryNotifications
-                   .GroupBy(certificatePrintStatus => certificatePrintStatus.Status)
-                   .Select(certificatePrintStatus => certificatePrintStatus.Key)
-                   .Where(printStatus => !PrintNotificationStatus.Contains(printStatus))
+            var invalidDeliveryNotificationStatuses = receipt.DeliveryNotifications
+                   .GroupBy(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Status)
+                   .Select(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Key)
+                   .Where(deliveryNotificationStatus => !DeliveryNotificationStatus.Contains(deliveryNotificationStatus))
                    .ToList();
 
             //Scenario 4:  Invalid status in delivery notification file
-            invalidPrintStatuses.ForEach(invalidPrintStatus =>
+            invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
             {
-                _logger.Log(LogLevel.Information, $"The certificate status {invalidPrintStatus} is not a valid delivery notification status.");
+                _logger.Log(LogLevel.Information, $"The certificate status {invalidDeliveryNotificationStatus} is not a valid delivery notification status.");
                 
             });
 
