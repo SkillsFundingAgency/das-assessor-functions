@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
         }
 
         [FunctionName("ExternalApiDataSyncFunction")]
-        public async Task Run([TimerTrigger("%ExternalApiDataSyncFunction%", RunOnStartup = true)]TimerInfo myTimer, ILogger log, ExecutionContext context)
+        public async Task Run([TimerTrigger("%ExternalApiDataSyncFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
             try
             {
