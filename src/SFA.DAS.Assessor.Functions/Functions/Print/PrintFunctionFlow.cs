@@ -27,11 +27,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
 
                 log.LogInformation($"Epao Importer PrintFunctionFlow started");
 
-                // DEBUG DEBUG DEBUG CON-2396 - FORCE A TIMEOUT WHICH IS 30 MINUTES BY DEFAULT
-                await Task.Delay(TimeSpan.FromMinutes(35));
-                // DEBUG DEBUG DEBUG CON-2396 - FORCE A TIMEOUT WHICH IS 30 MINUTES BY DEFAULT
-
-                //await _command.Execute();
+                await _command.Execute();
 
                 log.LogInformation("Epao Importer PrintFunctionFlow function completed");
             }
