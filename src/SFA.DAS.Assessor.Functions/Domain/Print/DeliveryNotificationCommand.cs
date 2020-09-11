@@ -22,6 +22,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly ICertificateService _certificateService;
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
+        public const string Delivered = "Delivered";
+        public const string NotDelivered = "NotDelivered";
+        public static string[] PrintNotificationStatus = new[] { Delivered, NotDelivered };
 
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
@@ -68,6 +71,19 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 _logger.Log(LogLevel.Information, $"Could not process delivery receipt file due to invalid format [{fileName}]");
                 return;
             }
+
+            var invalidPrintStatuses = receipt.DeliveryNotifications
+                   .GroupBy(certificatePrintStatus => certificatePrintStatus.Status)
+                   .Select(certificatePrintStatus => certificatePrintStatus.Key)
+                   .Where(printStatus => !PrintNotificationStatus.Contains(printStatus))
+                   .ToList();
+
+            //Scenario 4:  Invalid status in delivery notification file
+            invalidPrintStatuses.ForEach(invalidPrintStatus =>
+            {
+                _logger.Log(LogLevel.Information, $"The certificate status {invalidPrintStatus} is not a valid delivery notification status.");
+                
+            });
 
             await _certificateService.Save(receipt.DeliveryNotifications.Select(n => new Certificate
             {
