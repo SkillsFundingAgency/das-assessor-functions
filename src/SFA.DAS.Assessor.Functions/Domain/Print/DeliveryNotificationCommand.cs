@@ -9,6 +9,7 @@ using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DeliveryNotification = SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -21,10 +22,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
         private readonly IFileTransferClient _fileTransferClient;
-        private readonly SftpSettings _sftpSettings;
-        public const string Delivered = "Delivered";
-        public const string NotDelivered = "NotDelivered";
-        public static string[] DeliveryNotificationStatus = new[] { Delivered, NotDelivered };
+        private readonly SftpSettings _sftpSettings;       
+        public static string[] DeliveryNotificationStatus = new[] { DeliveryNotification.CertificateStatus.Delivered, DeliveryNotification.CertificateStatus.NotDelivered };
 
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,

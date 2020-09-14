@@ -15,5 +15,7 @@
         public const string Deleted = "Deleted";
         public const string Reprint = "Reprint";
         public const string Error = "Error";
+        public const string Delivered = "Delivered";
+        public const string NotDelivered = "NotDelivered";
     }
 }
