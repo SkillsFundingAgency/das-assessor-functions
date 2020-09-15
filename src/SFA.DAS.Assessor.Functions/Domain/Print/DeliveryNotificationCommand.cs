@@ -9,7 +9,6 @@ using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DeliveryNotification = SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -18,6 +17,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         // DeliveryNotifications-ddMMyyHHmm.json
         private static readonly string DateTimePattern = "[0-9]{10}";
         private static readonly string FilePattern = $@"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-{DateTimePattern}.json";
+        public const string Delivered = "Delivered";
+        public const string NotDelivered = "NotDelivered";
+        public static string[] DeliveryNotificationStatus = new[] { Delivered, NotDelivered };
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
@@ -73,7 +75,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var invalidDeliveryNotificationStatuses = receipt.DeliveryNotifications
                    .GroupBy(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Status)
                    .Select(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Key)
-                   .Where(deliveryNotificationStatus => !DeliveryNotification.CertificateStatus.HasDeliveryNotificationStatus(deliveryNotificationStatus))
+                   .Where(deliveryNotificationStatus => !DeliveryNotificationStatus.Contains(deliveryNotificationStatus))
                    .ToList();
                         
             invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
