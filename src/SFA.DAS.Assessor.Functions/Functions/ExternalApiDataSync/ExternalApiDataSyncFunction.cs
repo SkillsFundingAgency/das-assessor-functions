@@ -2,22 +2,24 @@ using System;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 
 namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
 {
     public class ExternalApiDataSyncFunction
-    {
-        private readonly IExternalApiDataSyncCommand _command;
+    {        
+        private readonly IAssessorServiceApiClient _assessorServiceApi;
 
-        public ExternalApiDataSyncFunction(IExternalApiDataSyncCommand command)
-        {
-            _command = command;
+        public ExternalApiDataSyncFunction(IAssessorServiceApiClient assessorServiceApi)
+        {            
+            _assessorServiceApi = assessorServiceApi;
         }
-
+        
         [FunctionName("ExternalApiDataSyncFunction")]
         public async Task Run([TimerTrigger("%ExternalApiDataSyncFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log, ExecutionContext context)
         {
+            var dataSyncRequest = new GetDataSyncRequest();
             try
             {
                 if (myTimer.IsPastDue)
@@ -27,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
 
                 log.LogInformation($"Epao ExternalApiDataSyncFunction started");
 
-                await _command.Execute();
+                await _assessorServiceApi.ExternalApiDataSync(dataSyncRequest);
 
                 log.LogInformation("Epao ExternalApiDataSyncFunction function completed");
             }

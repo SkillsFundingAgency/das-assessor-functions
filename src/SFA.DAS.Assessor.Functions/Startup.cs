@@ -15,8 +15,6 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
-using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync;
-using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -57,7 +55,6 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));            
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
-            builder.Services.Configure<ExternalApiDataSyncConfig>(config.GetSection("ExternalApiDataSync"));
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             
             builder.Services.AddScoped<AssessorTokenHandler>();
@@ -82,7 +79,6 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
-            builder.Services.AddTransient<IExternalApiDataSyncCommand, ExternalApiDataSyncCommand>();
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
 

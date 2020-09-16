@@ -183,6 +183,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 await PostPutRequest(request, sendEmailRequest);
             }
         }
+
+        public async Task ExternalApiDataSync(GetDataSyncRequest getDataSyncRequest)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/externalapidatasync"))
+            {
+                await PostPutRequest(request, getDataSyncRequest);
+            }
+        }
     }
 }
     
