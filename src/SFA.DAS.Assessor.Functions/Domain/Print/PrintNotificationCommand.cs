@@ -84,16 +84,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private async Task<Batch> ProcessFile(PrintNotificationFileInfo file)
         {
-            var printNotification = JsonConvert.DeserializeObject<PrintNotification>(file.FileContent);
+            var receipt = JsonConvert.DeserializeObject<PrintReceipt>(file.FileContent);
 
-            if (printNotification?.Batch == null || printNotification.Batch.BatchDate == DateTime.MinValue)
+            if (receipt?.Batch == null || receipt.Batch.BatchDate == DateTime.MinValue)
             {
                 throw new FileFormatValidationException($"Could not process print notifications due to invalid file format [{file.FileName}]");
             }
 
-            if (!int.TryParse(printNotification.Batch.BatchNumber, out int batchNumberToInt))
+            if (!int.TryParse(receipt.Batch.BatchNumber, out int batchNumberToInt))
             {
-                throw new FileFormatValidationException($"Could not process print notifications the Batch Number is not an integer [{printNotification.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
+                throw new FileFormatValidationException($"Could not process print notifications the Batch Number is not an integer [{receipt.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
             var batch = await _batchService.Get(batchNumberToInt);
@@ -103,10 +103,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
             }
 
-            batch.BatchCreated = printNotification.Batch.BatchDate;
-            batch.NumberOfCoverLetters = printNotification.Batch.PostalContactCount;
-            batch.NumberOfCertificates = printNotification.Batch.TotalCertificateCount;
-            batch.PrintedDate = printNotification.Batch.ProcessedDate;
+            batch.BatchCreated = receipt.Batch.BatchDate;
+            batch.NumberOfCoverLetters = receipt.Batch.PostalContactCount;
+            batch.NumberOfCertificates = receipt.Batch.TotalCertificateCount;
+            batch.PrintedDate = receipt.Batch.ProcessedDate;
             batch.DateOfResponse = DateTime.UtcNow;
             batch.Status = "Printed";
 
