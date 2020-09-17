@@ -89,7 +89,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 BatchId = n.BatchID,
                 CertificateReference = n.CertificateNumber,
                 Status = n.Status,
-                StatusDate = n.StatusChangeDate
+                StatusDate = n.StatusChangeDate,
+                Reason = n.Reason
             }));
 
             _fileTransferClient.DeleteFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}");

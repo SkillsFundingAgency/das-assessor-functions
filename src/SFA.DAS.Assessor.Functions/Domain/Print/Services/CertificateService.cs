@@ -36,7 +36,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                  BatchNumber = c.BatchId.Value,
                  CertificateReference = c.CertificateReference,
                  Status = c.Status,
-                 StatusChangedAt = c.StatusDate.Value
+                 StatusChangedAt = c.StatusDate.Value,
+                 ReasonForChange = c.Reason
             }));
         }
 
