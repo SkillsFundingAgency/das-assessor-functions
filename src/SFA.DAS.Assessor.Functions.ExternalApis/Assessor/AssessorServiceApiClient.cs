@@ -184,11 +184,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task ExternalApiDataSync(GetDataSyncRequest getDataSyncRequest)
+        public async Task RebuildExternalApiSandbox(RebuildExternalApiSandboxRequest rebuildExternalApiSandboxRequest)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/externalapidatasync"))
             {
-                await PostPutRequest(request, getDataSyncRequest);
+                await PostPutRequest(request, rebuildExternalApiSandboxRequest);
             }
         }
     }
