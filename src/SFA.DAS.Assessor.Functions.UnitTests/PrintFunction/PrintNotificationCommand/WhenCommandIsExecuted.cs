@@ -50,7 +50,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
 
                 _mockFileTransferClient
                     .Setup(m => m.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{filename}"))
-                    .Returns(JsonConvert.SerializeObject(new PrintNotification { 
+                    .Returns(JsonConvert.SerializeObject(new PrintReceipt { 
                         Batch = new BatchData { 
                             BatchNumber = _batchNumber.ToString(),
                             BatchDate = DateTime.Now.AddDays(-1),
@@ -140,7 +140,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
 
             _mockFileTransferClient
                 .Setup(m => m.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{fileName}"))
-               .Returns(JsonConvert.SerializeObject(new PrintNotification
+               .Returns(JsonConvert.SerializeObject(new PrintReceipt
                {
                    Batch = new BatchData
                    {
@@ -177,7 +177,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
 
             _mockFileTransferClient
                 .Setup(m => m.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{fileName}"))
-               .Returns(JsonConvert.SerializeObject(new PrintNotification
+               .Returns(JsonConvert.SerializeObject(new PrintReceipt
                {
                    Batch = new BatchData
                    {
