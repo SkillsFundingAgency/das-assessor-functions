@@ -15,6 +15,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
+using SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -81,6 +82,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
+            builder.Services.AddTransient<IRebuildExternalApiSandboxCommand, RebuildExternalApiSandboxCommand>();
 
             builder.Services.AddTransient((s) =>
             {
