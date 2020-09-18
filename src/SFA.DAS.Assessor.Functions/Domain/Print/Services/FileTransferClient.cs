@@ -78,8 +78,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                         string sftpFileName = sftpFile.Name;
                         if (fileExists)
                         {
+                            FileInfo fi = new FileInfo(sftpFileName);
                             _logger.Log(LogLevel.Information, $"Sftpfile already exists in the directory : {sftpFileName}");
-                            sftpFileName = sftpFileName + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss");
+                            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sftpFileName);
+                            sftpFileName = fileNameWithoutExtension + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss") + fi.Extension;
                         }
                         _logger.Log(LogLevel.Information, $"Begin moving of file:{sftpFileName}");
                         sftpFile.MoveTo($"{destinationDirectory}/{sftpFileName}");
