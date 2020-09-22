@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
     {
         private readonly ILogger<FileTransferClient> _logger;
         private readonly SftpSettings _sftpSettings;
-        
+
         private readonly Object _lock = new Object();
 
         public FileTransferClient(
@@ -26,7 +26,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             IOptions<SftpSettings> options)
         {
             _logger = logger;
-            _sftpSettings = options?.Value;            
+            _sftpSettings = options?.Value;
         }
 
         public void Send(MemoryStream memoryStream, string file)
@@ -51,6 +51,58 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     _logger.Log(LogLevel.Information, $"Validated the upload ...");
                 }
             }
+        }
+
+        /// <summary>
+        /// Move Processed file to destination folder
+        /// </summary>
+        /// <param name="remotefileName"></param>
+        /// <param name="destinationDirectory"></param>
+        public void MoveFile(string remotefileName, string destinationDirectory)
+        {
+            lock (_lock)
+            {
+                using (var sftpClient = new SftpClient(_sftpSettings.RemoteHost,
+                    Convert.ToInt32(_sftpSettings.Port),
+                    _sftpSettings.Username,
+                    _sftpSettings.Password))
+                {
+                    sftpClient.Connect();
+                    _logger.Log(LogLevel.Information, $"Listing Directory:{remotefileName}");
+                    var sftpFile = sftpClient.Get(remotefileName);
+                    if (sftpFile != null && sftpFile.IsRegularFile)
+                    {
+                        _logger.Log(LogLevel.Information, $"Listing Directory:{remotefileName}");
+                        bool fileExists = CheckIfRemoteFileExists(sftpClient,
+                            destinationDirectory, sftpFile.Name);
+                        string sftpFileName = sftpFile.Name;
+                        if (fileExists)
+                        {
+                            FileInfo fi = new FileInfo(sftpFileName);
+                            _logger.Log(LogLevel.Information, $"Sftpfile already exists in the directory : {sftpFileName}");
+                            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sftpFileName);
+                            sftpFileName = fileNameWithoutExtension + "_" + DateTime.Now.ToString("MMddyyyy_HHmmss") + fi.Extension;
+                        }
+                        _logger.Log(LogLevel.Information, $"Begin moving of file:{sftpFileName}");
+                        sftpFile.MoveTo($"{destinationDirectory}/{sftpFileName}");
+                        _logger.Log(LogLevel.Information, $"File:{sftpFileName} moved");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if Remote folder contains the given file name
+        /// </summary>
+        public bool CheckIfRemoteFileExists(SftpClient sftpClient, string remoteFolderName, string remotefileName)
+        {
+            bool isFileExists = sftpClient
+                .ListDirectory(remoteFolderName)
+                .Any(
+                    f => f.IsRegularFile &&
+                         f.Name.ToLower() == remotefileName.ToLower()
+                );
+            return isFileExists;
         }
 
         public async Task<List<string>> GetFileNames(string directory, string pattern)
@@ -109,7 +161,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         }
 
         public void DeleteFile(string file)
-        {            
+        {
             _logger.Log(LogLevel.Information, $"Deleting successfully processed file [{file}]");
 
             lock (_lock)
@@ -141,6 +193,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                         $"There has been  problem with the sftp file transfer with file name {file}");
                 }
             }
-        }        
+        }
     }
 }

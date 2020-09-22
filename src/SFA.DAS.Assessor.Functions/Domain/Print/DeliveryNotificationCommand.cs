@@ -92,8 +92,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 StatusDate = n.StatusChangeDate,
                 Reason = n.Reason
             }));
-
-            _fileTransferClient.DeleteFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}");
+            _fileTransferClient.MoveFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}", _sftpSettings.ArchiveDeliveryNotificationDirectory);
         }
     }
 }
