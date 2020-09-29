@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.ExternalApis.UnitTests", "SFA.DAS.Assessor.Functions.ExternalApis.UnitTests\SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.csproj", "{E333E12A-8726-4C13-AB2A-ABBCD848DE8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.Assessor.Functions.MockApis", "SFA.DAS.Assessor.Functions.MockApis\SFA.DAS.Assessor.Functions.MockApis.csproj", "{9C7783E2-FFCC-489A-B02F-05E667CDCB12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +31,6 @@ Global
 		{F5BA754A-C1A6-4902-8833-CE1C525DF74B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5BA754A-C1A6-4902-8833-CE1C525DF74B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5BA754A-C1A6-4902-8833-CE1C525DF74B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BED9E5C1-04B6-4153-9870-45433B146695}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BED9E5C1-04B6-4153-9870-45433B146695}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BED9E5C1-04B6-4153-9870-45433B146695}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BED9E5C1-04B6-4153-9870-45433B146695}.Release|Any CPU.Build.0 = Release|Any CPU
 		{44ED0206-F81D-4AA7-9817-5B949F4DC8CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{44ED0206-F81D-4AA7-9817-5B949F4DC8CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44ED0206-F81D-4AA7-9817-5B949F4DC8CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,6 +51,10 @@ Global
 		{E333E12A-8726-4C13-AB2A-ABBCD848DE8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E333E12A-8726-4C13-AB2A-ABBCD848DE8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E333E12A-8726-4C13-AB2A-ABBCD848DE8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C7783E2-FFCC-489A-B02F-05E667CDCB12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C7783E2-FFCC-489A-B02F-05E667CDCB12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C7783E2-FFCC-489A-B02F-05E667CDCB12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C7783E2-FFCC-489A-B02F-05E667CDCB12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +64,7 @@ Global
 		{2B797334-A9EC-493C-A7A7-4D172ABB6FE4} = {481051C0-C015-4149-95B5-6019A075F512}
 		{67E27B30-D084-498C-B2F2-74B351963EEE} = {7B24B539-1335-4DBC-A306-F176231B4A0B}
 		{E333E12A-8726-4C13-AB2A-ABBCD848DE8D} = {7B24B539-1335-4DBC-A306-F176231B4A0B}
+		{9C7783E2-FFCC-489A-B02F-05E667CDCB12} = {481051C0-C015-4149-95B5-6019A075F512}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DCC4A81-A1C7-497F-97A5-8292DD3694E7}

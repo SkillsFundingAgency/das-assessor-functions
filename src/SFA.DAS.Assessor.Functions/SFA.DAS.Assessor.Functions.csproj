@@ -42,6 +42,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.ExternalApis\SFA.DAS.Assessor.Functions.ExternalApis.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.Infrastructure\SFA.DAS.Assessor.Functions.Infrastructure.csproj" />
+    <ProjectReference Include="..\SFA.DAS.Assessor.Functions.MockApis\SFA.DAS.Assessor.Functions.MockApis.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.QnATypes\SFA.DAS.Assessor.Functions.QnATypes.csproj" />
   </ItemGroup>
 </Project>

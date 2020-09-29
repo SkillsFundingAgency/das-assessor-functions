@@ -20,6 +20,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
+using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using System;
 using System.Net.Http;
 
@@ -28,7 +29,7 @@ using System.Net.Http;
 namespace SFA.DAS.Assessor.Functions
 {
     public class Startup : FunctionsStartup
-    {   
+    {
         public override void Configure(IFunctionsHostBuilder builder)
         {
             var nLogConfiguration = new NLogConfiguration();
@@ -72,6 +73,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<RefreshIlrsSettings>(config.GetSection("RefreshIlrs"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
+            builder.Services.Configure<MockSettings>(config.GetSection("MockSettings"));
 
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
@@ -81,19 +83,29 @@ namespace SFA.DAS.Assessor.Functions
                 .AddHttpMessageHandler<AssessorTokenHandler>();
 
             builder.Services.AddScoped<DataCollectionTokenHandler>();
-            builder.Services.AddHttpClient<IDataCollectionServiceApiClient, DataCollectionServiceApiClient>()
-                .AddHttpMessageHandler<DataCollectionTokenHandler>()
-                .ConfigurePrimaryHttpMessageHandler(() => {
-                    var handler = new HttpClientHandler();
-                    if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
+
+            var mockSettings = config.GetSection("MockSettings").Get<MockSettings>();
+            if (mockSettings.UseDataCollectionMock)
+            {
+                builder.Services.AddTransient<IDataCollectionServiceApiClient, DataCollectionMockApiClient>();
+            }
+            else
+            {
+                builder.Services.AddHttpClient<IDataCollectionServiceApiClient, DataCollectionServiceApiClient>()
+                    .AddHttpMessageHandler<DataCollectionTokenHandler>()
+                    .ConfigurePrimaryHttpMessageHandler(() =>
                     {
-                        // this will disable SSL certificate validation for the LOCAL environment, alternatively obtain a certificate
-                        // and install it in the Trusted Root Certificate Authorities for the local machine and then remove this
-                        // override to test that a SSL call can be validated correctly by a client certificate
-                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
-                    }
-                    return handler;
-                });
+                        var handler = new HttpClientHandler();
+                        if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
+                        {
+                            // this will disable SSL certificate validation for the LOCAL environment, alternatively obtain a certificate
+                            // and install it in the Trusted Root Certificate Authorities for the local machine and then remove this
+                            // override to test that a SSL call can be validated correctly by a client certificate
+                            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+                        }
+                        return handler;
+                    });
+            }
 
             builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
 
