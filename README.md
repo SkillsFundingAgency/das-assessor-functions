@@ -47,6 +47,9 @@ instance of SFA.DAS.AssessorService.Application.Api project to which the local s
 1) When the RefreshIlrsEnqueueProviders function starts and there are any providers updated in the DC API since the RefreshIlrsLastRunDate
 in the assessor, a Azure Storage Queue will be created automatically; the name of the queue is defined in [QueueNames.cs](src\SFA.DAS.Assessor.Functions\Infrastructure\QueueNames.cs).
 
+2) The RefreshIlrsEnqueueProviders and RefreshIlrsDequeueProviders functions connect to the DC API, optionally the Configuration can be updated to specify that a Mock should be used for the DC API. The current value of the RefreshIlrsLastRunDate in the Assessor Settings controls the amount of Mock data which is generated. 
+      
+
 ### Opportunity Finder DataSync
 
 No specific configuration

@@ -87,7 +87,7 @@ namespace SFA.DAS.Assessor.Functions
             var mockSettings = config.GetSection("MockSettings").Get<MockSettings>();
             if (mockSettings.UseDataCollectionMock)
             {
-                builder.Services.AddTransient<IDataCollectionServiceApiClient, DataCollectionMockApiClient>();
+                builder.Services.AddSingleton<IDataCollectionServiceApiClient, DataCollectionMockApiClient>();
             }
             else
             {
