@@ -70,11 +70,11 @@ namespace SFA.DAS.Assessor.Functions
             
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection("DataCollectionApiAuthentication"));
-            builder.Services.Configure<RefreshIlrsSettings>(config.GetSection("RefreshIlrs"));
+            builder.Services.Configure<DataCollectionMock>(config.GetSection("DataCollectionMock"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
             builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
-            builder.Services.Configure<MockSettings>(config.GetSection("MockSettings"));
-
+            builder.Services.Configure<RefreshIlrsSettings>(config.GetSection("FunctionsSettings:RefreshIlrs"));
+            
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
 
@@ -84,8 +84,8 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddScoped<DataCollectionTokenHandler>();
 
-            var mockSettings = config.GetSection("MockSettings").Get<MockSettings>();
-            if (mockSettings.UseDataCollectionMock)
+            var dataCollectionMock = config.GetSection("DataCollectionMock").Get<DataCollectionMock>();
+            if (dataCollectionMock.Enabled)
             {
                 builder.Services.AddSingleton<IDataCollectionServiceApiClient, DataCollectionMockApiClient>();
             }

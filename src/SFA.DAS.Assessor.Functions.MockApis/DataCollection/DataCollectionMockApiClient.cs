@@ -3,49 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator;
 
 namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
 {
-    /// <summary>
-    /// The amount of Mock data which is generated on startup is controlled by the Settings table in the Assessor database, the RefreshIlrsLastRunDate
-    /// is passed to the GetAcademicYears method, depending on the value in the Settings:
-    /// 
-    /// YYYY-06-15 (10 Providers, 4 Learners, 1 Valid Learning Delivery and upto 4 invalid learning deliveries)
-    /// YYYY-05-15 (100 Providers, 8 Learners, 2 Valid Learning Delivery and upto 4 invalid learning deliveries)
-    /// YYYY-04-15 (200 Providers, 16 Learners, 3 Valid Learning Delivery and upto 4 invalid learning deliveries)
-    /// YYYY-03-15 (400 Providers, 32 Learners, 4 Valid Learning Delivery and upto 4 invalid learning deliveries)
-    /// YYYY-02-15 (800 Providers, 64 Learners, 5 Valid Learning Delivery and upto 4 invalid learning deliveries)
-    /// YYYY-01-15 (1600 Providers, 128 Learners, 6 Valid Learning Delivery and upto 4 invalid learning deliveries)
-    /// 
-    /// 1000 = Academic Year 1920
-    /// 2000 = Academic Year 2021
-    ///
-    /// Notes:
-    /// 1) Always use a time in the RefreshIlrsLastRunDate which is 12:00 to avoid any UTC time shift to a previous day
-    /// 
-    /// 2) The amount of data sent to the Assessor and stored in the [Ilrs] table is not a straight multiplication of the above numbers
-    /// due to there being overlapping sets of data which can cause Updates rather than inserts and data which may be ignored due to 
-    /// business rules, the purpose of the Mock data is to test the performance NOT the correctness of the data.
-    /// 
-    /// </summary>
     public class DataCollectionMockApiClient : IDataCollectionServiceApiClient
     {
-        private List<DataCollectionLearner> _learnerMockData = null;
-        private List<int> _providerMockData = null;
+        private ILogger<DataCollectionMockApiClient> _logger;
+        private List<string> _academicYears;
+        private List<DataCollectionLearner> _learnerMockData = new List<DataCollectionLearner>();
+        private List<int> _providerMockData = new List<int>();
 
-        ILogger<DataCollectionMockApiClient> _logger;
-
-        public DataCollectionMockApiClient(ILogger<DataCollectionMockApiClient> logger)
+        public DataCollectionMockApiClient(IOptions<DataCollectionMock> options, ILogger<DataCollectionMockApiClient> logger)
         {
             _logger = logger;
+
+            _academicYears = new List<string>() { options.Value.AcademicYear };
+            SetupDataCollectionMockData(options.Value.ProviderCount, options.Value.LearnerCount, options.Value.LearningDeliveryCount);
         }
 
-        private void AddDataCollectionLearnersForStartDate(int providerCount, int learnerCount, int learningDeliveryCount)
+        private void SetupDataCollectionMockData(int providerCount, int learnerCount, int learningDeliveryCount)
         {
-            _learnerMockData = new List<DataCollectionLearner>();
+            var generatingInfo = $"generating {providerCount} providers for {learnerCount} learners with {learningDeliveryCount} learning deliveries from source(s) {string.Join(",", _academicYears.ToArray())}";
+            _logger.LogInformation($"Epao RefreshIlrsEnqueueProviders DataCollectionMockApiClient started {generatingInfo}");
 
             var generator = new DataCollectionMockDataGenerator(1, new List<int> { 36, 81, 99 });
             for (int count = 0; count < providerCount; count++)
@@ -53,8 +37,13 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
                 var provider = Providers.ProvidersList[count];
                 _learnerMockData.AddRange(generator.GetLearners(provider, learnerCount, learningDeliveryCount));
             }
+
+            _providerMockData.AddRange(Providers.ProvidersList.Take(providerCount).ToList());
+
+            _logger.LogInformation($"Epao RefreshIlrsEnqueueProviders DataCollectionMockApiClient finished {generatingInfo}");
+
         }
-        
+
         public string BaseAddress()
         {
             throw new NotImplementedException();
@@ -62,31 +51,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
 
         public Task<List<string>> GetAcademicYears(DateTime dateTimeUtc)
         {
-            // initialize the test data for this singleton instance on the first call to academic years
-            if (_learnerMockData == null || _providerMockData == null)
-            {
-                ProviderCountDates.GetCounts(dateTimeUtc.Date, out int providerCount, out int learnerCount, out int learningDeliveryCount);
-                _logger.LogInformation($"Epao RefreshIlrsEnqueueProviders DataCollectionMockApiClient will generate {providerCount} providers for {dateTimeUtc.Date} with {learnerCount} learners and {learningDeliveryCount} learning deliveries");
-
-                AddDataCollectionLearnersForStartDate(providerCount, learnerCount, learningDeliveryCount);
-
-                _providerMockData = new List<int>();
-                _providerMockData.AddRange(Providers.ProvidersList.Take(providerCount).ToList());
-
-                _logger.LogInformation($"Epao RefreshIlrsEnqueueProviders DataCollectionMockApiClient has generated {providerCount} providers for {dateTimeUtc.Date} with {learnerCount} learners and {learningDeliveryCount} learning deliveries");
-            }
-
-            switch (dateTimeUtc.Year)
-            {
-                case 1000:
-                    return Task.FromResult(new List<string>() { "1920" });
-                    
-                case 2000:
-                    return Task.FromResult(new List<string>() { "2021" });
-
-                default: 
-                    return Task.FromResult(new List<string>() { "1920" });
-            }
+            return Task.FromResult(_academicYears);
         }
 
         public Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
