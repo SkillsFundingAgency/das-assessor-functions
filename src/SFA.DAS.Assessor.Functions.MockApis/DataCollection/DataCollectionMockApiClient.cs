@@ -13,35 +13,34 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
 {
     public class DataCollectionMockApiClient : IDataCollectionServiceApiClient
     {
+        private IOptions<DataCollectionMock> _optionsDataCollectionMock;
         private ILogger<DataCollectionMockApiClient> _logger;
-        private List<string> _academicYears;
-        private List<DataCollectionLearner> _learnerMockData = new List<DataCollectionLearner>();
+       
         private List<int> _providerMockData = new List<int>();
+        private List<DataCollectionLearner> _learnerMockDataList = new List<DataCollectionLearner>();
+        private Dictionary<int, List<DataCollectionLearner>> _learnerMockDataDictionary = new Dictionary<int, List<DataCollectionLearner>>();
 
-        public DataCollectionMockApiClient(IOptions<DataCollectionMock> options, ILogger<DataCollectionMockApiClient> logger)
+        private DataCollectionMockDataGenerator _generator;
+        
+        public DataCollectionMockApiClient(IOptions<DataCollectionMock> optionsDataCollectionMock,
+            IOptions<RefreshIlrsSettings> optionsRefeshIlrs,
+            ILogger<DataCollectionMockApiClient> logger)
         {
             _logger = logger;
 
-            _academicYears = new List<string>() { options.Value.AcademicYear };
-            SetupDataCollectionMockData(options.Value.ProviderCount, options.Value.LearnerCount, options.Value.LearningDeliveryCount);
-        }
+            _optionsDataCollectionMock = optionsDataCollectionMock;
 
-        private void SetupDataCollectionMockData(int providerCount, int learnerCount, int learningDeliveryCount)
-        {
-            var generatingInfo = $"generating {providerCount} providers for {learnerCount} learners with {learningDeliveryCount} learning deliveries from source(s) {string.Join(",", _academicYears.ToArray())}";
-            _logger.LogInformation($"Epao RefreshIlrsEnqueueProviders DataCollectionMockApiClient started {generatingInfo}");
+            _providerMockData.AddRange(Providers.ProvidersList.Take(_optionsDataCollectionMock.Value.ProviderCount).ToList());
 
-            var generator = new DataCollectionMockDataGenerator(1, new List<int> { 36, 81, 99 });
-            for (int count = 0; count < providerCount; count++)
-            {
-                var provider = Providers.ProvidersList[count];
-                _learnerMockData.AddRange(generator.GetLearners(provider, learnerCount, learningDeliveryCount));
-            }
+            var aimType = 1;
+            var fundModels = optionsRefeshIlrs.Value.LearnerFundModels;
+            
+            _generator = new DataCollectionMockDataGenerator(aimType, 
+                new List<string>(fundModels.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                .ConvertAll<int>(p => int.Parse(p.Trim())));
 
-            _providerMockData.AddRange(Providers.ProvidersList.Take(providerCount).ToList());
-
-            _logger.LogInformation($"Epao RefreshIlrsEnqueueProviders DataCollectionMockApiClient finished {generatingInfo}");
-
+            var generatingInfo = $"generating {_optionsDataCollectionMock.Value.ProviderCount} providers for {_optionsDataCollectionMock.Value.LearnerCount} learners with {_optionsDataCollectionMock.Value.LearningDeliveryCount} learning deliveries from source(s) {_optionsDataCollectionMock.Value.AcademicYear}";
+            _logger.LogInformation($"Epao RefreshIlrsEnqueueProviders DataCollectionMockApiClient {generatingInfo}");
         }
 
         public string BaseAddress()
@@ -51,12 +50,12 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
 
         public Task<List<string>> GetAcademicYears(DateTime dateTimeUtc)
         {
-            return Task.FromResult(_academicYears);
+            return Task.FromResult(new List<string>() { _optionsDataCollectionMock.Value.AcademicYear });
         }
 
         public Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
-            var learners = _learnerMockData;
+            var learners = _learnerMockDataList;
 
             var leanersPage = learners
                 .Skip((pageSize ?? 10) * (pageNumber-1) ?? 1).Take(pageSize ?? 10);
@@ -78,8 +77,15 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
 
         public Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
-            var learners = _learnerMockData
-                .Where(p => p.Ukprn == ukprn);
+            _learnerMockDataDictionary.TryGetValue(ukprn, out List<DataCollectionLearner> learners);
+            if (learners == null)
+            {
+                learners = _learnerMockDataDictionary[ukprn] = _generator.
+                    GetLearners(ukprn, _optionsDataCollectionMock.Value.LearnerCount, _optionsDataCollectionMock.Value.LearningDeliveryCount)
+                    .ToList();
+
+                _learnerMockDataList.AddRange(learners);
+            }
 
             var learnersPage = learners
                 .Skip((pageSize ?? 10) * (pageNumber - 1) ?? 1).Take(pageSize ?? 10);
