@@ -17,11 +17,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         // DeliveryNotifications-ddMMyyHHmm.json
         private static readonly string DateTimePattern = "[0-9]{10}";
         private static readonly string FilePattern = $@"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-{DateTimePattern}.json";
+        public const string Delivered = "Delivered";
+        public const string NotDelivered = "NotDelivered";
+        public static string[] DeliveryNotificationStatus = new[] { Delivered, NotDelivered };
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
         private readonly IFileTransferClient _fileTransferClient;
-        private readonly SftpSettings _sftpSettings;
+        private readonly SftpSettings _sftpSettings;        
 
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
@@ -69,6 +72,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 return;
             }
 
+            var invalidDeliveryNotificationStatuses = receipt.DeliveryNotifications
+                   .GroupBy(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Status)
+                   .Select(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Key)
+                   .Where(deliveryNotificationStatus => !DeliveryNotificationStatus.Contains(deliveryNotificationStatus))
+                   .ToList();
+                        
+            invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
+            {
+                _logger.Log(LogLevel.Information, $"The certificate status {invalidDeliveryNotificationStatus} is not a valid delivery notification status.");
+                
+            });
+
             await _certificateService.Save(receipt.DeliveryNotifications.Select(n => new Certificate
             {
                 BatchId = n.BatchID,
@@ -77,8 +92,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 StatusDate = n.StatusChangeDate,
                 Reason = n.Reason
             }));
-
-            _fileTransferClient.DeleteFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}");
+            _fileTransferClient.MoveFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}", _sftpSettings.ArchiveDeliveryNotificationDirectory);
         }
     }
 }

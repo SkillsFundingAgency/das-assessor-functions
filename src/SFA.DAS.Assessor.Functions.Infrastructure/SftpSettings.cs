@@ -11,6 +11,8 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure
         public string PrintRequestDirectory { get; set; }
         public string PrintResponseDirectory { get; set; }
         public string DeliveryNotificationDirectory { get; set; }
+        public string ArchivePrintResponseDirectory { get; set; }
+        public string ArchiveDeliveryNotificationDirectory { get; set; }
         public bool UseJson { get; set; }
     }
 }
