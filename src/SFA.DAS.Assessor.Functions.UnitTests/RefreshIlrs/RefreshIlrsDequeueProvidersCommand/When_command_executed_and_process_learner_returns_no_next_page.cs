@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Queue;
+﻿using Microsoft.Azure.WebJobs;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.RefreshIlrsDequeuePro
         {
             // Arrange
             Mock<IRefreshIlrsLearnerService> refreshIlrsLearnerService = new Mock<IRefreshIlrsLearnerService>();
-            Mock<IStorageQueue> storageQueue = new Mock<IStorageQueue>();
+            Mock<ICollector<string>> storageQueue = new Mock<ICollector<string>>();
 
             Domain.Ilrs.RefreshIlrsDequeueProvidersCommand sut = new Domain.Ilrs.RefreshIlrsDequeueProvidersCommand(refreshIlrsLearnerService.Object)
             {
@@ -38,8 +38,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.RefreshIlrsDequeuePro
             // Act
             await sut.Execute(inputQueueMessage.ToString());
 
-            // Assert            
-            storageQueue.Verify(p => p.AddMessageAsync(It.IsAny<CloudQueueMessage>()), Times.Never());
+            // Assert
+            storageQueue.Verify(p => p.Add(It.IsAny<string>()), Times.Never());
         }
     }
 }

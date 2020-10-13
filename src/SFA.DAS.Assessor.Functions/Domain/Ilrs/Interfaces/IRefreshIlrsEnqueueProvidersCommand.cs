@@ -1,10 +1,10 @@
-﻿using SFA.DAS.Assessor.Functions.Domain.Interfaces;
-using System.Threading.Tasks;
+﻿using Microsoft.Azure.WebJobs;
+using SFA.DAS.Assessor.Functions.Domain.Interfaces;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces
 {
     public interface IRefreshIlrsEnqueueProvidersCommand : ICommand
     {
-        IStorageQueue StorageQueue { get; set; }
+        ICollector<string> StorageQueue { get; set; }
     }
 }

@@ -1,11 +1,10 @@
-﻿using Microsoft.WindowsAzure.Storage.Queue;
+﻿using Microsoft.Azure.WebJobs;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
-using SFA.DAS.Assessor.Functions.Domain.Interfaces;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.RefreshIlrsDequeueProvidersCommand
@@ -19,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.RefreshIlrsDequeuePro
         {
             // Arrange
             Mock<IRefreshIlrsLearnerService> refreshIlrsLearnerService = new Mock<IRefreshIlrsLearnerService>();
-            Mock<IStorageQueue> storageQueue = new Mock<IStorageQueue>();
+            Mock<ICollector<string>> storageQueue = new Mock<ICollector<string>>();
 
             Domain.Ilrs.RefreshIlrsDequeueProvidersCommand sut = new Domain.Ilrs.RefreshIlrsDequeueProvidersCommand(refreshIlrsLearnerService.Object)
             {
@@ -51,14 +50,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.RefreshIlrsDequeuePro
             // Act
             await sut.Execute(inputQueueMessage.ToString());
 
-            // Assert            
-            storageQueue.Verify(p => p.AddMessageAsync(It.Is<CloudQueueMessage>(m => MessageEquals(m, new CloudQueueMessage(outputQueueMessage.ToString())))));
+            // Assert
+            storageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, outputQueueMessage.ToString()))));
         }
 
-        private bool MessageEquals(CloudQueueMessage first, CloudQueueMessage second)
+        private bool MessageEquals(string first, string second)
         {
-            var firstMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(first.AsString);
-            var secondMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(second.AsString);
+            var firstMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(first);
+            var secondMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(second);
 
             return firstMessage.Equals(secondMessage);
         }

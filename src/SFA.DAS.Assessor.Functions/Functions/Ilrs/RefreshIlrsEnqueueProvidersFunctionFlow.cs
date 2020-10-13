@@ -2,8 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Queue;
-using SFA.DAS.Assessor.Functions.Domain;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 
@@ -20,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
         [FunctionName("RefreshIlrsEnqueueProviders")]
         public async Task Run([TimerTrigger("%FunctionsSettings:RefreshIlrs:EnqueueProvidersSchedule%", RunOnStartup = true)]TimerInfo myTimer,
-            [Queue(QueueNames.RefreshIlrs, Connection = "StorageAccountConnectionString")]CloudQueue refreshIlrsQueue,
+            [Queue(QueueNames.RefreshIlrs), StorageAccount("StorageAccountConnectionString")] ICollector<string> refreshIlrsQueue,
             ILogger log)
         {
             try
@@ -34,7 +32,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
                     log.LogInformation("Epao RefreshIlrsEnqueueProviders has started");
                 }
 
-                _command.StorageQueue = new StorageQueue(refreshIlrsQueue);
+                _command.StorageQueue = refreshIlrsQueue;
                 await _command.Execute();
 
                 log.LogInformation("Epao RefreshIlrsEnqueueProviders has completed");

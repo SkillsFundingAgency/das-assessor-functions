@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Interfaces;
-using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using Microsoft.Azure.WebJobs;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
 {
@@ -27,13 +26,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
             {
                 foreach (var message in output)
                 {
-                    await StorageQueue.AddMessageAsync(new CloudQueueMessage(JsonConvert.SerializeObject(message)));
+                    StorageQueue.Add(JsonConvert.SerializeObject(message));
                 }
 
                 await _refreshIlrsProviderService.SetLastRunDateTime(_dateTimeHelper.DateTimeNow);
             }
         }
 
-        public IStorageQueue StorageQueue { get; set; }
+        public ICollector<string> StorageQueue { get; set; }
     }
 }

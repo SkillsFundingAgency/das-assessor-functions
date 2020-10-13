@@ -1,8 +1,7 @@
-﻿using Microsoft.WindowsAzure.Storage.Queue;
+﻿using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
-using SFA.DAS.Assessor.Functions.Domain.Interfaces;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
@@ -22,11 +21,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
             var nextPageProviderMessage = await _refreshIlrsLearnerService.ProcessLearners(providerMessage);
             if (nextPageProviderMessage != null)
             {
-                await StorageQueue.AddMessageAsync(
-                    new CloudQueueMessage(JsonConvert.SerializeObject(nextPageProviderMessage)));
+                StorageQueue.Add(JsonConvert.SerializeObject(nextPageProviderMessage));
             }
         }
 
-        public IStorageQueue StorageQueue { get; set; }
+        public ICollector<string> StorageQueue { get; set; }
     }
 }
