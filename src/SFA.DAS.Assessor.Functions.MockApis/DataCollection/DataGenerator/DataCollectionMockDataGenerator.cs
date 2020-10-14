@@ -38,7 +38,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
                         return learningDeliveries;
                     });
 
-            return dataCollectionLearnerGenerator.Generate(noOfLearners);
+            return dataCollectionLearnerGenerator.GenerateLazy(noOfLearners);
         }
 
         public IEnumerable<DataCollectionLearningDelivery> GetLearningDeliveries(int count, int? aimType = null)

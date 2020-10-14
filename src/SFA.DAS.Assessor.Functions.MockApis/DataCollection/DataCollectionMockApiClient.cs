@@ -48,12 +48,12 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
             throw new NotImplementedException();
         }
 
-        public Task<List<string>> GetAcademicYears(DateTime dateTimeUtc)
+        public async Task<List<string>> GetAcademicYears(DateTime dateTimeUtc)
         {
-            return Task.FromResult(new List<string>() { _optionsDataCollectionMock.Value.AcademicYear });
+            return await Task.FromResult(new List<string>() { _optionsDataCollectionMock.Value.AcademicYear });
         }
 
-        public Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
             var learners = _learnerMockDataList;
 
@@ -72,10 +72,10 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
                 }
             };
             
-            return Task.FromResult(page);
+            return await Task.FromResult(page);
         }
 
-        public Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
         {
             _learnerMockDataDictionary.TryGetValue(ukprn, out List<DataCollectionLearner> learners);
             if (learners == null)
@@ -102,10 +102,10 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
                 }
             };
 
-            return Task.FromResult(page);
+            return await Task.FromResult(page);
         }
 
-        public Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize, int? pageNumber)
         {
             var providers = startDateTime.Date < DateTime.Now.Date
                 ? _providerMockData
@@ -126,7 +126,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
                 }
             };
 
-            return Task.FromResult(page);
+            return await Task.FromResult(page);
         }
     }
 }
