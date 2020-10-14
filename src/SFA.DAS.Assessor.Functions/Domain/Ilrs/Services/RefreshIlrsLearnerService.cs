@@ -77,6 +77,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
                     };
 
                     var response = await _assessorServiceApiClient.ImportLearnerDetails(request);
+
+                    var totalErrorsInResponse = response?.LearnerDetailResults?.Sum(e => e.Errors?.Count ?? 0);
+                    _logger.LogInformation($"Request to import {request.ImportLearnerDetails.Count} learner details resulted in {totalErrorsInResponse} error(s)");
+
                     response?.LearnerDetailResults?.ForEach(ld =>
                     {
                         ld?.Errors?.ForEach(e =>
