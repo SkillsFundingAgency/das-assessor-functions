@@ -13,10 +13,10 @@
 	"logging": {
 		"fileLoggingMode": "always",
 		"logLevel": {
-			"default": "Debug",
-			"Host.Results": "Debug",
-			"Function": "Debug",
-			"Host.Aggregator": "Debug"
+			"default": "Information",
+			"Host.Results": "Error",
+			"Function": "Trace",
+			"Host.Aggregator": "Trace"
 		}
 	}
 }

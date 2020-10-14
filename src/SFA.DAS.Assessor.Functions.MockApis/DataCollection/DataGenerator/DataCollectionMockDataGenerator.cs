@@ -38,7 +38,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
                         return learningDeliveries;
                     });
 
-            return dataCollectionLearnerGenerator.GenerateLazy(noOfLearners);
+            return dataCollectionLearnerGenerator.Generate(noOfLearners);
         }
 
         public IEnumerable<DataCollectionLearningDelivery> GetLearningDeliveries(int count, int? aimType = null)
@@ -48,7 +48,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
             List<int?> stdCodelList = new List<int?>() { 5, 26, 59, 93};
             List<string> epaOrgIDlList = new List<string>() { "EPA0002", "EPA0006", "EPA0011", "EPA0016", "EPA0026", "EPA0045", "EPA0060", "EPA0077", "EPA0110" };
             List<int> outcomeList = new List<int>() { 1, 3, 8 };
-            List<int?> compStatusList = new List<int?>() { null, 1, 2, 3, 6 };
+            List<int?> compStatusList = new List<int?>() { 1, 2, 3, 6 };
             var otherDataCollectionLearningDelivery = new OtherDataCollectionLearningDelivery();
 
             var dataCollectionLearningDeliveryGenerator = new Faker<DataCollectionLearningDelivery>()
