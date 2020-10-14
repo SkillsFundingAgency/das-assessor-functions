@@ -84,7 +84,10 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
                     GetLearners(ukprn, _optionsDataCollectionMock.Value.LearnerCount, _optionsDataCollectionMock.Value.LearningDeliveryCount)
                     .ToList();
 
-                _learnerMockDataList.AddRange(learners);
+                lock (_learnerMockDataList)
+                {
+                    _learnerMockDataList.AddRange(learners);
+                }
             }
 
             var learnersPage = learners
