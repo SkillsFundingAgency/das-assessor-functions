@@ -27,6 +27,13 @@
             },
             "defaultValue": []
         },
+        "storageAccountAllowedIPs": {
+            "type": "array",
+            "metadata": {
+                "description": "Allowed IP's"
+            },
+            "defaultValue": []
+        },
         "loggingRedisConnectionString": {
             "type": "securestring"
         },
@@ -109,7 +116,7 @@
         }
     },
     "variables": {
-        "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
+        "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/storage-acc-ip-restrictions/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'),'-asp')]",
         "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]",
@@ -292,6 +299,15 @@
                 "parameters": {
                     "storageAccountName": {
                         "value": "[variables('storageAccountName')]"
+                    },
+                    "allowedIpAddresses": {
+                        "value": "[parameters('storageAccountAllowedIPs')]"
+                    },
+                    "subnetResourceIdList": {
+                        "value": "[reference('function-app-subnet').outputs.SubnetResourceId.value]"
+                    },
+                    "storageKind": {
+                        "value": "StorageV2"
                     }
                 }
             }
