@@ -33,49 +33,6 @@
         "configurationStorageConnectionString": {
           "type": "securestring"
         },
-        "refreshIlrsEnqueueProvidersFunctionFlowSchedule": {
-            "type": "string",
-            "metadata": {
-              "description": "RefreshIlrsEnqueueFunctionFlow CRON Schedule e.g. default is 7:00 PM"
-            },
-            "defaultValue": "0 19 * * *"
-        },
-        "standardCollationImportFlowFunctionSchedule": {
-          "type": "string",
-          "metadata": {
-            "description": "StandardCollationImportFlow CRON Schedule e.g. default is 6:30 am"
-          },
-          "defaultValue": "30 6 * * *"
-        },
-        "standardSummaryUpdateFlowFunctionSchedule": {
-            "type": "string",
-            "metadata": {
-                "description": "StandardSummaryUpdateFlow CRON Schedule e.g. default is 7:00 am"
-            },
-            "defaultValue": "0 7 * * *"
-        },
-        "certificatePrintFunctionSchedule": {
-            "type": "string",
-            "metadata": {
-                "description": "certificatePrintFunction CRON Schedule e.g. 0 */15 * * * *"
-            }
-			,
-            "defaultValue": "0 */15 * * * *"
-        },
-        "certificatePrintNotificationFunctionSchedule": {
-            "type": "string",
-            "metadata": {
-                "description": "CertificatePrintNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
-            },
-            "defaultValue": "0 13 * * *"
-        },
-        "certificateDeliveryNotificationFunctionSchedule": {
-            "type": "string",
-            "metadata": {
-                "description": "certificateDeliveryNotificationFunction CRON Schedule e.g. 0 */15 * * * *"
-            },
-            "defaultValue": "0 15 * * *"
-        },
         "appServicePlanSize": {
             "type": "string",
             "allowedValues": [
@@ -97,7 +54,7 @@
         },
         "functionsExtensionVersion": {
             "type": "string",
-            "defaultValue": "~2.0"
+            "defaultValue": "~3"
         },
         "sharedEnvResourceGroup": {
             "type": "string"
@@ -249,36 +206,12 @@
                                 "value": "[parameters('configurationStorageConnectionString')]"
                             },
                             {
-                                "name": "StandardCollationImportFlowFunctionSchedule",
-                                "value": "[parameters('standardCollationImportFlowFunctionSchedule')]"
-                            },
-                            {
-                                "name": "StandardSummaryUpdateFlowFunctionSchedule",
-                                "value": "[parameters('standardSummaryUpdateFlowFunctionSchedule')]"
-                            },
-                            {
-                                "name": "RefreshIlrsEnqueueProvidersFunctionFlowSchedule",
-                                "value": "[parameters('refreshIlrsEnqueueProvidersFunctionFlowSchedule')]"
-                            },
-                            {
                                 "name": "AppName",
                                 "value": "das-assessor-functions"
                             },
                             {
                                 "name": "FUNCTIONS_WORKER_RUNTIME",
                                 "value": "dotnet"
-                            },
-                            {
-                                "name": "CertificatePrintFunctionSchedule",
-                                "value": "[parameters('certificatePrintFunctionSchedule')]"
-                            },
-                            {
-                                "name": "CertificatePrintNotificationFunctionSchedule",
-                                "value": "[parameters('certificatePrintNotificationFunctionSchedule')]"
-                            },
-                            {
-                                "name": "CertificateDeliveryNotificationFunctionSchedule",
-                                "value": "[parameters('certificateDeliveryNotificationFunctionSchedule')]"
                             }
                         ]
                     }

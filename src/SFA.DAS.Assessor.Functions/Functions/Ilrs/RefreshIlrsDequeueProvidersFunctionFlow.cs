@@ -18,8 +18,8 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
         [FunctionName("RefreshIlrsDequeueProviders")]
         public async Task Run(
-            [QueueTrigger(QueueNames.RefreshIlrs, Connection = "StorageAccountConnectionString")]string message,
-            [Queue(QueueNames.RefreshIlrs), StorageAccount("StorageAccountConnectionString")] ICollector<string> refreshIlrsQueue,
+            [QueueTrigger(QueueNames.RefreshIlrs)]string message,
+            [Queue(QueueNames.RefreshIlrs)] ICollector<string> refreshIlrsQueue,
             ILogger log)
         {
             try

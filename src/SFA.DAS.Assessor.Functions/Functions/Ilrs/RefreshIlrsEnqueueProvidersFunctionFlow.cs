@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
         [FunctionName("RefreshIlrsEnqueueProviders")]
         public async Task Run([TimerTrigger("%FunctionsSettings:RefreshIlrs:EnqueueProvidersSchedule%", RunOnStartup = true)]TimerInfo myTimer,
-            [Queue(QueueNames.RefreshIlrs), StorageAccount("StorageAccountConnectionString")] ICollector<string> refreshIlrsQueue,
+            [Queue(QueueNames.RefreshIlrs)] ICollector<string> refreshIlrsQueue,
             ILogger log)
         {
             try

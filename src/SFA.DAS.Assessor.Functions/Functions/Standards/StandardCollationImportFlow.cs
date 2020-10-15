@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
         }
 
         [FunctionName("StandardCollationImportFlow")]
-        public async Task Run([TimerTrigger("%StandardCollationImportFlowFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%FunctionsSettings:StandardCollationImportFlow:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
