@@ -303,9 +303,6 @@
                     "allowedIpAddresses": {
                         "value": "[parameters('storageAccountAllowedIPs')]"
                     },
-                    "subnetResourceIdList": {
-                        "value": "[createArray(reference('function-app-subnet').outputs.SubnetResourceId.value)]"
-                    },
                     "storageKind": {
                         "value": "StorageV2"
                     }
