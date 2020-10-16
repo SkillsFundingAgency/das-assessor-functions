@@ -48,7 +48,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.BatchNumber + 1;
         }
 
-        public async Task Save(Batch batch)
+        public async Task<ValidationResponse> Save(Batch batch)
         {
             if (!batch.Id.HasValue) // is new
             {
@@ -86,8 +86,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             if (batch.Status == "Printed")
             {
-                await _assessorServiceApiClient.UpdateBatchToPrinted(batch.BatchNumber, batch.PrintedDate ?? DateTime.Now);
+                return await _assessorServiceApiClient.UpdateBatchToPrinted(batch.BatchNumber, batch.PrintedDate ?? DateTime.Now);
             }
+
+            return null;
         }
     }
 }

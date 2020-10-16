@@ -82,11 +82,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime)
+        public async Task<ValidationResponse> UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/printed "))
             {
-                await PostPutRequest(request, new { batchNumber, printedAt = printedDateTime });
+                return await PostPutRequestWithResponse<PrintedBatchLogRequest, ValidationResponse>(request, new PrintedBatchLogRequest { BatchNumber = batchNumber, PrintedAt = printedDateTime });
             }
         }
 
