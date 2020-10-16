@@ -113,6 +113,9 @@
         },
         "subnetDelegations": {
             "type": "array"
+        },
+        "storageContainerNames": {
+            "type": "array"
         }
     },
     "variables": {
@@ -311,6 +314,33 @@
                     }
                 }
             }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('storage-account-container-',parameters('storageContainerNames')[copyIndex()])]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-container.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
+                    },
+                    "containerName": {
+                        "value": "[parameters('storageContainerNames')[copyIndex()]]"
+                    }
+                }
+            },
+            "copy": {
+                "count": "[length(parameters('storageContainerNames'))]",
+                "name": "storageContainerCopy"
+            },
+            "dependsOn": [
+                "storage-account"
+            ]
         }
     ],
     "outputs": {
