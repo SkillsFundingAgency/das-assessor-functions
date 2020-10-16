@@ -116,7 +116,14 @@
         },
         "storageContainerNames": {
             "type": "array"
-        }
+        },
+        "storagePolicyRules": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "A list of management policy rules"
+            }
+        },
     },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/storage-acc-ip-restrictions/templates/",
@@ -303,7 +310,7 @@
                     "storageAccountName": {
                         "value": "[variables('storageAccountName')]"
                     },
-                    "allowedIpAddresses": {
+                    "allowedIpAddressesList": {
                         "value": "[parameters('storageAccountAllowedIPs')]"
                     },
                     "subnetResourceIdList": {
@@ -337,6 +344,29 @@
             "copy": {
                 "count": "[length(parameters('storageContainerNames'))]",
                 "name": "storageContainerCopy"
+            },
+            "dependsOn": [
+                "storage-account"
+            ]
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "storage-management-policy",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-management-policy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
+                    },
+                    "policyRules": {
+                        "value": "[parameters('storagePolicyRules')]"
+                    }
+                }
             },
             "dependsOn": [
                 "storage-account"
