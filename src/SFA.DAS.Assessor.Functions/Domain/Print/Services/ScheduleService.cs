@@ -35,9 +35,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public Task UpdateStatus(Schedule schedule, ScheduleRunStatus scheduleRunStatus)
         {
-            var sendScheduleRunStatusRequest = new SendScheduleRunStatusRequest { ScheduleRunId = schedule.Id, ScheduleRunStatus = scheduleRunStatus };
+            var updateScheduleRunStatusRequest = new UpdateScheduleRunStatusRequest { ScheduleRunId = schedule.Id, ScheduleRunStatus = scheduleRunStatus };
 
-            return _assessorServiceApiClient.SetScheduleStatus(sendScheduleRunStatusRequest);
+            return _assessorServiceApiClient.UpdateScheduleStatus(updateScheduleRunStatusRequest);
         }
     }
 }

@@ -184,11 +184,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task SetScheduleStatus(SendScheduleRunStatusRequest sendScheduleRunStatusRequest)
+        public async Task UpdateScheduleStatus(UpdateScheduleRunStatusRequest updateScheduleRunStatusRequest)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule/updatestatus"))
             {
-                await PostPutRequest(request, sendScheduleRunStatusRequest);
+                await PostPutRequest(request, updateScheduleRunStatusRequest);
             }
         }
     }

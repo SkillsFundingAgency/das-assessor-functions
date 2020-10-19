@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types
 {
-    public class SendScheduleRunStatusRequest
+    public class UpdateScheduleRunStatusRequest
     {
         public Guid ScheduleRunId { get; set; }
         public ScheduleRunStatus ScheduleRunStatus { get; set; }
