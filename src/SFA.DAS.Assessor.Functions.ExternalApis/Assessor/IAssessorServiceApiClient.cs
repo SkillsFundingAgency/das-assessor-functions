@@ -19,9 +19,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task<BatchLogResponse> GetGetBatchLogByBatchNumber(string batchNumber);
         Task<ScheduleRun> GetSchedule(ScheduleType scheduleType);
         Task UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData);
-        Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences);
+        Task<ValidationResponse> SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences);
         Task<ValidationResponse> UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime);
-        Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus);        
+        Task<ValidationResponse> UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus);        
         Task<EmailTemplateSummary> GetEmailTemplate(string templateName);
         Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest);
     }

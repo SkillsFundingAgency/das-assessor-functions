@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.ApiClient.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
@@ -61,8 +60,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences)
+        public async Task<ValidationResponse> SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences)
         {
+            var validationResponse = new ValidationResponse();
+
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
             // which is currently 100, however this has been reduced to 5 as a workaround for current database performance
             const int chunkSize = 5;
@@ -77,9 +78,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
                 using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/sent-to-printer"))
                 {
-                    await PostPutRequest(request, updateBatchLogSentToPrinterRequest);
+                    var result= await PostPutRequestWithResponse<UpdateBatchLogSentToPrinterRequest, ValidationResponse>(request, updateBatchLogSentToPrinterRequest);
+                    validationResponse.Errors.AddRange(result.Errors);
                 }
             }
+
+            return validationResponse;
         }
 
         public async Task<ValidationResponse> UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime)
@@ -90,8 +94,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus)
+        public async Task<ValidationResponse> UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus)
         {
+            var validationResponse = new ValidationResponse();
+
             // the certificate printed status be will updated in chunks to stay within the WAF message size limits
             // which is currently 100, however this has been reduced to 5 as a workaround for current database performance
             const int chunkSize = 5;
@@ -105,9 +111,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
                 using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/certificates/update-print-status"))
                 {
-                    await PostPutRequest(request, updateCertificatesPrintStatusRequest);
+                    var result =  await PostPutRequestWithResponse<UpdateCertificatesPrintStatusRequest, ValidationResponse>(request, updateCertificatesPrintStatusRequest);
+                    validationResponse.Errors.AddRange(result.Errors);
                 }
             }
+
+            return validationResponse;
         }
    
         public async Task CompleteSchedule(Guid scheduleRunId)
