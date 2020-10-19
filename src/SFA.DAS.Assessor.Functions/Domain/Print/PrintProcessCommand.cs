@@ -49,16 +49,19 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         public async Task Execute()
         {
+            Schedule schedule = null;
             try
             {
                 _logger.Log(LogLevel.Information, "Print Process Function Started");
 
-                var schedule = await _scheduleService.Get();
+                schedule = await _scheduleService.Get();
                 if (schedule == null)
                 {
                     _logger.Log(LogLevel.Information, "Print Function not scheduled to run at this time.");
                     return;
                 }
+
+                await _scheduleService.UpdateStatus(schedule, ExternalApis.Assessor.Types.ScheduleRunStatus.Started);
 
                 var batchNumber = await _batchService.NextBatchId();                
                 var certificates = (await _certificateService.Get(CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
@@ -112,6 +115,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, $"Function Errored Message:: {e.Message} InnerException :: {e.InnerException} ", e);
+
+                if (schedule != null && schedule.Id != Guid.Empty)
+                {
+                    await _scheduleService.UpdateStatus(schedule, ExternalApis.Assessor.Types.ScheduleRunStatus.Failed);
+                }
                 throw;
             }
         }

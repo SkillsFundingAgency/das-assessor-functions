@@ -32,5 +32,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             return _assessorServiceApiClient.CompleteSchedule(schedule.Id);
         }
+
+        public Task UpdateStatus(Schedule schedule, ScheduleRunStatus scheduleRunStatus)
+        {
+            var sendScheduleRunStatusRequest = new SendScheduleRunStatusRequest { ScheduleRunId = schedule.Id, ScheduleRunStatus = scheduleRunStatus };
+
+            return _assessorServiceApiClient.SetScheduleStatus(sendScheduleRunStatusRequest);
+        }
     }
 }
