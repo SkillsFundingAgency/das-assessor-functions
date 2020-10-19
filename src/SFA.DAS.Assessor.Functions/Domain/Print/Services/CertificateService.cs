@@ -29,9 +29,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
         }
 
-        public async Task Save(IEnumerable<Certificate> certificates)
+        public async Task<ValidationResponse> Save(IEnumerable<Certificate> certificates)
         {
-            await _assessorServiceApiClient.UpdatePrintStatus(certificates.Select(c => new CertificatePrintStatus 
+            return await _assessorServiceApiClient.UpdatePrintStatus(certificates.Select(c => new CertificatePrintStatus 
             { 
                  BatchNumber = c.BatchId.Value,
                  CertificateReference = c.CertificateReference,
