@@ -18,8 +18,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
         private Domain.Print.PrintProcessCommand _sut;
 
         private Mock<ILogger<Domain.Print.PrintProcessCommand>> _mockLogger;
-        private Mock<IPrintingJsonCreator> _mockPrintingJsonCreator;
-        private Mock<IPrintingSpreadsheetCreator> _mockPrintingSpreadsheetCreator;
+        private Mock<IPrintCreator> _mockPrintCreator;
         private Mock<IBatchService> _mockBatchService;
         private Mock<ICertificateService> _mockCertificateService;
         private Mock<IScheduleService> _mockScheduleService;
@@ -39,8 +38,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger<Domain.Print.PrintProcessCommand>>();
-            _mockPrintingJsonCreator = new Mock<IPrintingJsonCreator>();
-            _mockPrintingSpreadsheetCreator = new Mock<IPrintingSpreadsheetCreator>();
+            _mockPrintCreator = new Mock<IPrintCreator>();
             _mockBatchService = new Mock<IBatchService>();
             _mockCertificateService = new Mock<ICertificateService>();
             _mockScheduleService = new Mock<IScheduleService>();
@@ -80,7 +78,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
                 .Setup(m => m.NextBatchId())
                 .ReturnsAsync(_batchNumber);
 
-            _mockPrintingJsonCreator
+            _mockPrintCreator
                 .Setup(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()))
                 .Returns("{}");
 
@@ -102,8 +100,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
             _sut = new Domain.Print.PrintProcessCommand(
                 _mockLogger.Object,
-                _mockPrintingJsonCreator.Object,
-                _mockPrintingSpreadsheetCreator.Object,
+                _mockPrintCreator.Object,
                 _mockBatchService.Object,
                 _mockCertificateService.Object,
                 _mockScheduleService.Object,
@@ -186,7 +183,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert            
-            _mockPrintingJsonCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
+            _mockPrintCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -233,7 +230,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert            
-            _mockPrintingJsonCreator.Verify(m => m.Create(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
+            _mockPrintCreator.Verify(m => m.Create(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
             _mockNotificationService.Verify(m => m.Send(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
             _mockBatchService.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber.Equals(_batchNumber))), Times.Once);
             _mockScheduleService.Verify(m => m.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once);

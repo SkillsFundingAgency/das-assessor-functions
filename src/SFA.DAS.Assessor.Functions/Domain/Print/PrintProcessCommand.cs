@@ -17,8 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     public class PrintProcessCommand : IPrintProcessCommand
     {
         private readonly ILogger<PrintProcessCommand> _logger;
-        private readonly IPrintingSpreadsheetCreator _printingSpreadsheetCreator;
-        private readonly IPrintingJsonCreator _printingJsonCreator;
+        private readonly IPrintCreator _printCreator;
         private readonly IBatchService _batchService;
         private readonly ICertificateService _certificateService;
         private readonly IScheduleService _scheduleService;
@@ -29,8 +28,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         public PrintProcessCommand(
             ILogger<PrintProcessCommand> logger,
-            IPrintingJsonCreator printingJsonCreator,
-            IPrintingSpreadsheetCreator printingSpreadsheetCreator,
+            IPrintCreator printCreator,
             IBatchService batchService,
             ICertificateService certificateService,
             IScheduleService scheduleService,
@@ -39,8 +37,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             IOptions<CertificatePrintFunctionSettings> options)
         {
             _logger = logger;
-            _printingJsonCreator = printingJsonCreator;
-            _printingSpreadsheetCreator = printingSpreadsheetCreator;
+            _printCreator = printCreator;
             _certificateService = certificateService;
             _batchService = batchService;
             _scheduleService = scheduleService;
@@ -89,7 +86,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                     var uploadDirectory = _settings.PrintRequestDirectory;
                     var uploadPath = $"{uploadDirectory}/{batch.CertificatesFileName}";
-                    var fileContents = _printingJsonCreator.Create(batch.BatchNumber, batch.Certificates, uploadPath);
+                    var fileContents = _printCreator.Create(batch.BatchNumber, batch.Certificates, uploadPath);
 
                     await UploadPrintRequest(uploadPath, fileContents);
                     uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory, false);

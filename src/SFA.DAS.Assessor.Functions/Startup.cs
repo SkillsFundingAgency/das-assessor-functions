@@ -80,7 +80,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IFileTransferClient>(s =>
                 new BlobTransferClient(s.GetRequiredService<ILogger<BlobTransferClient>>(), storageConnectionString));
 
-            builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
+            builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();

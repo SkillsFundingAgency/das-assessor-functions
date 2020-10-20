@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class PrintingJsonCreator : IPrintingJsonCreator
+    public class PrintingJsonCreator : IPrintCreator
     {
         private readonly CertificateDetails _certificateDetails;
 
