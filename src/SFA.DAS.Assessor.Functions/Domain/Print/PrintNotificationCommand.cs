@@ -18,6 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     {
         private readonly ILogger<PrintNotificationCommand> _logger;
         private readonly IBatchService _batchService;
+        private readonly IValidationService _validationService;
         private readonly IFileTransferClient _fileTransferClient;
         private readonly SftpSettings _sftpSettings;
 
@@ -32,6 +33,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         public PrintNotificationCommand(
             ILogger<PrintNotificationCommand> logger,
             IBatchService batchService,
+            IValidationService validationService,
             IFileTransferClient fileTransferClient,
             IOptions<SftpSettings> options)
         {
@@ -39,6 +41,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _batchService = batchService;
             _fileTransferClient = fileTransferClient;
             _sftpSettings = options?.Value;
+            _validationService = validationService;
         }
 
         public async Task Execute()
@@ -55,7 +58,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             }
         }
 
-        private async Task Process(string directoryName, string filePattern, string dateTimePattern, string dateTimeFormat, Func<PrintNotificationFileInfo, Task<Batch>> processFile)
+        private async Task Process(string directoryName, string filePattern, string dateTimePattern, string dateTimeFormat, Func<PrintNotificationFileInfo, Task> processFile)
         {
             var fileNames = await _fileTransferClient.GetFileNames(directoryName, filePattern);
             if (!fileNames.Any())
@@ -71,8 +74,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                 try
                 {
-                    var batch = await processFile(fileInfo);
-                    await _batchService.Save(batch);
+                    await processFile(fileInfo);
                     _fileTransferClient.MoveFile($"{directoryName}/{fileName}", _sftpSettings.ArchivePrintResponseDirectory);
                 }
                 catch (FileFormatValidationException ex)
@@ -82,17 +84,25 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             }
         }
 
-        private async Task<Batch> ProcessFile(PrintNotificationFileInfo file)
+        private async Task ProcessFile(PrintNotificationFileInfo file)
         {
             var receipt = JsonConvert.DeserializeObject<PrintReceipt>(file.FileContent);
 
+            _validationService.Start(file.FileName, file.FileContent, _sftpSettings.ErrorPrintResponseDirectory);
+
             if (receipt?.Batch == null || receipt.Batch.BatchDate == DateTime.MinValue)
             {
+                _validationService.Log(nameof(receipt.Batch), $"Could not process print notifications due to invalid file format [{file.FileName}]");
+                _validationService.End();
+
                 throw new FileFormatValidationException($"Could not process print notifications due to invalid file format [{file.FileName}]");
             }
 
             if (!int.TryParse(receipt.Batch.BatchNumber, out int batchNumberToInt))
             {
+                _validationService.Log(nameof(receipt.Batch.BatchNumber), $"Could not process print notifications the Batch Number is not an integer [{receipt.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
+                _validationService.End();
+
                 throw new FileFormatValidationException($"Could not process print notifications the Batch Number is not an integer [{receipt.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
@@ -100,6 +110,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
             if (batch == null)
             {
+                _validationService.Log(nameof(batch), $"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
+                _validationService.End();
+
                 throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
             }
 
@@ -110,20 +123,31 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             batch.DateOfResponse = DateTime.UtcNow;
             batch.Status = "Printed";
 
-            return batch;
+            var result = await _batchService.Save(batch);
+            result.Errors.ForEach(e => _validationService.Log(e.Field, e.ErrorMessage));
+
+            _validationService.End();
         }
 
-        private async Task<Batch> ProcessLegacyFile(PrintNotificationFileInfo file)
+        private async Task ProcessLegacyFile(PrintNotificationFileInfo file)
         {
             var batchResponse = JsonConvert.DeserializeObject<BatchResponse>(file.FileContent);
 
+            _validationService.Start(file.FileName, file.FileContent, _sftpSettings.ErrorPrintResponseDirectory);
+
             if (batchResponse?.Batch == null || batchResponse.Batch.BatchDate == DateTime.MinValue)
             {
+                _validationService.Log(nameof(batchResponse.Batch), $"Could not process downloaded file due to invalid file format [{file.FileName}]");
+                _validationService.End();
+
                 throw new FileFormatValidationException($"Could not process downloaded file due to invalid file format [{file.FileName}]");
             }
 
             if (!int.TryParse(batchResponse.Batch.BatchNumber, out int batchNumberToInt))
             {
+                _validationService.Log(nameof(batchResponse.Batch.BatchNumber), $"The Batch Number is not an integer [{batchResponse.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
+                _validationService.End();
+
                 throw new FileFormatValidationException($"The Batch Number is not an integer [{batchResponse.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
@@ -131,6 +155,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
             if (batch == null)
             {
+                _validationService.Log(nameof(batch), $"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
+                _validationService.End();
+
                 throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
             }
 
@@ -142,7 +169,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             batch.DateOfResponse = DateTime.UtcNow;
             batch.Status = "Printed";
 
-            return batch;
+            var result = await _batchService.Save(batch);
+            result.Errors.ForEach(e => _validationService.Log(e.Field, e.ErrorMessage));
+
+            _validationService.End();
         }
     }
 }

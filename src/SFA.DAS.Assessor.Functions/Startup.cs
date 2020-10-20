@@ -65,6 +65,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddScoped<IBatchService, BatchService>();
             builder.Services.AddScoped<ICertificateService, CertificateService>();
             builder.Services.AddScoped<IScheduleService, ScheduleService>();
+            builder.Services.AddScoped<IValidationService, ValidationService>();
 
             if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
             {

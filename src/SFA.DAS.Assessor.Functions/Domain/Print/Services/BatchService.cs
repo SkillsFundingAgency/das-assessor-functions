@@ -50,6 +50,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public async Task<ValidationResponse> Save(Batch batch)
         {
+            var validationResponse = new ValidationResponse();
+
             if (!batch.Id.HasValue) // is new
             {
                 await _assessorServiceApiClient.CreateBatchLog(new CreateBatchLogRequest
@@ -65,12 +67,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     NumberOfCoverLetters = batch.NumberOfCoverLetters
                 });
 
-                await _assessorServiceApiClient.SaveSentToPrinter(batch.BatchNumber, batch.Certificates.Select(c => c.CertificateReference));
-
+                var result = await _assessorServiceApiClient.SaveSentToPrinter(batch.BatchNumber, batch.Certificates.Select(c => c.CertificateReference));
+                validationResponse.Errors.AddRange(result.Errors);
             }
             else // update existing
             {
-                await _assessorServiceApiClient.UpdateBatchDataInBatchLog(
+                var result = await _assessorServiceApiClient.UpdateBatchDataInBatchLog(
                     batch.Id.Value,
                     new BatchData
                     {
@@ -82,14 +84,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                         PostedDate = batch.PostedDate,
                         DateOfResponse = batch.DateOfResponse
                     });
+
+                validationResponse.Errors.AddRange(result.Errors);
             }
 
             if (batch.Status == "Printed")
             {
-                return await _assessorServiceApiClient.UpdateBatchToPrinted(batch.BatchNumber, batch.PrintedDate ?? DateTime.Now);
+               var result = await _assessorServiceApiClient.UpdateBatchToPrinted(batch.BatchNumber, batch.PrintedDate ?? DateTime.Now);
+               validationResponse.Errors.AddRange(result.Errors);
             }
 
-            return null;
+            return validationResponse;
         }
     }
 }

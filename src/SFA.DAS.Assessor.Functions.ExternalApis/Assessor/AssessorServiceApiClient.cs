@@ -169,11 +169,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData)
+        public async Task<ValidationResponse> UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/update-batch-data"))
             {
-                await PostPutRequest(request, new { Id = batchId, BatchData = batchData });
+                return await PostPutRequestWithResponse<UpdateBatchDataBatchLogRequest, ValidationResponse>(request, new UpdateBatchDataBatchLogRequest { Id = batchId, BatchData = batchData });
             }
         }
 
