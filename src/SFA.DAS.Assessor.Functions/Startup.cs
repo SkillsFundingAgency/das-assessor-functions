@@ -14,6 +14,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
+using System;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -43,14 +44,11 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.AddConfiguration((configBuilder) =>
             {
-                var tempConfig = configBuilder
-                    .Build();
-
                 var configuration = configBuilder
                     .AddAzureTableStorageConfiguration(
-                        tempConfig["ConfigurationStorageConnectionString"],
+                        Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
                         "SFA.DAS.AssessorFunctions",
-                        tempConfig["EnvironmentName"],
+                        Environment.GetEnvironmentVariable("EnvironmentName"),
                         "1.0")
                     .Build();
 
