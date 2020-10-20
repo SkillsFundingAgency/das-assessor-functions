@@ -2,19 +2,18 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using NLog.Extensions.Logging;
-using Renci.SshNet;
 using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
+using SFA.DAS.Assessor.Functions.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using System;
+using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -42,19 +41,30 @@ namespace SFA.DAS.Assessor.Functions
                 nLogConfiguration.ConfigureNLog();
             });
 
-            var config = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddAzureTableStorageConfiguration(
-                    Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
-                    Environment.GetEnvironmentVariable("AppName"),
-                    Environment.GetEnvironmentVariable("EnvironmentName"),
-                    "1.0", "SFA.DAS.AssessorFunctions")
-                .Build();
+            builder.AddConfiguration((configBuilder) =>
+            {
+                var tempConfig = configBuilder
+                    .Build();
+
+                var configuration = configBuilder
+                    .AddAzureTableStorageConfiguration(
+                        tempConfig["ConfigurationStorageConnectionString"],
+                        "SFA.DAS.AssessorFunctions",
+                        tempConfig["EnvironmentName"],
+                        "1.0")
+                    .Build();
+
+                return configuration;
+            });
+
+            var config = builder.GetCurrentConfiguration();
 
             builder.Services.AddOptions();
-            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));            
+            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
-            builder.Services.Configure<SftpSettings>(config.GetSection("SftpSettings"));
+            builder.Services.Configure<CertificatePrintFunctionSettings>(config.GetSection("FunctionsSettings:CertificatePrintFunction"));
+            builder.Services.Configure<CertificatePrintNotificationFunctionSettings>(config.GetSection("FunctionsSettings:CertificatePrintNotificationFunction"));
+            builder.Services.Configure<CertificateDeliveryNotificationFunctionSettings>(config.GetSection("FunctionsSettings:CertificateDeliveryNotificationFunction"));
 
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             
@@ -66,30 +76,17 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddScoped<ICertificateService, CertificateService>();
             builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
-            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-            {
-                builder.Services.AddTransient<IFileTransferClient, NullFileTransferClient>();
-            }
-            else
-            {
-                builder.Services.AddTransient<IFileTransferClient, FileTransferClient>();
-            }
+            var storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
+            builder.Services.AddTransient<IFileTransferClient>(s =>
+                new BlobTransferClient(s.GetRequiredService<ILogger<BlobTransferClient>>(), storageConnectionString));
 
             builder.Services.AddTransient<IPrintingJsonCreator, PrintingJsonCreator>();
-            builder.Services.AddTransient<IPrintingSpreadsheetCreator, PrintingSpreadsheetCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
-
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
-
-            builder.Services.AddTransient((s) =>
-            {
-                var sftpSettings = s.GetService<IOptions<SftpSettings>>()?.Value;
-                return new SftpClient(sftpSettings.RemoteHost, Convert.ToInt32(sftpSettings.Port), sftpSettings.Username, sftpSettings.Password);
-            });
-
+            
             builder.Services.AddTransient<INotificationService, NotificationService>();
         }
     }

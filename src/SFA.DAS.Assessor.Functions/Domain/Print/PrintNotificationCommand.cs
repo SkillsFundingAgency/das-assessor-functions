@@ -18,46 +18,40 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     {
         private readonly ILogger<PrintNotificationCommand> _logger;
         private readonly IBatchService _batchService;
-        private readonly IFileTransferClient _fileTransferClient;
-        private readonly SftpSettings _sftpSettings;
+        private readonly IFileTransferClient _externalFileTransferClient;
+        private readonly IFileTransferClient _internalFileTransferClient;
+        private readonly CertificatePrintNotificationFunctionSettings _settings;
 
         // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
         private static readonly string DateTimePattern = "[0-9]{10}";
         private static readonly string FilePattern = $@"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{{1,6}}-{DateTimePattern}.json";
 
-        // printResponse-MMYY-XXXXXX.json where XXX = 001, 002... 999999 etc
-        private static readonly string LegacyDateTimePattern = "[0-9]{4}";
-        private static readonly string LegacyFilePattern = $@"^[Pp][Rr][Ii][Nn][Tt][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-{LegacyDateTimePattern}-[0-9]{{1,6}}.json";
-
         public PrintNotificationCommand(
             ILogger<PrintNotificationCommand> logger,
             IBatchService batchService,
-            IFileTransferClient fileTransferClient,
-            IOptions<SftpSettings> options)
+            IFileTransferClient externalFileTransferClient,
+            IFileTransferClient internalFileTransferClient,
+            IOptions<CertificatePrintNotificationFunctionSettings> options)
         {
             _logger = logger;
             _batchService = batchService;
-            _fileTransferClient = fileTransferClient;
-            _sftpSettings = options?.Value;
+            _externalFileTransferClient = externalFileTransferClient;
+            _internalFileTransferClient = internalFileTransferClient;
+            _settings = options?.Value;
+
+            _externalFileTransferClient.ContainerName = _settings.PrintResponseExternalBlobContainer;
+            _internalFileTransferClient.ContainerName = _settings.PrintResponseInternalBlobContainer;
         }
 
         public async Task Execute()
         {
             _logger.Log(LogLevel.Information, "Print Response Notification Function Started");
-
-            if (_sftpSettings.UseJson)
-            {
-                await Process(_sftpSettings.PrintResponseDirectory, FilePattern, DateTimePattern, "ddMMyyHHmm", (f) => ProcessFile(f));
-            }
-            else
-            {
-                await Process(_sftpSettings.ProofDirectory, LegacyFilePattern, LegacyDateTimePattern, "MMYY", (f) => ProcessLegacyFile(f));
-            }
+            await Process(_settings.PrintResponseDirectory, FilePattern, DateTimePattern, "ddMMyyHHmm", (f) => ProcessFile(f));
         }
 
         private async Task Process(string directoryName, string filePattern, string dateTimePattern, string dateTimeFormat, Func<PrintNotificationFileInfo, Task<Batch>> processFile)
         {
-            var fileNames = await _fileTransferClient.GetFileNames(directoryName, filePattern);
+            var fileNames = await _externalFileTransferClient.GetFileNames(directoryName, filePattern, false);
             if (!fileNames.Any())
             {
                 _logger.Log(LogLevel.Information, "There are no certificate print notifications from the printer to process");
@@ -67,13 +61,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var sortedFileNames = fileNames.ToList().SortByDateTimePattern(dateTimePattern, dateTimeFormat);
             foreach (var fileName in sortedFileNames)
             {
-                var fileInfo = new PrintNotificationFileInfo(_fileTransferClient.DownloadFile($"{directoryName}/{fileName}"), fileName);
+                var fileContent = await _externalFileTransferClient.DownloadFile($"{directoryName}/{fileName}");
+                var fileInfo = new PrintNotificationFileInfo(fileContent, fileName);
 
                 try
                 {
                     var batch = await processFile(fileInfo);
                     await _batchService.Save(batch);
-                    _fileTransferClient.MoveFile($"{directoryName}/{fileName}", _sftpSettings.ArchivePrintResponseDirectory);
+                    await _externalFileTransferClient.MoveFile(
+                        $"{directoryName}/{fileName}",
+                        _internalFileTransferClient,
+                        $"{_settings.ArchivePrintResponseDirectory}/{fileName}");
                 }
                 catch (FileFormatValidationException ex)
                 {

@@ -21,51 +21,55 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
 
         private Mock<ILogger<Domain.Print.DeliveryNotificationCommand>> _mockLogger;
         private Mock<ICertificateService> _mockCertificateService;
-        private Mock<IFileTransferClient> _mockFileTransferClient;
-        private Mock<IOptions<SftpSettings>> _mockSftpSettings;
+        private Mock<IFileTransferClient> _mockExternalFileTransferClient;
+        private Mock<IFileTransferClient> _mockInternalFileTransferClient;
+        private Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>> _mockSftpSettings;
 
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
-        private SftpSettings _sftpSettings;
+        private CertificateDeliveryNotificationFunctionSettings _settings;
 
         [SetUp]
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger<Domain.Print.DeliveryNotificationCommand>>();
             _mockCertificateService = new Mock<ICertificateService>();
-            _mockFileTransferClient = new Mock<IFileTransferClient>();
-            _mockSftpSettings = new Mock<IOptions<SftpSettings>>();
+            _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
+            _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
+            _mockSftpSettings = new Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>>();
 
-            _sftpSettings = new SftpSettings { UseJson = true, 
-                DeliveryNotificationDirectory = "TestDelivery",
-                ArchiveDeliveryNotificationDirectory = "ArchiveTestDelivery"
+            _settings = new CertificateDeliveryNotificationFunctionSettings 
+            {
+                DeliveryNotificationDirectory = "MockDeliveryNotificationDirectory",
+                ArchiveDeliveryNotificationDirectory = "MockArchiveDeliveryNotificationDirectory"
             };
 
             _mockSftpSettings
                 .Setup(m => m.Value)
-                .Returns(_sftpSettings);
+                .Returns(_settings);
 
             _downloadedFiles = new List<string>();
             var generator = new RandomGenerator();
             for (int i = 0; i < 10; i++)
             {
-                var filename = $"printResponse-0120-{generator.Next(111111, 999999)}.json";
+                var filename = $"DeliveryNotifications-{generator.Next(DateTime.Now.AddDays(-100), DateTime.Now.AddDays(100)).ToString("ddMMyyHHmm")}.json";
                 _downloadedFiles.Add(filename);
 
-                _mockFileTransferClient
-                    .Setup(m => m.DownloadFile($"{_sftpSettings.DeliveryNotificationDirectory}/{filename}"))
-                    .Returns(JsonConvert.SerializeObject(new DeliveryReceipt { DeliveryNotifications = new List<DeliveryNotification> 
+                _mockExternalFileTransferClient
+                    .Setup(m => m.DownloadFile($"{_settings.DeliveryNotificationDirectory}/{filename}"))
+                    .ReturnsAsync(JsonConvert.SerializeObject(new DeliveryReceipt { DeliveryNotifications = new List<DeliveryNotification> 
                         { new DeliveryNotification { BatchID = _batchNumber } } }));
             };
 
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(_downloadedFiles);
 
             _sut = new Domain.Print.DeliveryNotificationCommand(
                 _mockLogger.Object,
                 _mockCertificateService.Object,
-                _mockFileTransferClient.Object,
+                _mockExternalFileTransferClient.Object,
+                _mockExternalFileTransferClient.Object,
                 _mockSftpSettings.Object
                 );
         }
@@ -88,8 +92,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         {
             // Arrange
             var logMessage = "No certificate delivery notifications from the printer are available to process";
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string>());
 
             // Act
@@ -106,13 +110,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             var fileName = Guid.NewGuid().ToString();
             var logMessage = $"Could not process delivery receipt file due to invalid format [{fileName}]";
 
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string> { fileName });
 
-            _mockFileTransferClient
-                .Setup(m => m.DownloadFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}"))
-                .Returns("{}");
+            _mockExternalFileTransferClient
+                .Setup(m => m.DownloadFile($"{_settings.DeliveryNotificationDirectory}/{fileName}"))
+                .ReturnsAsync("{}");
 
             // Act
             await _sut.Execute();
@@ -124,14 +128,19 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         [Test]
         public async Task ThenItShouldProcessAndMoveToArchiveDeliveryNotificationFiles()
         {
-            // Arrange
-
             // Act
             await _sut.Execute();
 
             // Assert
             _mockCertificateService.Verify(m => m.Save(It.Is<IEnumerable<Certificate>>(c => c.ToList().Where(i => i.BatchId == _batchNumber).Count().Equals(1))), Times.Exactly(_downloadedFiles.Count));
-            _mockFileTransferClient.Verify(m => m.MoveFile(It.IsAny<string>(), _sftpSettings.ArchiveDeliveryNotificationDirectory), Times.Exactly(_downloadedFiles.Count));
+            
+            foreach (var filename in _downloadedFiles)
+            {
+                var downloadedFilename = $"{_settings.DeliveryNotificationDirectory}/{filename}";
+                var uploadedFilename = $"{_settings.ArchiveDeliveryNotificationDirectory}/{filename}";
+
+                _mockExternalFileTransferClient.Verify(m => m.MoveFile(downloadedFilename, _mockExternalFileTransferClient.Object, uploadedFilename), Times.Once);
+            }
         }
     }
 }

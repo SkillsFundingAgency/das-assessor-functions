@@ -20,38 +20,42 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
 
         private Mock<ILogger<Domain.Print.PrintNotificationCommand>> _mockLogger;
         private Mock<IBatchService> _mockBatchService;
-        private Mock<IFileTransferClient> _mockFileTransferClient;
-        private Mock<IOptions<SftpSettings>> _mockSftpSettings;
+        private Mock<IFileTransferClient> _mockExternalFileTransferClient;
+        private Mock<IFileTransferClient> _mockInternalFileTransferClient;
+        private Mock<IOptions<CertificatePrintNotificationFunctionSettings>> _mockSettings;
 
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
-        private SftpSettings _sftpSettings;
+        private CertificatePrintNotificationFunctionSettings _settings;
 
         [SetUp]
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger<Domain.Print.PrintNotificationCommand>>();
             _mockBatchService = new Mock<IBatchService>();
-            _mockFileTransferClient = new Mock<IFileTransferClient>();
-            _mockSftpSettings = new Mock<IOptions<SftpSettings>>();
+            _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
+            _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
+            _mockSettings = new Mock<IOptions<CertificatePrintNotificationFunctionSettings>>();
 
-            _sftpSettings = new SftpSettings { UseJson = true, PrintResponseDirectory = "TestNotification",
-                ArchivePrintResponseDirectory = "ArchivePrintResponseTestPrint" };
+            _settings = new CertificatePrintNotificationFunctionSettings {
+                PrintResponseDirectory = "MockPrintResponseDirectory",
+                ArchivePrintResponseDirectory = "MockArchivePrintResponseDirectory"
+            };
 
-            _mockSftpSettings
+            _mockSettings
                 .Setup(m => m.Value)
-                .Returns(_sftpSettings);
+                .Returns(_settings);
 
             _downloadedFiles = new List<string>();
             var generator = new RandomGenerator();
             for (int i = 0; i < 10; i++)
             {
-                var filename = $"printResponse-0120-{generator.Next(111111, 999999)}.json";
+                var filename = $"PrintResponse-0120-{generator.Next(111111, 999999)}.json";
                 _downloadedFiles.Add(filename);
 
-                _mockFileTransferClient
-                    .Setup(m => m.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{filename}"))
-                    .Returns(JsonConvert.SerializeObject(new PrintReceipt { 
+                _mockExternalFileTransferClient
+                    .Setup(m => m.DownloadFile($"{_settings.PrintResponseDirectory}/{filename}"))
+                    .ReturnsAsync(JsonConvert.SerializeObject(new PrintReceipt { 
                         Batch = new BatchData { 
                             BatchNumber = _batchNumber.ToString(),
                             BatchDate = DateTime.Now.AddDays(-1),
@@ -61,8 +65,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                         }}));
             };
 
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(_downloadedFiles);
 
             _mockBatchService
@@ -72,8 +76,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             _sut = new Domain.Print.PrintNotificationCommand(
                 _mockLogger.Object,
                 _mockBatchService.Object,
-                _mockFileTransferClient.Object,
-                _mockSftpSettings.Object
+                _mockExternalFileTransferClient.Object,
+                _mockInternalFileTransferClient.Object,
+                _mockSettings.Object
                 );
         }
 
@@ -95,8 +100,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         {
             // Arrange
             var logMessage = "There are no certificate print notifications from the printer to process";
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string>());
 
             // Act
@@ -113,13 +118,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             var fileName = Guid.NewGuid().ToString();
             var logMessage = $"Could not process print notifications due to invalid file format [{fileName}]";
 
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string> { fileName });
 
-            _mockFileTransferClient
-                .Setup(m => m.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{fileName}"))
-                .Returns("{}");
+            _mockExternalFileTransferClient
+                .Setup(m => m.DownloadFile($"{_settings.PrintResponseDirectory}/{fileName}"))
+                .ReturnsAsync("{}");
 
             // Act
             await _sut.Execute();
@@ -135,13 +140,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             var fileName = Guid.NewGuid().ToString();
             var logMessage = $"Could not process print notifications unable to match an existing batch Log Batch Number [{_batchNumber}] in the print notification in the file [{fileName}]";
 
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string> { fileName });
 
-            _mockFileTransferClient
-                .Setup(m => m.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{fileName}"))
-               .Returns(JsonConvert.SerializeObject(new PrintReceipt
+            _mockExternalFileTransferClient
+                .Setup(m => m.DownloadFile($"{_settings.PrintResponseDirectory}/{fileName}"))
+               .ReturnsAsync(JsonConvert.SerializeObject(new PrintReceipt
                {
                    Batch = new BatchData
                    {
@@ -172,13 +177,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             var batchNumber = "NotAnInt";
             var logMessage = $"Could not process print notifications the Batch Number is not an integer [{batchNumber}] in the print notification in the file [{fileName}]";
 
-            _mockFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
+            _mockExternalFileTransferClient
+                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string> { fileName });
 
-            _mockFileTransferClient
-                .Setup(m => m.DownloadFile($"{_sftpSettings.PrintResponseDirectory}/{fileName}"))
-               .Returns(JsonConvert.SerializeObject(new PrintReceipt
+            _mockExternalFileTransferClient
+                .Setup(m => m.DownloadFile($"{_settings.PrintResponseDirectory}/{fileName}"))
+               .ReturnsAsync(JsonConvert.SerializeObject(new PrintReceipt
                {
                    Batch = new BatchData
                    {
@@ -200,14 +205,19 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         [Test]
         public async Task ThenItShouldProcessAndArchivePrintNotificationFiles()
         {
-            // Arrange
-
             // Act
             await _sut.Execute();
 
             // Assert
             _mockBatchService.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
-            _mockFileTransferClient.Verify(m => m.MoveFile(It.IsAny<string>(), _sftpSettings.ArchivePrintResponseDirectory), Times.Exactly(_downloadedFiles.Count));
+            
+            foreach (var filename in _downloadedFiles)
+            {
+                var downloadedFilename = $"{_settings.PrintResponseDirectory}/{filename}";
+                var uploadedFilename = $"{_settings.ArchivePrintResponseDirectory}/{filename}";
+
+                _mockExternalFileTransferClient.Verify(m => m.MoveFile(downloadedFilename, _mockInternalFileTransferClient.Object, uploadedFilename), Times.Once);
+            }
         }
     }
 }

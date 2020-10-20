@@ -22,7 +22,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         private AssessorServiceApiClient _sut;
 
         private Mock<HttpMessageHandler> _mockHttpMessageHandler;
-        private Mock<IAssessorServiceTokenService> _mockAssessorServiceTokenService;
         private Mock<IOptions<AssessorApiAuthentication>> _mockOptions;
         private Mock<ILogger<AssessorServiceApiClient>> _mockLogger;
 

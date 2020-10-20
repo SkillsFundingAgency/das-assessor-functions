@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,7 +25,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         
         private readonly INotificationService _notificationService;
         private readonly IFileTransferClient _fileTransferClient;
-        private readonly SftpSettings _sftpSettings;
+        private readonly CertificatePrintFunctionSettings _settings;
 
         public PrintProcessCommand(
             ILogger<PrintProcessCommand> logger,
@@ -34,7 +36,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             IScheduleService scheduleService,
             INotificationService notificationService,
             IFileTransferClient fileTransferClient,
-            IOptions<SftpSettings> options)
+            IOptions<CertificatePrintFunctionSettings> options)
         {
             _logger = logger;
             _printingJsonCreator = printingJsonCreator;
@@ -44,7 +46,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _scheduleService = scheduleService;
             _notificationService = notificationService;
             _fileTransferClient = fileTransferClient;
-            _sftpSettings = options?.Value;
+            _settings = options?.Value;
+
+            _fileTransferClient.ContainerName = _settings.PrintRequestBlobContainer;
         }
 
         public async Task Execute()
@@ -70,7 +74,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 else
                 {
                     var uploadedFileNames = new List<string>();
-                    string uploadDirectory = "";
 
                     var batch = new Batch
                     {
@@ -80,31 +83,26 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         Period = DateTime.UtcNow.UtcToTimeZoneTime().ToString("MMyy"),
                         BatchCreated = DateTime.UtcNow,
                         ScheduledDate = schedule.RunTime,
+                        CertificatesFileName = $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json",
                         Certificates = certificates
                     };
 
-                    if (_sftpSettings.UseJson)
-                    {
-                        uploadDirectory = _sftpSettings.PrintRequestDirectory;
-                        batch.CertificatesFileName = $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
-                        _printingJsonCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
-                    }
-                    else
-                    {
-                        uploadDirectory = _sftpSettings.UploadDirectory;
-                        batch.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
-                        _printingSpreadsheetCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
-                    }
-                    
-                    await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
-                    uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory);                    
+                    var uploadDirectory = _settings.PrintRequestDirectory;
+                    var uploadPath = $"{uploadDirectory}/{batch.CertificatesFileName}";
+                    var fileContents = _printingJsonCreator.Create(batch.BatchNumber, batch.Certificates, uploadPath);
 
+                    await UploadPrintRequest(uploadPath, fileContents);
+                    uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory, false);
+
+                    await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
+                    
                     batch.FileUploadEndTime = DateTime.UtcNow;
                     batch.NumberOfCertificates = certificates.Count;
                     batch.NumberOfCoverLetters = 0;
                     batch.ScheduledDate = schedule.RunTime;
 
                     LogUploadedFiles(uploadedFileNames, uploadDirectory);
+                    
                     await _batchService.Save(batch);
                 }
                 await _scheduleService.Save(schedule);
@@ -113,6 +111,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             {
                 _logger.Log(LogLevel.Error, $"Function Errored Message:: {e.Message} InnerException :: {e.InnerException} ", e);
                 throw;
+            }
+        }
+
+        private async Task UploadPrintRequest(string path, string fileContents)
+        {
+            byte[] array = Encoding.ASCII.GetBytes(fileContents);
+            using (var stream = new MemoryStream(array))
+            {
+                await _fileTransferClient.UploadFile(stream, path);
             }
         }
 

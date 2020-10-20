@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         }
 
         [FunctionName("CertificateDeliveryNotificationFunction")]
-        public async Task Run([TimerTrigger("%CertificateDeliveryNotificationFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%FunctionsSettings:CertificateDeliveryNotificationFunction:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {

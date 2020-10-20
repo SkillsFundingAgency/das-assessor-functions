@@ -15,8 +15,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("CertificatePrintNotificationFunction")]        
-        public async Task Run([TimerTrigger("%CertificatePrintNotificationFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        [FunctionName("CertificatePrintNotificationFunction")]
+        public async Task Run([TimerTrigger("%FunctionsSettings:CertificatePrintNotificationFunction:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {

@@ -5,10 +5,16 @@
     <AzureFunctionsVersion>v2</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="ApplicationsMigrator\**" />
+    <EmbeddedResource Remove="ApplicationsMigrator\**" />
+    <None Remove="ApplicationsMigrator\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="EPPlus" Version="4.5.2.1" />
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.5" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.1" />
+    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.1" />
     <PackageReference Include="Microsoft.Azure.Storage.Common" Version="11.1.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="3.0.5" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.2" />
@@ -43,8 +49,5 @@
   <ItemGroup>
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.ExternalApis\SFA.DAS.Assessor.Functions.ExternalApis.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.QnATypes\SFA.DAS.Assessor.Functions.QnATypes.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ApplicationsMigrator\" />
   </ItemGroup>
 </Project>
