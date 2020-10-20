@@ -79,7 +79,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/sent-to-printer"))
                 {
                     var result= await PostPutRequestWithResponse<UpdateBatchLogSentToPrinterRequest, ValidationResponse>(request, updateBatchLogSentToPrinterRequest);
-                    validationResponse.Errors.AddRange(result.Errors);
+                    if(result != null) validationResponse.Errors.AddRange(result.Errors);
                 }
             }
 
@@ -112,7 +112,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/certificates/update-print-status"))
                 {
                     var result =  await PostPutRequestWithResponse<UpdateCertificatesPrintStatusRequest, ValidationResponse>(request, updateCertificatesPrintStatusRequest);
-                    validationResponse.Errors.AddRange(result.Errors);
+                    if (result != null) validationResponse.Errors.AddRange(result.Errors);
                 }
             }
 

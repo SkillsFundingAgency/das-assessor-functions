@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificationCommand
 {
@@ -63,6 +64,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             _mockFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(_downloadedFiles);
+
+            _mockCertificateService
+                .Setup(m => m.Save(It.IsAny<IEnumerable<Certificate>>()))
+                .ReturnsAsync(new ValidationResponse());
 
             _sut = new Domain.Print.DeliveryNotificationCommand(
                 _mockLogger.Object,

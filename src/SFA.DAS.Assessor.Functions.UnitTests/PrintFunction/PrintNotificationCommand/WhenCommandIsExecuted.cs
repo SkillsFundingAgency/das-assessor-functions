@@ -11,6 +11,8 @@ using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using BatchData = SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications.BatchData;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCommand
 {
@@ -70,6 +72,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             _mockBatchService
                 .Setup(m => m.Get(_batchNumber))
                 .ReturnsAsync(new Batch { BatchNumber = _batchNumber });
+
+            _mockBatchService
+                .Setup(m => m.Save(It.IsAny<Batch>()))
+                .ReturnsAsync(new ValidationResponse());
 
             _sut = new Domain.Print.PrintNotificationCommand(
                 _mockLogger.Object,
