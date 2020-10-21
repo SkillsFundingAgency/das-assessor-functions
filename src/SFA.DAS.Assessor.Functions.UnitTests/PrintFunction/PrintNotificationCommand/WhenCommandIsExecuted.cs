@@ -23,7 +23,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         private Mock<ILogger<Domain.Print.PrintNotificationCommand>> _mockLogger;
         private Mock<IBatchService> _mockBatchService;
         private Mock<IFileTransferClient> _mockFileTransferClient;
-        private Mock<IValidationService> _mockValidationService;
         private Mock<IOptions<SftpSettings>> _mockSftpSettings;
 
         private int _batchNumber = 1;
@@ -36,7 +35,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             _mockLogger = new Mock<ILogger<Domain.Print.PrintNotificationCommand>>();
             _mockBatchService = new Mock<IBatchService>();
             _mockFileTransferClient = new Mock<IFileTransferClient>();
-            _mockValidationService = new Mock<IValidationService>();
             _mockSftpSettings = new Mock<IOptions<SftpSettings>>();
 
             _sftpSettings = new SftpSettings { UseJson = true, PrintResponseDirectory = "TestNotification",
@@ -80,7 +78,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             _sut = new Domain.Print.PrintNotificationCommand(
                 _mockLogger.Object,
                 _mockBatchService.Object,
-                _mockValidationService.Object,
                 _mockFileTransferClient.Object,
                 _mockSftpSettings.Object
                 );

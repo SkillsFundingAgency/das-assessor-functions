@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
@@ -6,22 +7,17 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class ValidationService :IValidationService
+    public class ValidationService : IDisposable
     {
         private readonly IFileTransferClient _fileTransferClient;
-       
-        private string _fileName;
-        private string _filePath;
-        private string _content;
-        private List<ValidationDetails> _errors;
+        private readonly string _fileName;
+        private readonly string _filePath;
+        private readonly string _content;
+        private readonly List<ValidationDetails> _errors;
 
-        public ValidationService(IFileTransferClient fileTransferClient)
+        public ValidationService(string fileName, string content, string filePath, IFileTransferClient fileTransferClient)
         {
             _fileTransferClient = fileTransferClient;
-        }
-
-        public void Start(string fileName, string content, string filePath)
-        {
             _fileName = fileName;
             _filePath = filePath;
             _content = content;
@@ -37,7 +33,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             });
         }
 
-        public void End()
+        public void Dispose()
         {
             if (!_errors.Any()) return;
 
