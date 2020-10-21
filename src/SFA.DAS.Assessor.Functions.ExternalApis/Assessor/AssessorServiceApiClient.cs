@@ -184,11 +184,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdateScheduleStatus(UpdateScheduleRunStatusRequest updateScheduleRunStatusRequest)
+        public async Task UpdateLastRunStatus(UpdateLastRunStatusRequest updateLastRunStatusRequest)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule/updatestatus"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule/updatelaststatus"))
             {
-                await PostPutRequest(request, updateScheduleRunStatusRequest);
+                await PostPutRequest(request, updateLastRunStatusRequest);
             }
         }
     }

@@ -24,6 +24,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus);        
         Task<EmailTemplateSummary> GetEmailTemplate(string templateName);
         Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest);
-        Task UpdateScheduleStatus(UpdateScheduleRunStatusRequest updateScheduleRunStatusRequest);
+        Task UpdateLastRunStatus(UpdateLastRunStatusRequest updateScheduleRunStatusRequest);
     }
 }

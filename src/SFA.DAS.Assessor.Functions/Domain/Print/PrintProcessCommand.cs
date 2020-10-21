@@ -61,7 +61,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     return;
                 }
 
-                await _scheduleService.UpdateStatus(schedule, ExternalApis.Assessor.Types.ScheduleRunStatus.Started);
+                await _scheduleService.UpdateLastRunStatus(schedule, ExternalApis.Assessor.Types.LastRunStatus.Started);
 
                 var batchNumber = await _batchService.NextBatchId();                
                 var certificates = (await _certificateService.Get(CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
@@ -118,7 +118,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                 if (schedule != null && schedule.Id != Guid.Empty)
                 {
-                    await _scheduleService.UpdateStatus(schedule, ExternalApis.Assessor.Types.ScheduleRunStatus.Failed);
+                    await _scheduleService.UpdateLastRunStatus(schedule, ExternalApis.Assessor.Types.LastRunStatus.Failed);
                 }
                 throw;
             }
