@@ -293,5 +293,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             // Assert
             _mockBatchService.Verify(q => q.NextBatchId(), Times.Once());
         }
+
+        [Test]
+        public async Task ThenItShouldUpdateTheLastRunStatusToStarted()
+        {
+            // Arrange
+
+            // Act
+            await _sut.Execute();
+
+            // Assert
+            _mockScheduleService.Verify(q => q.UpdateLastRunStatus(It.IsAny<Schedule>(), ExternalApis.Assessor.Types.LastRunStatus.Started), Times.Once());
+        }
     }
 }
