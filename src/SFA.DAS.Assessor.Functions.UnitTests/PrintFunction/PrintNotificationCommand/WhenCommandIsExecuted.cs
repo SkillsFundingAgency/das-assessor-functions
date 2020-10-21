@@ -57,7 +57,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                     .Setup(m => m.DownloadFile($"{_settings.PrintResponseDirectory}/{filename}"))
                     .ReturnsAsync(JsonConvert.SerializeObject(new PrintReceipt { 
                         Batch = new BatchData { 
-                            BatchNumber = _batchNumber.ToString(),
+                            BatchNumber = _batchNumber,
                             BatchDate = DateTime.Now.AddDays(-1),
                             ProcessedDate = DateTime.Now,
                             PostalContactCount = 2,
@@ -150,7 +150,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                {
                    Batch = new BatchData
                    {
-                       BatchNumber = _batchNumber.ToString(),
+                       BatchNumber = _batchNumber,
                        BatchDate = DateTime.Now.AddDays(-1),
                        ProcessedDate = DateTime.Now,
                        PostalContactCount = 2,
@@ -161,39 +161,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             _mockBatchService
                .Setup(m => m.Get(_batchNumber))
                .Returns(Task.FromResult<Batch>(null));
-
-            // Act
-            await _sut.Execute();
-
-            // Assert
-            _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
-        }
-
-        [Test]
-        public async Task ThenItShouldLogIfThePrintNotificationHasAnNonIntegerBatchNumber()
-        {
-            // Arrange
-            var fileName = Guid.NewGuid().ToString();
-            var batchNumber = "NotAnInt";
-            var logMessage = $"Could not process print notifications the Batch Number is not an integer [{batchNumber}] in the print notification in the file [{fileName}]";
-
-            _mockExternalFileTransferClient
-                .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
-                .ReturnsAsync(new List<string> { fileName });
-
-            _mockExternalFileTransferClient
-                .Setup(m => m.DownloadFile($"{_settings.PrintResponseDirectory}/{fileName}"))
-               .ReturnsAsync(JsonConvert.SerializeObject(new PrintReceipt
-               {
-                   Batch = new BatchData
-                   {
-                       BatchNumber = batchNumber,
-                       BatchDate = DateTime.Now.AddDays(-1),
-                       ProcessedDate = DateTime.Now,
-                       PostalContactCount = 2,
-                       TotalCertificateCount = 6
-                   }
-               }));
 
             // Act
             await _sut.Execute();

@@ -8,7 +8,6 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -89,54 +88,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 throw new FileFormatValidationException($"Could not process print notifications due to invalid file format [{file.FileName}]");
             }
 
-            if (!int.TryParse(receipt.Batch.BatchNumber, out int batchNumberToInt))
-            {
-                throw new FileFormatValidationException($"Could not process print notifications the Batch Number is not an integer [{receipt.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
-            }
-
-            var batch = await _batchService.Get(batchNumberToInt);
+            var batch = await _batchService.Get(receipt.Batch.BatchNumber);
 
             if (batch == null)
             {
-                throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
+                throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{receipt.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
             }
 
             batch.BatchCreated = receipt.Batch.BatchDate;
             batch.NumberOfCoverLetters = receipt.Batch.PostalContactCount;
             batch.NumberOfCertificates = receipt.Batch.TotalCertificateCount;
             batch.PrintedDate = receipt.Batch.ProcessedDate;
-            batch.DateOfResponse = DateTime.UtcNow;
-            batch.Status = "Printed";
-
-            return batch;
-        }
-
-        private async Task<Batch> ProcessLegacyFile(PrintNotificationFileInfo file)
-        {
-            var batchResponse = JsonConvert.DeserializeObject<BatchResponse>(file.FileContent);
-
-            if (batchResponse?.Batch == null || batchResponse.Batch.BatchDate == DateTime.MinValue)
-            {
-                throw new FileFormatValidationException($"Could not process downloaded file due to invalid file format [{file.FileName}]");
-            }
-
-            if (!int.TryParse(batchResponse.Batch.BatchNumber, out int batchNumberToInt))
-            {
-                throw new FileFormatValidationException($"The Batch Number is not an integer [{batchResponse.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
-            }
-
-            var batch = await _batchService.Get(batchNumberToInt);
-
-            if (batch == null)
-            {
-                throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{batchNumberToInt}] in the print notification in the file [{file.FileName}]");
-            }
-
-            batch.BatchCreated = batchResponse.Batch.BatchDate;
-            batch.NumberOfCoverLetters = batchResponse.Batch.PostalContactCount;
-            batch.NumberOfCertificates = batchResponse.Batch.TotalCertificateCount;
-            batch.PrintedDate = batchResponse.Batch.PrintedDate;
-            batch.PostedDate = batchResponse.Batch.PostedDate;
             batch.DateOfResponse = DateTime.UtcNow;
             batch.Status = "Printed";
 
