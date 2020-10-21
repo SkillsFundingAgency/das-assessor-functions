@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 
@@ -38,6 +39,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public void End()
         {
+            if (!_errors.Any()) return;
+
             using (var memoryStream = new MemoryStream())
             using (var sw = new StreamWriter(memoryStream))
             {
@@ -54,7 +57,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     sw.WriteLine();
                 }
 
-                _fileTransferClient.Send(memoryStream, $"{_filePath}/{_fileName}");
+                _fileTransferClient.Send(memoryStream, $"{_filePath}/{_fileName}.error");
             }
         }
     }
