@@ -4,11 +4,13 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
@@ -23,7 +25,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
         private Mock<ICertificateService> _mockCertificateService;
         private Mock<IScheduleService> _mockScheduleService;
         private Mock<INotificationService> _mockNotificationService;
-        private Mock<IFileTransferClient> _mockFileTransferClient;
+        private Mock<IFileTransferClient> _mockExternalFileTransferClient;
+        private Mock<IFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<CertificatePrintFunctionSettings>> _mockSettings;
 
         private int _batchNumber = 1;
@@ -32,7 +35,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
         private List<string> _uploadedFiles;
         private Batch _batch;
         private Guid _batchId;
-        private CertificatePrintFunctionSettings _sftpSettings;
+        private CertificatePrintFunctionSettings _settings;
 
         [SetUp]
         public void Arrange()
@@ -43,16 +46,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             _mockCertificateService = new Mock<ICertificateService>();
             _mockScheduleService = new Mock<IScheduleService>();
             _mockNotificationService = new Mock<INotificationService>();
-            _mockFileTransferClient = new Mock<IFileTransferClient>();
+            _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
+            _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
             _mockSettings = new Mock<IOptions<CertificatePrintFunctionSettings>>();
 
-            _sftpSettings = new CertificatePrintFunctionSettings { 
+            _settings = new CertificatePrintFunctionSettings { 
                 PrintRequestDirectory = "MockPrintRequestDirectory"
             };
 
             _mockSettings
                 .Setup(m => m.Value)
-                .Returns(_sftpSettings);
+                .Returns(_settings);
 
             _uploadedFiles = new List<string>();
             var generator = new RandomGenerator();
@@ -61,12 +65,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
                 var filename = $"PrintBatch-12{i}-{generator.Next(DateTime.Now.AddDays(-100), DateTime.Now.AddDays(100)).ToString("ddMMyyHHmm")}.json";
                 _uploadedFiles.Add(filename);
 
-                _mockFileTransferClient
-                    .Setup(m => m.DownloadFile($"{_sftpSettings.PrintRequestDirectory}/{filename}"))
+                _mockExternalFileTransferClient
+                    .Setup(m => m.DownloadFile($"{_settings.PrintRequestDirectory}/{filename}"))
                     .ReturnsAsync(JsonConvert.SerializeObject(new BatchResponse { Batch = new BatchDataResponse { BatchNumber = _batchNumber.ToString(), BatchDate = DateTime.Now } }));
             };
 
-            _mockFileTransferClient
+            _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), false))
                 .ReturnsAsync(_uploadedFiles);
 
@@ -105,7 +109,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
                 _mockCertificateService.Object,
                 _mockScheduleService.Object,
                 _mockNotificationService.Object,
-                _mockFileTransferClient.Object,
+                _mockExternalFileTransferClient.Object,
+                _mockInternalFileTransferClient.Object,
                 _mockSettings.Object
                 );
         }
@@ -166,7 +171,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             // Act
             await _sut.Execute();
 
-            // Assert            
+            // Assert
             _mockBatchService.Verify(m => m.Save(It.IsAny<Batch>()), Times.Never);
             _mockScheduleService.Verify(q => q.Save(It.IsAny<Schedule>()), Times.Never());
         }
@@ -182,7 +187,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             // Act
             await _sut.Execute();
 
-            // Assert            
+            // Assert
             _mockPrintCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -214,7 +219,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             // Act
             await _sut.Execute();
 
-            // Assert            
+            // Assert
             _mockScheduleService.Verify(q => q.Save(It.Is<Schedule>(s => s.Id ==_scheduleId)), Times.Once());
 
             _mockBatchService.Verify(m => m.Save(It.IsAny<Batch>()), Times.Never);
@@ -224,16 +229,28 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
         [Test]
         public async Task ThenItShouldCreateAJsonPrint()
         {
-            // Arrange
-
             // Act
             await _sut.Execute();
 
-            // Assert            
+            // Assert
             _mockPrintCreator.Verify(m => m.Create(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
             _mockNotificationService.Verify(m => m.Send(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
             _mockBatchService.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber.Equals(_batchNumber))), Times.Once);
             _mockScheduleService.Verify(m => m.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once);
+        }
+
+        [Test]
+        public async Task ThenItShouldUploadAndArchivePrintRequest()
+        {
+            // Arrange
+            var fileName = $"PrintBatch-{_batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
+            
+            // Act
+            await _sut.Execute();
+
+            // Assert
+            _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<MemoryStream>(), It.Is<string>(s => s == $"{_settings.PrintRequestDirectory}/{fileName}")));
+            _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<MemoryStream>(), It.Is<string>(s => s == $"{_settings.ArchivePrintRequestDirectory}/{fileName}")));
         }
 
         [Test]

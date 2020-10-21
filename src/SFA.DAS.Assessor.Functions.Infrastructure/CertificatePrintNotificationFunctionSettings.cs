@@ -7,5 +7,6 @@
         public string PrintResponseInternalBlobContainer { get; set; }
         public string PrintResponseDirectory { get; set; }
         public string ArchivePrintResponseDirectory { get; set; }
+        public string ErrorArchivePrintResponseDirectory { get; set; }
     }
 }

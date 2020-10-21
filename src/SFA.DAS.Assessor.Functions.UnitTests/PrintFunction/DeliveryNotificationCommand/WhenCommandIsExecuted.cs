@@ -23,7 +23,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         private Mock<ICertificateService> _mockCertificateService;
         private Mock<IFileTransferClient> _mockExternalFileTransferClient;
         private Mock<IFileTransferClient> _mockInternalFileTransferClient;
-        private Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>> _mockSftpSettings;
+        private Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>> _mockSettings;
 
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
@@ -36,7 +36,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             _mockCertificateService = new Mock<ICertificateService>();
             _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
             _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
-            _mockSftpSettings = new Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>>();
+            _mockSettings = new Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>>();
 
             _settings = new CertificateDeliveryNotificationFunctionSettings 
             {
@@ -44,7 +44,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
                 ArchiveDeliveryNotificationDirectory = "MockArchiveDeliveryNotificationDirectory"
             };
 
-            _mockSftpSettings
+            _mockSettings
                 .Setup(m => m.Value)
                 .Returns(_settings);
 
@@ -70,7 +70,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
                 _mockCertificateService.Object,
                 _mockExternalFileTransferClient.Object,
                 _mockExternalFileTransferClient.Object,
-                _mockSftpSettings.Object
+                _mockSettings.Object
                 );
         }
 

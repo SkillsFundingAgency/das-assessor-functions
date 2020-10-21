@@ -22,7 +22,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IScheduleService _scheduleService;
         
         private readonly INotificationService _notificationService;
-        private readonly IFileTransferClient _fileTransferClient;
+        private readonly IFileTransferClient _externalFileTransferClient;
+        private readonly IFileTransferClient _internalFileTransferClient;
         private readonly CertificatePrintFunctionSettings _settings;
 
         public PrintProcessCommand(
@@ -32,7 +33,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             ICertificateService certificateService,
             IScheduleService scheduleService,
             INotificationService notificationService,
-            IFileTransferClient fileTransferClient,
+            IFileTransferClient externalFileTransferClient,
+            IFileTransferClient internalFileTransferClient,
             IOptions<CertificatePrintFunctionSettings> options)
         {
             _logger = logger;
@@ -41,10 +43,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _batchService = batchService;
             _scheduleService = scheduleService;
             _notificationService = notificationService;
-            _fileTransferClient = fileTransferClient;
+            _externalFileTransferClient = externalFileTransferClient;
+            _internalFileTransferClient = internalFileTransferClient;
             _settings = options?.Value;
 
-            _fileTransferClient.ContainerName = _settings.PrintRequestBlobContainer;
+            _externalFileTransferClient.ContainerName = _settings.PrintRequestExternalBlobContainer;
+            _internalFileTransferClient.ContainerName = _settings.PrintRequestInternalBlobContainer;
         }
 
         public async Task Execute()
@@ -85,10 +89,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                     var uploadDirectory = _settings.PrintRequestDirectory;
                     var uploadPath = $"{uploadDirectory}/{batch.CertificatesFileName}";
+                    
                     var fileContents = _printCreator.Create(batch.BatchNumber, batch.Certificates, uploadPath);
 
-                    await UploadPrintRequest(uploadPath, fileContents);
-                    uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory, false);
+                    await UploadPrintRequest(_externalFileTransferClient, uploadPath, fileContents);
+                    uploadedFileNames = await _externalFileTransferClient.GetFileNames(uploadDirectory, false);
+
+                    var archiveDirectory = _settings.ArchivePrintRequestDirectory;
+                    var archivePath = $"{archiveDirectory}/{batch.CertificatesFileName}";
+                    await UploadPrintRequest(_internalFileTransferClient, archivePath, fileContents);
 
                     await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
                     
@@ -110,12 +119,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             }
         }
 
-        private async Task UploadPrintRequest(string path, string fileContents)
+        private async Task UploadPrintRequest(IFileTransferClient fileTransferClient, string path, string fileContents)
         {
             byte[] array = Encoding.ASCII.GetBytes(fileContents);
             using (var stream = new MemoryStream(array))
             {
-                await _fileTransferClient.UploadFile(stream, path);
+                await fileTransferClient.UploadFile(stream, path);
             }
         }
 

@@ -7,5 +7,6 @@
         public string DeliveryNotificationInternalBlobContainer { get; set; }
         public string DeliveryNotificationDirectory { get; set; }
         public string ArchiveDeliveryNotificationDirectory { get; set; }
+        public string ErrorDeliveryNotificationDirectory { get; set; }
     }
 }
