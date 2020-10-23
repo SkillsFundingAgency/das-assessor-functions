@@ -50,8 +50,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
             _mockSettings = new Mock<IOptions<CertificatePrintFunctionSettings>>();
 
-            _settings = new CertificatePrintFunctionSettings { 
-                PrintRequestDirectory = "MockPrintRequestDirectory"
+            _settings = new CertificatePrintFunctionSettings {
+                PrintRequestDirectory = "MockPrintRequestDirectory",
+                ArchivePrintRequestDirectory = "MockArchivePrintRequestDirectory"
             };
 
             _mockSettings
@@ -250,7 +251,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
             // Assert
             _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<MemoryStream>(), It.Is<string>(s => s == $"{_settings.PrintRequestDirectory}/{fileName}")));
-            _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<MemoryStream>(), It.Is<string>(s => s == $"{_settings.ArchivePrintRequestDirectory}/{fileName}")));
+            _mockInternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<MemoryStream>(), It.Is<string>(s => s == $"{_settings.ArchivePrintRequestDirectory}/{fileName}")));
         }
 
         [Test]
