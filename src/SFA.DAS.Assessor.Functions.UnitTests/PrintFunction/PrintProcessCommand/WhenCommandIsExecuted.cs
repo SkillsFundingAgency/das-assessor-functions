@@ -303,7 +303,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert
-            _mockScheduleService.Verify(q => q.UpdateLastRunStatus(It.IsAny<Schedule>(), ExternalApis.Assessor.Types.LastRunStatus.Started), Times.Once());
+            _mockScheduleService.Verify(q => q.Start(It.IsAny<Schedule>()), Times.Once());
         }
     }
 }

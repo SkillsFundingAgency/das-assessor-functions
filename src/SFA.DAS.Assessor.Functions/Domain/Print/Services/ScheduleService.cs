@@ -2,6 +2,7 @@
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using System;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
@@ -33,9 +34,19 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return _assessorServiceApiClient.CompleteSchedule(schedule.Id);
         }
 
-        public Task UpdateLastRunStatus(Schedule schedule, LastRunStatus scheduleRunStatus)
+        public Task Start(Schedule schedule)
         {
-            var updateScheduleRunStatusRequest = new UpdateLastRunStatusRequest { ScheduleRunId = schedule.Id, LastRunStatus = scheduleRunStatus };
+            return UpdateLastRunStatus(schedule.Id, LastRunStatus.Started);
+        }
+
+        public Task Fail(Schedule schedule)
+        {
+            return UpdateLastRunStatus(schedule.Id, LastRunStatus.Failed);
+        }
+
+        private Task UpdateLastRunStatus(Guid scheduleId, LastRunStatus scheduleRunStatus)
+        {
+            var updateScheduleRunStatusRequest = new UpdateLastRunStatusRequest { ScheduleRunId = scheduleId, LastRunStatus = scheduleRunStatus };
 
             return _assessorServiceApiClient.UpdateLastRunStatus(updateScheduleRunStatusRequest);
         }

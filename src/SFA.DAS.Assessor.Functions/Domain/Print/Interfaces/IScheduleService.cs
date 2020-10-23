@@ -8,6 +8,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
     {
         Task<Schedule> Get();
         Task Save(Schedule schedule);
-        Task UpdateLastRunStatus(Schedule schedule, LastRunStatus status);
+        Task Start(Schedule schedule);
+        Task Fail(Schedule schedule);
     }
 }
