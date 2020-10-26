@@ -69,7 +69,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
                 _mockLogger.Object,
                 _mockCertificateService.Object,
                 _mockExternalFileTransferClient.Object,
-                _mockExternalFileTransferClient.Object,
+                _mockInternalFileTransferClient.Object,
                 _mockSettings.Object
                 );
         }
@@ -139,7 +139,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
                 var downloadedFilename = $"{_settings.DeliveryNotificationDirectory}/{filename}";
                 var uploadedFilename = $"{_settings.ArchiveDeliveryNotificationDirectory}/{filename}";
 
-                _mockExternalFileTransferClient.Verify(m => m.MoveFile(downloadedFilename, _mockExternalFileTransferClient.Object, uploadedFilename), Times.Once);
+                _mockExternalFileTransferClient.Verify(m => m.DownloadFile(downloadedFilename), Times.Once);
+                _mockInternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<string>(), uploadedFilename), Times.Once);
+                _mockExternalFileTransferClient.Verify(m => m.DeleteFile(downloadedFilename), Times.Once);
             }
         }
     }

@@ -22,6 +22,11 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             {
                 if (myTimer.IsPastDue)
                 {
+                    if(myTimer.ScheduleStatus.Last < DateTime.UtcNow.AddMinutes(-1))
+                    {
+                        log.LogCritical("Epao Importer PrintFunctionFlow timer trigger is running more than 1 minute late");
+                    }
+
                     log.LogInformation("Epao Importer PrintFunctionFlow timer trigger is running later than scheduled");
                 }
 

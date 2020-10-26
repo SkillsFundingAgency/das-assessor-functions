@@ -84,7 +84,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
                 .ReturnsAsync(_batchNumber);
 
             _mockPrintCreator
-                .Setup(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()))
+                .Setup(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>()))
                 .Returns("{}");
 
             _certificates = Builder<Certificate>
@@ -189,7 +189,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert
-            _mockPrintCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
+            _mockPrintCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>()), Times.Never);
         }
 
         [Test]
@@ -234,7 +234,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert
-            _mockPrintCreator.Verify(m => m.Create(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
+            _mockPrintCreator.Verify(m => m.Create(_batchNumber, _certificates), Times.Once);
             _mockNotificationService.Verify(m => m.Send(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
             _mockBatchService.Verify(m => m.Save(It.Is<Batch>(b => b.BatchNumber.Equals(_batchNumber))), Times.Once);
             _mockScheduleService.Verify(m => m.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once);
@@ -250,8 +250,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert
-            _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<MemoryStream>(), It.Is<string>(s => s == $"{_settings.PrintRequestDirectory}/{fileName}")));
-            _mockInternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<MemoryStream>(), It.Is<string>(s => s == $"{_settings.ArchivePrintRequestDirectory}/{fileName}")));
+            _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<string>(), It.Is<string>(s => s == $"{_settings.PrintRequestDirectory}/{fileName}")));
+            _mockInternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<string>(), It.Is<string>(s => s == $"{_settings.ArchivePrintRequestDirectory}/{fileName}")));
         }
 
         [Test]

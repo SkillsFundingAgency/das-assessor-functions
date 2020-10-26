@@ -76,7 +76,7 @@ namespace SFA.DAS.Assessor.Functions
 
             var storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
             builder.Services.AddTransient<IFileTransferClient>(s =>
-                new BlobTransferClient(s.GetRequiredService<ILogger<BlobTransferClient>>(), storageConnectionString));
+                new BlobFileTransferClient(s.GetRequiredService<ILogger<BlobFileTransferClient>>(), storageConnectionString));
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();

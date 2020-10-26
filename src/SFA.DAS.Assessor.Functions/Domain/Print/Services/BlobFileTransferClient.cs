@@ -13,14 +13,14 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class BlobTransferClient : IFileTransferClient
+    public class BlobFileTransferClient : IFileTransferClient
     {
-        private readonly ILogger<BlobTransferClient> _logger;
+        private readonly ILogger<BlobFileTransferClient> _logger;
         private string _connectionString { get; }
         
         public string ContainerName { get; set; }
 
-        public BlobTransferClient(ILogger<BlobTransferClient> logger, string connectionString)
+        public BlobFileTransferClient(ILogger<BlobFileTransferClient> logger, string connectionString)
         {
             _logger = logger;
             _connectionString = connectionString;
@@ -49,7 +49,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return fileNames;
         }
 
-        public async Task UploadFile(MemoryStream memoryStream, string path)
+        public async Task UploadFile(string fileContents, string path)
         {
             try
             {
@@ -58,7 +58,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                 _logger.LogInformation($"Uploading {path} to blob storage {ContainerName}");
 
-                await blob.UploadFromStreamAsync(memoryStream);
+                byte[] array = Encoding.ASCII.GetBytes(fileContents);
+                using (var stream = new MemoryStream(array))
+                {
+                    await blob.UploadFromStreamAsync(stream);
+                }
 
                 _logger.LogInformation($"Uploaded {path} to blob storage {ContainerName}");
             }
@@ -114,27 +118,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error deleting {path} from blob storage {ContainerName}");
-            }
-        }
-
-        public async Task MoveFile(string sourcePath, IFileTransferClient destinationFileTransferClient, string destinationPath)
-        {
-            try
-            {
-                _logger.LogInformation($"Moving {sourcePath} from blob storage {ContainerName} to {destinationPath} in blob storage {destinationFileTransferClient.ContainerName}");
-
-                using (var stream = new MemoryStream())
-                {
-                    await Download(sourcePath, stream);
-                    await destinationFileTransferClient.UploadFile(stream, destinationPath);
-                    await DeleteFile(sourcePath);
-                }
-
-                _logger.LogInformation($"Moved {sourcePath} from blob storage {ContainerName} to {destinationPath} in blob storage {destinationFileTransferClient.ContainerName}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error moving {sourcePath} from blob storage {ContainerName} to {destinationPath} in blob storage {destinationFileTransferClient.ContainerName}");
             }
         }
 

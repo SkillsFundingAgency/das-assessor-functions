@@ -9,9 +9,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
         string ContainerName { get; set; }
         Task<List<string>> GetFileNames(string directory, bool recursive);
         Task<List<string>> GetFileNames(string directory, string pattern, bool recursive);
-        Task UploadFile(MemoryStream memoryStream, string path);
+        Task UploadFile(string fileContents, string path);
         Task<string> DownloadFile(string path);
         Task DeleteFile(string path);
-        Task MoveFile(string sourcePath, IFileTransferClient destinationFileTransferClient, string destinationPath);
     }
 }

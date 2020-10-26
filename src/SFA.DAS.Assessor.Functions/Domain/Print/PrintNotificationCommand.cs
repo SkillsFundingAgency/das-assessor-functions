@@ -60,17 +60,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var sortedFileNames = fileNames.ToList().SortByDateTimePattern(dateTimePattern, dateTimeFormat);
             foreach (var fileName in sortedFileNames)
             {
-                var fileContent = await _externalFileTransferClient.DownloadFile($"{directoryName}/{fileName}");
-                var fileInfo = new PrintNotificationFileInfo(fileContent, fileName);
-
                 try
                 {
+                    var fileContents = await _externalFileTransferClient.DownloadFile($"{directoryName}/{fileName}");
+                    var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
+
                     var batch = await processFile(fileInfo);
                     await _batchService.Save(batch);
-                    await _externalFileTransferClient.MoveFile(
-                        $"{directoryName}/{fileName}",
-                        _internalFileTransferClient,
-                        $"{_settings.ArchivePrintResponseDirectory}/{fileName}");
+
+                    await _internalFileTransferClient.UploadFile(fileContents, $"{_settings.ArchivePrintResponseDirectory}/{fileName}");
+                    await _externalFileTransferClient.DeleteFile($"{directoryName}/{fileName}");
                 }
                 catch (FileFormatValidationException ex)
                 {

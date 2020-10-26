@@ -21,7 +21,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _certificateDetails = options?.Value;
         }
 
-        public string Create(int batchNumber, IEnumerable<Certificate> certificates, string file)
+        public string Create(int batchNumber, IEnumerable<Certificate> certificates)
         {
             var printOutput = new PrintOutput
             {

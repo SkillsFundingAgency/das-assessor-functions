@@ -183,7 +183,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                 var downloadedFilename = $"{_settings.PrintResponseDirectory}/{filename}";
                 var uploadedFilename = $"{_settings.ArchivePrintResponseDirectory}/{filename}";
 
-                _mockExternalFileTransferClient.Verify(m => m.MoveFile(downloadedFilename, _mockInternalFileTransferClient.Object, uploadedFilename), Times.Once);
+                _mockExternalFileTransferClient.Verify(m => m.DownloadFile(downloadedFilename), Times.Once);
+                _mockInternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<string>(), uploadedFilename), Times.Once);
+                _mockExternalFileTransferClient.Verify(m => m.DeleteFile(downloadedFilename), Times.Once);
             }
         }
     }

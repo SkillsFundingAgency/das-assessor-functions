@@ -100,10 +100,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 Reason = n.Reason
             }));
 
-            await _externalFileTransferClient.MoveFile(
-                $"{_settings.DeliveryNotificationDirectory}/{fileName}",
-                _internalFileTransferClient,
-                $"{_settings.ArchiveDeliveryNotificationDirectory}/{fileName}");
+            await _internalFileTransferClient.UploadFile(fileContents, $"{_settings.ArchiveDeliveryNotificationDirectory}/{fileName}");
+            await _externalFileTransferClient.DeleteFile($"{_settings.DeliveryNotificationDirectory}/{fileName}");
         }
     }
 }

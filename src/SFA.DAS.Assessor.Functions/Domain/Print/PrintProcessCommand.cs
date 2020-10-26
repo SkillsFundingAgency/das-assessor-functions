@@ -87,18 +87,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         Certificates = certificates
                     };
 
+                    var fileContents = _printCreator.Create(batch.BatchNumber, batch.Certificates);
+
                     var uploadDirectory = _settings.PrintRequestDirectory;
                     var uploadPath = $"{uploadDirectory}/{batch.CertificatesFileName}";
+                    await _externalFileTransferClient.UploadFile(fileContents, uploadPath);
                     
-                    var fileContents = _printCreator.Create(batch.BatchNumber, batch.Certificates, uploadPath);
-
-                    await UploadPrintRequest(_externalFileTransferClient, uploadPath, fileContents);
                     uploadedFileNames = await _externalFileTransferClient.GetFileNames(uploadDirectory, false);
 
                     var archiveDirectory = _settings.ArchivePrintRequestDirectory;
                     var archivePath = $"{archiveDirectory}/{batch.CertificatesFileName}";
-                    await UploadPrintRequest(_internalFileTransferClient, archivePath, fileContents);
-
+                    await _internalFileTransferClient.UploadFile(fileContents, archivePath);
+                   
                     await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
                     
                     batch.FileUploadEndTime = DateTime.UtcNow;
@@ -116,15 +116,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             {
                 _logger.Log(LogLevel.Error, $"Function Errored Message:: {e.Message} InnerException :: {e.InnerException} ", e);
                 throw;
-            }
-        }
-
-        private async Task UploadPrintRequest(IFileTransferClient fileTransferClient, string path, string fileContents)
-        {
-            byte[] array = Encoding.ASCII.GetBytes(fileContents);
-            using (var stream = new MemoryStream(array))
-            {
-                await fileTransferClient.UploadFile(stream, path);
             }
         }
 

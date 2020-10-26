@@ -69,8 +69,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var path = $"{_printResponseDirectory}/Samples/{filename}";
 
             _fileTransferClient.ContainerName = _printReponseBlobContainerName;
-            
-            await UploadSampleFile(path, JsonConvert.SerializeObject(samplePrintResponse));
+            await _fileTransferClient.UploadFile(JsonConvert.SerializeObject(samplePrintResponse), path);
         }
 
         private async Task UploadSampleDeliveryNotificationFile()
@@ -102,17 +101,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var path = $"{_deliveryNotificationDirectory}/Samples/{filename}";
 
             _fileTransferClient.ContainerName = _deliveryNotificationBlobContainerName;
-
-            await UploadSampleFile(path, JsonConvert.SerializeObject(sampleDeliveryNotification));
-        }
-
-        private async Task UploadSampleFile(string path, string fileContents)
-        {
-            byte[] array = Encoding.ASCII.GetBytes(fileContents);
-            using (var stream = new MemoryStream(array))
-            {
-                await _fileTransferClient.UploadFile(stream, path);
-            }
+            await _fileTransferClient.UploadFile(JsonConvert.SerializeObject(sampleDeliveryNotification), path);
         }
     }
 }
