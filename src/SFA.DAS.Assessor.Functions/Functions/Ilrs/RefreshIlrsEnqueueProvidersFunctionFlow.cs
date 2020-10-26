@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 
@@ -10,10 +11,12 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
     public class RefreshIlrsEnqueueProvidersFunctionFlow
     {
         private readonly IRefreshIlrsEnqueueProvidersCommand _command;
+        private readonly RefreshIlrsSettings _settings;
 
-        public RefreshIlrsEnqueueProvidersFunctionFlow(IRefreshIlrsEnqueueProvidersCommand command)
+        public RefreshIlrsEnqueueProvidersFunctionFlow(IRefreshIlrsEnqueueProvidersCommand command, IOptions<RefreshIlrsSettings> options)
         {
             _command = command;
+            _settings = options?.Value;
         }
 
         [FunctionName("RefreshIlrsEnqueueProviders")]
@@ -26,6 +29,12 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
                 if (myTimer.IsPastDue)
                 {
                     log.LogInformation("Epao RefreshIlrsEnqueueProviders has started later than scheduled");
+
+                    if (myTimer.ScheduleStatus.Last < DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(_settings.EnqueueProvidersMaxPastDueMinutes)))
+                    {
+                        log.LogError($"Epao RefreshIlrsEnqueueProviders has exceeded {_settings.EnqueueProvidersMaxPastDueMinutes} minutes past due time and will next run at {myTimer.Schedule.GetNextOccurrence(DateTime.UtcNow)}");
+                        return;
+                    }
                 }
                 else
                 {
