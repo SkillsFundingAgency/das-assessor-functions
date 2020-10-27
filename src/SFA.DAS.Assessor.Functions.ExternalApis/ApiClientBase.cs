@@ -69,7 +69,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
         protected async Task<T> GetAsync<T>(HttpRequestMessage requestMessage, string message = null)
         {
             var response = await GetAsync(requestMessage, message);
-
+            
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -204,7 +204,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
                 {
                     return await _httpClient.PutAsync(requestMessage.RequestUri, null);
                 }
-
+                
                 return null;
             });
 
@@ -220,14 +220,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 throw new ArgumentOutOfRangeException(nameof(requestMessage), $"Request must be {nameof(HttpMethod.Delete)}");
             }
-
+            
             var response = await _retryPolicy.ExecuteAsync(async () =>
             {
                 if (requestMessage.Method == HttpMethod.Delete)
                 {
                     return await _httpClient.DeleteAsync(requestMessage.RequestUri);
                 }
-
+                
                 return null;
             });
 

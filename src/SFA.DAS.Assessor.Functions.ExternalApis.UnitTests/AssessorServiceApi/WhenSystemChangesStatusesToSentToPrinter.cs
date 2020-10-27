@@ -6,7 +6,6 @@ using Moq.Protected;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
