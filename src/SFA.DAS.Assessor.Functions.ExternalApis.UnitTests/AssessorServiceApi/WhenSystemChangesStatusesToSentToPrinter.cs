@@ -6,7 +6,6 @@ using Moq.Protected;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -19,7 +18,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         private AssessorServiceApiClient _sut;
 
         private Mock<HttpMessageHandler> _mockHttpMessageHandler;
-        private Mock<IAssessorServiceTokenService> _mockAssessorServiceTokenService;
         private Mock<IOptions<AssessorApiAuthentication>> _mockOptions;
         private Mock<ILogger<AssessorServiceApiClient>> _mockLogger;
 
