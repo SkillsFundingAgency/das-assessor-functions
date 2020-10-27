@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
         }
 
         [FunctionName("StandardSummaryUpdateFlow")]
-        public async Task Run([TimerTrigger("%StandardSummaryUpdateFlowFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%FunctionsSettings:StandardSummaryUpdateFlow:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
