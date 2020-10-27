@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Interfaces
 {

@@ -15,25 +15,25 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("CertificatePrintNotificationFunction")]
+        [FunctionName("CertificatePrintNotificationFunction")]        
         public async Task Run([TimerTrigger("%FunctionsSettings:CertificatePrintNotificationFunction:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("Epao Importer PrintNotificationFunction timer trigger is running later than scheduled");
+                    log.LogInformation("Epao CertificatePrintNotificationFunction timer trigger is running later than scheduled");
                 }
 
-                log.LogInformation($"Epao Importer PrintNotificationFunction started");
+                log.LogInformation($"Epao CertificatePrintNotificationFunction started");
 
                 await _command.Execute();
 
-                log.LogInformation("Epao Importer PrintNotificationFunction function completed");
+                log.LogInformation("Epao CertificatePrintNotificationFunction function completed");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Epao Importer PrintNotificationFunction function failed");
+                log.LogError(ex, "Epao CertificatePrintNotificationFunction function failed");
             }
         }
     }
