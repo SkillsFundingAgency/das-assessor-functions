@@ -192,6 +192,15 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 await PostPutRequest(request, sendEmailRequest);
             }
         }
+
+        public async Task<ImportLearnerDetailResponse> ImportLearnerDetails(ImportLearnerDetailRequest importLearnerDetailRequest)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/learnerdetails/import"))
+            {
+                return await PostPutRequestWithResponse<ImportLearnerDetailRequest, ImportLearnerDetailResponse>(request,
+                    importLearnerDetailRequest);
+            }
+        }
     }
 }
     
