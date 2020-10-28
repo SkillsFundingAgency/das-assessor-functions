@@ -56,7 +56,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogInformation($"Uploading {path} to blob storage {ContainerName}");
+                _logger.LogDebug($"Uploading {path} to blob storage {ContainerName}");
 
                 byte[] array = Encoding.ASCII.GetBytes(fileContents);
                 using (var stream = new MemoryStream(array))
@@ -64,7 +64,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     await blob.UploadFromStreamAsync(stream);
                 }
 
-                _logger.LogInformation($"Uploaded {path} to blob storage {ContainerName}");
+                _logger.LogDebug($"Uploaded {path} to blob storage {ContainerName}");
             }
             catch (Exception ex)
             {
@@ -81,7 +81,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogInformation($"Downloading {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Downloading {path} from blob storage {ContainerName}");
 
                 using (var stream = new MemoryStream())
                 {
@@ -92,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     }
                 }
 
-                _logger.LogInformation($"Downloaded {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Downloaded {path} from blob storage {ContainerName}");
             }
             catch (Exception ex)
             {
@@ -109,16 +109,38 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogInformation($"Deleting {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Deleting {path} from blob storage {ContainerName}");
 
                 await blob.DeleteAsync();
 
-                _logger.LogInformation($"Deleted {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Deleted {path} from blob storage {ContainerName}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error deleting {path} from blob storage {ContainerName}");
             }
+        }
+
+        public async Task<bool?> FileExists(string path)
+        {
+            bool? exists = null;
+            try
+            {
+                var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
+
+                _logger.LogDebug($"Checking for {path} exists in blob storage {ContainerName}");
+
+                exists = await blob.ExistsAsync();
+
+                _logger.LogDebug($"Checked for {path} exists in blob storage {ContainerName}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error checking {path} exists in blob storage {ContainerName}");
+            }
+
+            return exists;
         }
 
         private async Task Download(string path, MemoryStream stream)
