@@ -67,6 +67,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection("DataCollectionApiAuthentication"));
             builder.Services.Configure<DataCollectionMock>(config.GetSection("DataCollectionMock"));
             builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
+            builder.Services.Configure<RefreshIlrsSettings>(config.GetSection("FunctionsSettings:RefreshIlrs"));
             builder.Services.Configure<CertificatePrintFunctionSettings>(config.GetSection("FunctionsSettings:CertificatePrintFunction"));
             builder.Services.Configure<CertificatePrintNotificationFunctionSettings>(config.GetSection("FunctionsSettings:CertificatePrintNotificationFunction"));
             builder.Services.Configure<CertificateDeliveryNotificationFunctionSettings>(config.GetSection("FunctionsSettings:CertificateDeliveryNotificationFunction"));
@@ -123,7 +124,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
-            builder.Services.AddTransient<IBlogStorageSamplesFunctionCommand, BlogStorageSamplesFunctionCommand>();
+            builder.Services.AddTransient<IBlobStorageSamplesCommand, BlobStorageSamplesCommand>();
             
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();

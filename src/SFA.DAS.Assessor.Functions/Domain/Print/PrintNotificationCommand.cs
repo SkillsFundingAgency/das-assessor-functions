@@ -13,12 +13,10 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
-    public class PrintNotificationCommand : IPrintNotificationCommand
+    public class PrintNotificationCommand : NotificationCommand, IPrintNotificationCommand
     {
         private readonly ILogger<PrintNotificationCommand> _logger;
         private readonly IBatchService _batchService;
-        private readonly IFileTransferClient _externalFileTransferClient;
-        private readonly IFileTransferClient _internalFileTransferClient;
         private readonly CertificatePrintNotificationFunctionSettings _settings;
 
         // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
@@ -31,11 +29,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             IFileTransferClient externalFileTransferClient,
             IFileTransferClient internalFileTransferClient,
             IOptions<CertificatePrintNotificationFunctionSettings> options)
+            : base(externalFileTransferClient, internalFileTransferClient)
         {
             _logger = logger;
             _batchService = batchService;
-            _externalFileTransferClient = externalFileTransferClient;
-            _internalFileTransferClient = internalFileTransferClient;
             _settings = options?.Value;
 
             _externalFileTransferClient.ContainerName = _settings.PrintResponseExternalBlobContainer;
@@ -45,12 +42,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         public async Task Execute()
         {
             _logger.Log(LogLevel.Information, "Print Response Notification Function Started");
-            await Process(_settings.PrintResponseDirectory, FilePattern, DateTimePattern, "ddMMyyHHmm", (f) => ProcessFile(f));
+            await Process(_settings.PrintResponseDirectory, FilePattern, DateTimePattern, "ddMMyyHHmm");
         }
 
-        private async Task Process(string directoryName, string filePattern, string dateTimePattern, string dateTimeFormat, Func<PrintNotificationFileInfo, Task<Batch>> processFile)
+        private async Task Process(string downloadDirectoryName, string filePattern, string dateTimePattern, string dateTimeFormat)
         {
-            var fileNames = await _externalFileTransferClient.GetFileNames(directoryName, filePattern, false);
+            var fileNames = await _externalFileTransferClient.GetFileNames(downloadDirectoryName, filePattern, false);
             if (!fileNames.Any())
             {
                 _logger.Log(LogLevel.Information, "There are no certificate print notifications from the printer to process");
@@ -62,14 +59,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             {
                 try
                 {
-                    var fileContents = await _externalFileTransferClient.DownloadFile($"{directoryName}/{fileName}");
+                    var fileContents = await _externalFileTransferClient.DownloadFile($"{downloadDirectoryName}/{fileName}");
                     var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
 
-                    var batch = await processFile(fileInfo);
+                    var batch = await ProcessFile(fileInfo);
                     await _batchService.Save(batch);
 
-                    await _internalFileTransferClient.UploadFile(fileContents, $"{_settings.ArchivePrintResponseDirectory}/{fileName}");
-                    await _externalFileTransferClient.DeleteFile($"{directoryName}/{fileName}");
+                    await ArchiveFile(fileContents, fileName, downloadDirectoryName, _settings.ArchivePrintResponseDirectory);
                 }
                 catch (FileFormatValidationException ex)
                 {

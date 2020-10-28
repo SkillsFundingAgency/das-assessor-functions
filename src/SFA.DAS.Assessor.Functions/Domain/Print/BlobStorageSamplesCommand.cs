@@ -6,13 +6,11 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
-    public class BlogStorageSamplesFunctionCommand : IBlogStorageSamplesFunctionCommand
+    public class BlobStorageSamplesCommand : IBlobStorageSamplesCommand
     {
         private readonly ILogger<PrintProcessCommand> _logger;
         private readonly IFileTransferClient _fileTransferClient;
@@ -23,7 +21,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private string _deliveryNotificationDirectory;
         private string _deliveryNotificationBlobContainerName;
 
-        public BlogStorageSamplesFunctionCommand(
+        public BlobStorageSamplesCommand(
             ILogger<PrintProcessCommand> logger,
             IFileTransferClient fileTransferClient,
             IOptions<CertificatePrintNotificationFunctionSettings> optionsCertificatePrintNotificationFunction,
@@ -49,7 +47,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"BlogStorageSamplesFunctionCommand failed");
+                _logger.LogError(ex, $"BlobStorageSamplesFunctionCommand failed");
                 throw;
             }
         }

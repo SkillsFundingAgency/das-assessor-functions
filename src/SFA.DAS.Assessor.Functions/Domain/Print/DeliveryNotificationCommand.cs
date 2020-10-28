@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
-    public class DeliveryNotificationCommand : IDeliveryNotificationCommand
+    public class DeliveryNotificationCommand : NotificationCommand, IDeliveryNotificationCommand
     {
         // DeliveryNotifications-ddMMyyHHmm.json
         private static readonly string DateTimePattern = "[0-9]{10}";
@@ -23,8 +23,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
-        private readonly IFileTransferClient _externalFileTransferClient;
-        private readonly IFileTransferClient _internalFileTransferClient;
         private readonly CertificateDeliveryNotificationFunctionSettings _settings;
 
         public DeliveryNotificationCommand(
@@ -33,11 +31,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             IFileTransferClient externalFileTransferClient,
             IFileTransferClient internalFileTransferClient,
             IOptions<CertificateDeliveryNotificationFunctionSettings> options)
+            : base (externalFileTransferClient, internalFileTransferClient)
         {
             _logger = logger;
             _certificateService = certificateService;
-            _externalFileTransferClient = externalFileTransferClient;
-            _internalFileTransferClient = internalFileTransferClient;
             _settings = options?.Value;
 
             _externalFileTransferClient.ContainerName = _settings.DeliveryNotificationExternalBlobContainer;
@@ -100,8 +97,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 Reason = n.Reason
             }));
 
-            await _internalFileTransferClient.UploadFile(fileContents, $"{_settings.ArchiveDeliveryNotificationDirectory}/{fileName}");
-            await _externalFileTransferClient.DeleteFile($"{_settings.DeliveryNotificationDirectory}/{fileName}");
+            await ArchiveFile(fileContents, fileName, _settings.DeliveryNotificationDirectory, _settings.ArchiveDeliveryNotificationDirectory);
         }
     }
 }
