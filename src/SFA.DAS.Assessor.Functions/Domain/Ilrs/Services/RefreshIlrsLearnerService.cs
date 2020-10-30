@@ -49,9 +49,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
             var aimType = 1;
             var allStandards = -1;
             var fundModels = ConfigurationHelper.ConvertCsvValueToList<int>(_refreshIlrsOptions.LearnerFundModels);
+            var allProgTypes = -1;
             var pageSize = _refreshIlrsOptions.LearnerPageSize;
 
-            var learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, providerMessage.LearnerPageNumber);
+            var learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, allProgTypes, pageSize, providerMessage.LearnerPageNumber);
             if (learnersPage != null)
             {
                 if (learnersPage.PagingInfo.TotalPages > learnersPage.PagingInfo.PageNumber)
