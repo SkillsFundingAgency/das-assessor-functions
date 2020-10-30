@@ -9,7 +9,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
     {
         Task<List<string>> GetAcademicYears(DateTime dateTimeUtc);
         Task<DataCollectionProvidersPage> GetProviders(string source, DateTime startDateTime, int? pageSize, int? pageNumber);
-        Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber);
-        Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber);
+        Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber);
+        Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber);
     }
 }

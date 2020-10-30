@@ -31,7 +31,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.Services.RefreshIlrsL
             // Act
             await Sut.ProcessLearners(providerMessage);
 
-            // Assert            
+            // Assert
             var optionsLearnerFundModels = ConfigurationHelper.ConvertCsvValueToList<int>(Options.Object.Value.LearnerFundModels);
             DataCollectionServiceApiClient.Verify(
                 v => v.GetLearners(
@@ -40,6 +40,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.Services.RefreshIlrsL
                     1,
                     -1,
                     It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
+                    -1,
                     Options.Object.Value.LearnerPageSize,
                     pageNumber), 
                 Times.Once);
