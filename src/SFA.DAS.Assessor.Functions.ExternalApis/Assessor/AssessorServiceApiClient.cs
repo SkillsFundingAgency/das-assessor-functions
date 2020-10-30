@@ -15,8 +15,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
     public class AssessorServiceApiClient : ApiClientBase, IAssessorServiceApiClient
     {
         public AssessorServiceApiClient(
-            HttpClient httpClient, 
-            IOptions<AssessorApiAuthentication> options, 
+            HttpClient httpClient,
+            IOptions<AssessorApiAuthentication> options,
             ILogger<AssessorServiceApiClient> logger)
             : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
         {
@@ -41,7 +41,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"api/v1/assessor-setting/{name}/{value}"))
             {
-               await PostPutRequest(request);
+                await PostPutRequest(request);
             }
         }
 
@@ -61,90 +61,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences)
-        {
-            // the certificate printed status be will updated in chunks to stay within the WAF message size limits
-            // which is currently 100, however this has been reduced to 5 as a workaround for current database performance
-            const int chunkSize = 5;
-
-            foreach (var certificateReferencesChunk in certificateReferences.ToList().ChunkBy(chunkSize))
-            {
-                var updateBatchLogSentToPrinterRequest = new UpdateBatchLogSentToPrinterRequest
-                {
-                    BatchNumber = batchNumber,
-                    CertificateReferences = certificateReferencesChunk
-                };
-
-                using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/sent-to-printer"))
-                {
-                    await PostPutRequest(request, updateBatchLogSentToPrinterRequest);
-                }
-            }
-        }
-
-        public async Task UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime)
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/printed "))
-            {
-                await PostPutRequest(request, new { batchNumber, printedAt = printedDateTime });
-            }
-        }
-
-        public async Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus)
-        {
-            // the certificate printed status be will updated in chunks to stay within the WAF message size limits
-            // which is currently 100, however this has been reduced to 5 as a workaround for current database performance
-            const int chunkSize = 5;
-
-            foreach (var certificatePrintStatusChunk in certificatePrintStatus.ToList().ChunkBy(chunkSize))
-            {
-                var updateCertificatesPrintStatusRequest = new UpdateCertificatesPrintStatusRequest
-                {
-                     CertificatePrintStatuses = certificatePrintStatusChunk
-                };
-
-                using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/certificates/update-print-status"))
-                {
-                    await PostPutRequest(request, updateCertificatesPrintStatusRequest);
-                }
-            }
-        }
-   
-        public async Task CompleteSchedule(Guid scheduleRunId)
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule?scheduleRunId={scheduleRunId}"))
-            {
-                await PostPutRequest(request);
-            }
-        }
-
-        public async Task<CertificatesToBePrintedResponse> GetCertificatesToBePrinted()
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/certificates/tobeprinted"))
-            {
-                return await GetAsync<CertificatesToBePrintedResponse>(request);
-            }
-        }
-
-        public async Task<BatchLogResponse> GetCurrentBatchLog()
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/batches/latest"))
-            {
-                var response = await GetAsync<BatchLogResponse>(request);
-
-                if(response == null)
-                {
-                    return new BatchLogResponse
-                    {
-                        BatchNumber = 0
-                    };
-                }
-
-                return response;
-            }
-        }
-
-        public async Task<BatchLogResponse> GetGetBatchLogByBatchNumber(string batchNumber)
+        public async Task<BatchLogResponse> GetBatchLogByBatchNumber(string batchNumber)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/{batchNumber}"))
             {
@@ -152,19 +69,73 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
+        public async Task UpdateBatchAddCertificatesReadyToPrint(int batchNumber)
+        {
+            var chunkSize = 50;
+
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/add-certificates-ready-to-print/{chunkSize}"))
+            {
+                BatchReadyToPrintResponse response = null;
+                do
+                {
+                    response = await PostPutRequestWithResponse<UpdateBatchLogAddCertificatesReadyToPrintRequest, BatchReadyToPrintResponse>(request, null);
+                } while (response != null && response.CertificatesAdded == chunkSize);
+            }
+        }
+
+        public async Task<int?> GetNextBatchNumberToBePrinted()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/next-ready-to-print"))
+            {
+                return await GetAsync<int?>(request);
+            }
+        }
+
+        public async Task<CertificatesToBePrintedResponse> GetCertificatesToBePrinted(int batchNumber)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/{batchNumber}/certificates-ready-to-print"))
+            {
+                return await GetAsync<CertificatesToBePrintedResponse>(request);
+            }
+        }
+
+        public async Task UpdateBatchDataInBatchLog(int batchNumber, BatchData batchData)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-batch-data"))
+            {
+                await PostPutRequest(request, new { BatchData = batchData });
+            }
+        }
+
+        public async Task<int> GetCertificatesReadyToPrintCount()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/certificates/ready-to-print/count"))
+            {
+                return await GetAsync<int>(request);
+            }
+        }
+
+        public async Task UpdatePrintStatus(List<CertificatePrintStatusUpdate> certificatePrintStatusChanges)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/certificates/update-print-status"))
+            {
+                await PostPutRequest(request, certificatePrintStatusChanges);
+            }
+        }
+
+        public async Task CompleteSchedule(Guid scheduleRunId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule?scheduleRunId={scheduleRunId}"))
+            {
+                await PostPutRequest(request);
+            }
+        }
+        
         public async Task<ScheduleRun> GetSchedule(ScheduleType scheduleType)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/schedule/runnow?scheduleType={(int)scheduleType}"))
             {
                 return await GetAsync<ScheduleRun>(request);
-            }
-        }
-
-        public async Task UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData)
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/update-batch-data"))
-            {
-                await PostPutRequest(request, new { Id = batchId, BatchData = batchData });
             }
         }
 
@@ -179,7 +150,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         public async Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/emailTemplates"))
-            {                
+            {
                 await PostPutRequest(request, sendEmailRequest);
             }
         }
@@ -194,4 +165,3 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         }
     }
 }
-    

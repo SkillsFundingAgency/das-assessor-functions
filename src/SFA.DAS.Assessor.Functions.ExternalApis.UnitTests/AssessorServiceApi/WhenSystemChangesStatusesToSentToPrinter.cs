@@ -70,7 +70,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
                 .Verifiable();
 
             // Act
-            await _sut.SaveSentToPrinter(batchNumber, certificateResponses);
+            //await _sut.SaveSentToPrinter(batchNumber, certificateResponses);
 
             // Assert
             _mockHttpMessageHandler

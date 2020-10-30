@@ -12,7 +12,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
     public class BlobStorageSamplesCommand : IBlobStorageSamplesCommand
     {
-        private readonly ILogger<PrintProcessCommand> _logger;
+        private readonly ILogger<BlobStorageSamplesCommand> _logger;
         private readonly IFileTransferClient _fileTransferClient;
 
         private string _printResponseDirectory;
@@ -22,7 +22,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private string _deliveryNotificationBlobContainerName;
 
         public BlobStorageSamplesCommand(
-            ILogger<PrintProcessCommand> logger,
+            ILogger<BlobStorageSamplesCommand> logger,
             IFileTransferClient fileTransferClient,
             IOptions<CertificatePrintNotificationFunctionSettings> optionsCertificatePrintNotificationFunction,
             IOptions<CertificateDeliveryNotificationFunctionSettings> optionsCertificateDeliveryNotificationFunction)

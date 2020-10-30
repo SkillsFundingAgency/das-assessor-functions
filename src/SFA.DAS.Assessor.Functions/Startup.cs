@@ -121,7 +121,7 @@ namespace SFA.DAS.Assessor.Functions
                 new BlobFileTransferClient(s.GetRequiredService<ILogger<BlobFileTransferClient>>(), storageConnectionString));
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
-            builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
+            builder.Services.AddTransient<IPrintCommand, PrintCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
             builder.Services.AddTransient<IBlobStorageSamplesCommand, BlobStorageSamplesCommand>();

@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +42,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _externalFileTransferClient.ContainerName = _settings.DeliveryNotificationExternalBlobContainer;
             _internalFileTransferClient.ContainerName = _settings.DeliveryNotificationInternalBlobContainer;
         }
+
+        public ICollector<string> StorageQueue { get; set; }
 
         public async Task Execute()
         {
@@ -88,14 +92,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 
             });
 
-            await _certificateService.Save(receipt.DeliveryNotifications.Select(n => new Certificate
+            _certificateService.QueueCertificatePrintStatusUpdates(receipt.DeliveryNotifications.Select(n => new CertificatePrintStatusUpdate
             {
-                BatchId = n.BatchID,
                 CertificateReference = n.CertificateNumber,
+                BatchNumber = n.BatchID,
                 Status = n.Status,
-                StatusDate = n.StatusChangeDate,
-                Reason = n.Reason
-            }));
+                StatusAt = n.StatusChangeDate,
+                ReasonForChange = n.Reason
+            }).ToList(), StorageQueue);
 
             await ArchiveFile(fileContents, fileName, _settings.DeliveryNotificationDirectory, _settings.ArchiveDeliveryNotificationDirectory);
         }

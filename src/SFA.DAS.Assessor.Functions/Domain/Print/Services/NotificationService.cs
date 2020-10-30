@@ -36,20 +36,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _deliveryNotificationDirectory = optionsCertificateDeliveryNotificationFunctionSettings.Value.DeliveryNotificationDirectory;
         }
 
-        public async Task Send(int batchNumber, List<Certificate> certificates, string certificatesFileName)
+        public async Task Send(int certificatesCount, string certificatesFileName)
         {
-            _logger.Log(LogLevel.Information, $"Inside NotificationService certificatesFileName :: {certificatesFileName}  CertificatesCount :: {certificates.Count()} ");
+            _logger.LogDebug($"NotificationService::Sending notification of {certificatesCount} certificates in '{certificatesFileName}'");
 
             var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
             
-            var personalisationTokens = CreatePersonalisationTokens(certificates, certificatesFileName);
-
-            _logger.Log(LogLevel.Information, "Send Email");
+            var personalisationTokens = CreatePersonalisationTokens(certificatesCount, certificatesFileName);
 
             await _assessorServiceApi.SendEmailWithTemplate(new SendEmailRequest(string.Empty, emailTemplateSummary, personalisationTokens));
         }
 
-        private Dictionary<string, string> CreatePersonalisationTokens(List<Certificate> certificates, string certificatesFileName)
+        private Dictionary<string, string> CreatePersonalisationTokens(int certificatesCount, string certificatesFileName)
         {
             // TODO: The template which is sent need to be re-worked including the parameters below
             var personalisation = new Dictionary<string, string>
@@ -57,7 +55,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 {"fileName", $"{certificatesFileName}"},
                 {
                     "numberOfCertificatesToBePrinted",
-                    $"{certificates.Count}"
+                    $"{certificatesCount}"
                 }
             };
 

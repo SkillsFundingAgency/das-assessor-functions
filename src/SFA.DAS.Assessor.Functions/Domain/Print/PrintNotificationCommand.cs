@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
@@ -39,6 +40,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _internalFileTransferClient.ContainerName = _settings.PrintResponseInternalBlobContainer;
         }
 
+        public ICollector<string> StorageQueue { get; set; }
+
         public async Task Execute()
         {
             _logger.Log(LogLevel.Information, "Print Response Notification Function Started");
@@ -63,7 +66,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
 
                     var batch = await ProcessFile(fileInfo);
-                    await _batchService.Save(batch);
+                    await _batchService.Update(batch, StorageQueue);
 
                     await ArchiveFile(fileContents, fileName, downloadDirectoryName, _settings.ArchivePrintResponseDirectory);
                 }

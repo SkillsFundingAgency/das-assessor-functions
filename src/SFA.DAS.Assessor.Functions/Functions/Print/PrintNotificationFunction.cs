@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Print
 {
@@ -16,7 +17,9 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         }
 
         [FunctionName("CertificatePrintNotificationFunction")]
-        public async Task Run([TimerTrigger("%FunctionsSettings:CertificatePrintNotificationFunction:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%FunctionsSettings:CertificatePrintNotificationFunction:Schedule%", RunOnStartup = true)]TimerInfo myTimer,
+            [Queue(QueueNames.CertificatePrintStatusUpdate)] ICollector<string> storageQueue,
+            ILogger log)
         {
             try
             {
@@ -27,6 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
 
                 log.LogInformation($"Epao CertificatePrintNotificationFunction started");
 
+                _command.StorageQueue = storageQueue;
                 await _command.Execute();
 
                 log.LogInformation("Epao CertificatePrintNotificationFunction function completed");
