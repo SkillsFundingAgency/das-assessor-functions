@@ -158,7 +158,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             await _sut.Execute();
 
             // Assert
-            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
+            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -224,7 +224,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
             _mockScheduleService.Verify(q => q.Save(It.Is<Schedule>(s => s.Id ==_scheduleId)), Times.Once());
 
             //_mockBatchService.Verify(m => m.Update(It.IsAny<Batch>()), Times.Never);
-            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
+            _mockNotificationService.Verify(m => m.Send(It.IsAny<int>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -235,7 +235,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
             // Assert
             _mockPrintCreator.Verify(m => m.Create(_batchNumber, _certificates), Times.Once);
-            _mockNotificationService.Verify(m => m.Send(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
+            _mockNotificationService.Verify(m => m.Send(_certificates.Count, It.IsAny<string>()), Times.Once);
             //_mockBatchService.Verify(m => m.Update(It.Is<Batch>(b => b.BatchNumber.Equals(_batchNumber))), Times.Once);
             _mockScheduleService.Verify(m => m.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once);
         }
