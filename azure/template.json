@@ -27,6 +27,13 @@
             },
             "defaultValue": []
         },
+        "storageAccountAllowedIPs": {
+            "type": "array",
+            "metadata": {
+                "description": "Allowed IP's"
+            },
+            "defaultValue": []
+        },
         "loggingRedisConnectionString": {
             "type": "securestring"
         },
@@ -70,6 +77,16 @@
         },
         "subnetDelegations": {
             "type": "array"
+        },
+        "storageContainerNames": {
+            "type": "array"
+        },
+        "storagePolicyRules": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "A list of management policy rules"
+            }
         }
     },
     "variables": {
@@ -237,11 +254,67 @@
                     "storageAccountName": {
                         "value": "[variables('storageAccountName')]"
                     },
+                    "allowedIpAddressesList": {
+                        "value": "[parameters('storageAccountAllowedIPs')]"
+                    },
+                    "subnetResourceIdList": {
+                        "value": "[createArray(reference('function-app-subnet').outputs.SubnetResourceId.value)]"
+                    },
                     "storageKind": {
                         "value": "StorageV2"
                     }
                 }
             }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('storage-account-container-',parameters('storageContainerNames')[copyIndex()])]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-container.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
+                    },
+                    "containerName": {
+                        "value": "[parameters('storageContainerNames')[copyIndex()]]"
+                    }
+                }
+            },
+            "copy": {
+                "count": "[length(parameters('storageContainerNames'))]",
+                "name": "storageContainerCopy"
+            },
+            "dependsOn": [
+                "storage-account"
+            ]
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "storage-management-policy",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-management-policy.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
+                    },
+                    "policyRules": {
+                        "value": "[parameters('storagePolicyRules')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "storage-account"
+            ]
         }
     ],
     "outputs": {
