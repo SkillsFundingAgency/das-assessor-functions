@@ -116,7 +116,6 @@
         },
         "storagePolicyRules": {
             "type": "array",
-            "defaultValue": [],
             "metadata": {
                 "description": "A list of management policy rules"
             }
