@@ -85,7 +85,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintProcessCommand
 
             _mockPrintCreator
                 .Setup(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>()))
-                .Returns("{}");
+                .Returns(new PrintOutput());
 
             _certificates = Builder<Certificate>
                 .CreateListOfSize(10)

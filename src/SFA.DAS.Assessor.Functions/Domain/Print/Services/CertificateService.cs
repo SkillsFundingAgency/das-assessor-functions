@@ -8,34 +8,44 @@ using System.Threading.Tasks;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
     public class CertificateService : ICertificateService
     {
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
+        private readonly ILogger<CertificateService> _logger;
 
-        public CertificateService(IAssessorServiceApiClient assessorServiceApiClient)
+        public CertificateService(IAssessorServiceApiClient assessorServiceApiClient, ILogger<CertificateService> logger)
         {
             _assessorServiceApiClient = assessorServiceApiClient;
+            _logger = logger;
         }
 
-        public void QueueCertificatePrintStatusUpdates(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates, ICollector<string> storageQueue)
+        public void QueueCertificatePrintStatusUpdateMessages(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates, ICollector<string> storageQueue)
         {
-            foreach (var chunk in certificatePrintStatusUpdates.ChunkBy(10))
+            var messages = certificatePrintStatusUpdates.ChunkBy(10).Select(chunk => new CertificatePrintStatusUpdateMessage()
             {
-                var message = new CertificatePrintStatusUpdateMessage()
-                {
-                    CertificatePrintStatusUpdates = chunk
-                };
+                CertificatePrintStatusUpdates = chunk
+            }).ToList();
 
-                storageQueue.Add(JsonConvert.SerializeObject(message));
-            }
+            messages.ForEach(p => storageQueue.Add(JsonConvert.SerializeObject(p)));
+
+            _logger.LogInformation($"Queued {messages.Count} messages to update delivery status for {certificatePrintStatusUpdates.Count} certificates");
         }
 
         public async Task ProcessCertificatesPrintStatusUpdates(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates)
         {
-            await _assessorServiceApiClient.UpdatePrintStatus(certificatePrintStatusUpdates);
+            var model = new CertificatesPrintStatusUpdateRequest()
+            {
+                CertificatePrintStatusUpdates = certificatePrintStatusUpdates
+            };
+
+            var response = await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
+            if(response.Errors.Count > 0)
+            {
+            }
         }
     }
 }

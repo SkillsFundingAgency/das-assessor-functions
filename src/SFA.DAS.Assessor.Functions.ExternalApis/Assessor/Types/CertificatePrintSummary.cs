@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types
 {
-    public class CertificateToBePrintedSummary
+    public class CertificatePrintSummary
     {
         public long Uln { get; set; }
         public int StandardCode { get; set; }

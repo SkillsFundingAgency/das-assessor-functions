@@ -61,7 +61,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task<BatchLogResponse> GetBatchLogByBatchNumber(string batchNumber)
+        public async Task<BatchLogResponse> GetBatchLog(int batchNumber)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/{batchNumber}"))
             {
@@ -69,41 +69,43 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdateBatchAddCertificatesReadyToPrint(int batchNumber)
+        public async Task<int> UpdateBatchLogReadyToPrintAddCertifictes(int batchNumber, UpdateBatchLogReadyToPrintAddCertificatesRequest model)
         {
-            var chunkSize = 50;
-
-            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/add-certificates-ready-to-print/{chunkSize}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-ready-to-print-add-certificates"))
             {
-                BatchReadyToPrintResponse response = null;
-                do
-                {
-                    response = await PostPutRequestWithResponse<UpdateBatchLogAddCertificatesReadyToPrintRequest, BatchReadyToPrintResponse>(request, null);
-                } while (response != null && response.CertificatesAdded == chunkSize);
+                return await PostPutRequestWithResponse<UpdateBatchLogReadyToPrintAddCertificatesRequest, int>(request, model);
             }
         }
 
-        public async Task<int?> GetNextBatchNumberToBePrinted()
+        public async Task<ValidationResponse> UpdateBatchLogSentToPrinter(int batchNumber, UpdateBatchLogSentToPrinterRequest model)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/next-ready-to-print"))
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-sent-to-printer"))
+            {
+                return await PostPutRequestWithResponse<UpdateBatchLogSentToPrinterRequest, ValidationResponse>(request, model);
+            }
+        }
+
+        public async Task<ValidationResponse> UpdateBatchLogPrinted(int batchNumber, UpdateBatchLogPrintedRequest model)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-printed"))
+            {
+                return await PostPutRequestWithResponse<UpdateBatchLogPrintedRequest, ValidationResponse>(request, model);
+            }
+        }
+
+        public async Task<int?> GetBatchNumberReadyToPrint()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/batch-number-ready-to-print"))
             {
                 return await GetAsync<int?>(request);
             }
         }
 
-        public async Task<CertificatesToBePrintedResponse> GetCertificatesToBePrinted(int batchNumber)
+        public async Task<CertificatesForBatchNumberResponse> GetCertificatesForBatchNumber(int batchNumber)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/{batchNumber}/certificates-ready-to-print"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/certificates/batch/{batchNumber}"))
             {
-                return await GetAsync<CertificatesToBePrintedResponse>(request);
-            }
-        }
-
-        public async Task UpdateBatchDataInBatchLog(int batchNumber, BatchData batchData)
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-batch-data"))
-            {
-                await PostPutRequest(request, new { BatchData = batchData });
+                return await GetAsync<CertificatesForBatchNumberResponse>(request);
             }
         }
 
@@ -115,11 +117,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdatePrintStatus(List<CertificatePrintStatusUpdate> certificatePrintStatusChanges)
+        public async Task<ValidationResponse> UpdateCertificatesPrintStatus(CertificatesPrintStatusUpdateRequest model)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/certificates/update-print-status"))
+            using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/certificates/update-print-status"))
             {
-                await PostPutRequest(request, certificatePrintStatusChanges);
+                return await PostPutRequestWithResponse<CertificatesPrintStatusUpdateRequest, ValidationResponse>(request, model);
             }
         }
 

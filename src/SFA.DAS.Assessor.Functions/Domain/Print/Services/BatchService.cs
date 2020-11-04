@@ -1,29 +1,32 @@
-﻿using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Extensions;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using System.Collections.Generic;
-using Microsoft.Azure.WebJobs;
-using Newtonsoft.Json;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
     public class BatchService : IBatchService
     {
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
+        private readonly ILogger<BatchService> _logger;
 
-        public BatchService(IAssessorServiceApiClient assessorServiceApiClient)
+        public BatchService(IAssessorServiceApiClient assessorServiceApiClient, ILogger<BatchService> logger)
         {
             _assessorServiceApiClient = assessorServiceApiClient;
+            _logger = logger;
         }
 
         public async Task<Batch> Get(int batchNumber)
         {
-            var batchLogResponse = await _assessorServiceApiClient.GetBatchLogByBatchNumber(batchNumber.ToString());
+            var batchLogResponse = await _assessorServiceApiClient.GetBatchLog(batchNumber);
 
             if (batchLogResponse?.Id != null)
             {
@@ -45,66 +48,120 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return null;
         }
 
-        public async Task<int?> CreateNextBatchToBePrinted(DateTime scheduledDate)
+        public async Task<int?> GetOrCreatePrintBatchReadyToPrint(DateTime scheduledDate)
         {
+            var chunkSize = 50;
+
+            var nextBatchNumberReadyToPrint = await _assessorServiceApiClient.GetBatchNumberReadyToPrint();
             if (await _assessorServiceApiClient.GetCertificatesReadyToPrintCount() > 0)
             {
-                var response = await _assessorServiceApiClient.CreateBatchLog(new CreateBatchLogRequest
+                if (nextBatchNumberReadyToPrint == null)
                 {
-                    ScheduledDate = scheduledDate
-                });
+                    var response = await _assessorServiceApiClient.CreateBatchLog(new CreateBatchLogRequest
+                    {
+                        ScheduledDate = scheduledDate
+                    });
 
-                await _assessorServiceApiClient.UpdateBatchAddCertificatesReadyToPrint(response.BatchNumber);
+                    nextBatchNumberReadyToPrint = response.BatchNumber;
+                }
+
+                do
+                {
+                    var model = new UpdateBatchLogReadyToPrintAddCertificatesRequest()
+                    {
+                        MaxCertificatesToBeAdded = chunkSize
+                    };
+
+                    var addedCount = await _assessorServiceApiClient.UpdateBatchLogReadyToPrintAddCertifictes(nextBatchNumberReadyToPrint.Value, model);
+
+                    _logger.LogInformation($"Added {addedCount} ready to print certificates to batch {nextBatchNumberReadyToPrint.Value}");
+                }
+                while (await _assessorServiceApiClient.GetCertificatesReadyToPrintCount() > 0);
             }
 
-            return await GetNextBatchNumberToBePrinted();
+            return nextBatchNumberReadyToPrint;
         }
 
-        public async Task<int?> GetNextBatchNumberToBePrinted()
+        public async Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber)
         {
-            return await _assessorServiceApiClient.GetNextBatchNumberToBePrinted();
-        }
-
-        public async Task<List<Certificate>> GetCertificatesToBePrinted(int batchNumber)
-        {
-            var response = await _assessorServiceApiClient.GetCertificatesToBePrinted(batchNumber);
+            var response = await _assessorServiceApiClient.GetCertificatesForBatchNumber(batchNumber);
             return response.Certificates.Select(Map).ToList();
         }
 
         public async Task Update(Batch batch, ICollector<string> storageQueue)
         {
-            foreach (var chunk in batch.Certificates.ChunkBy(10))
+            if (batch.Status == "SentToPrinter")
+            {
+                _logger.LogInformation($"Requested batch log {batch.BatchNumber} is updated to sent to printer");
+
+                var updateRequest = new UpdateBatchLogSentToPrinterRequest()
+                {
+                    BatchCreated = batch.BatchCreated,
+                    NumberOfCertificates = batch.NumberOfCertificates,
+                    NumberOfCoverLetters = batch.NumberOfCoverLetters,
+                    CertificatesFileName = batch.CertificatesFileName,
+                    FileUploadStartTime = batch.FileUploadStartTime,
+                    FileUploadEndTime = batch.FileUploadEndTime,
+                };
+
+                var response = await _assessorServiceApiClient.UpdateBatchLogSentToPrinter(batch.BatchNumber, updateRequest);
+
+                var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, DateTime.UtcNow);
+                messages.ForEach(p => storageQueue.Add(p));
+
+                _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as sent to printer");
+            }
+            else if (batch.Status == "Printed")
+            {
+                _logger.LogInformation($"Requested batch log {batch.BatchNumber} is updated as printed");
+
+                var updateRequest = new UpdateBatchLogPrintedRequest()
+                {
+                    BatchDate = batch.BatchCreated,
+                    PostalContactCount = batch.NumberOfCoverLetters,
+                    TotalCertificateCount = batch.NumberOfCertificates,
+                    PrintedDate = batch.PrintedDate,
+                    DateOfResponse = batch.DateOfResponse
+                };
+
+                var response = await _assessorServiceApiClient.UpdateBatchLogPrinted(batch.BatchNumber, updateRequest);
+                if (response.Errors.Count == 0)
+                {
+                    batch.Certificates = await GetCertificatesForBatchNumber(batch.BatchNumber);
+
+                    var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, batch.PrintedDate.Value);
+                    messages.ForEach(p => storageQueue.Add(p));
+
+                    _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as printed");
+                }
+            }
+        }
+        
+        private List<string> QueueCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt)
+        {
+            var messages = new List<string>();
+
+            foreach (var chunk in certificates.ChunkBy(50))
             {
                 var message = new CertificatePrintStatusUpdateMessage()
                 {
                     CertificatePrintStatusUpdates = chunk.Select(p => new CertificatePrintStatusUpdate()
                     {
                         CertificateReference = p.CertificateReference,
-                        BatchNumber = batch.BatchNumber,
-                        Status = batch.Status,
-                        StatusAt = batch.Status == "Printed" ? batch.PrintedDate.Value : DateTime.UtcNow,
+                        BatchNumber = batchNumber,
+                        Status = status,
+                        StatusAt = statusAt,
                         ReasonForChange = null
                     }).ToList()
                 };
 
-                storageQueue.Add(JsonConvert.SerializeObject(message));
+                messages.Add(JsonConvert.SerializeObject(message));
             }
 
-            await _assessorServiceApiClient.UpdateBatchDataInBatchLog(
-                batch.BatchNumber,
-                new BatchData
-                {
-                    BatchNumber = batch.BatchNumber,
-                    BatchDate = batch.BatchCreated,
-                    PostalContactCount = batch.NumberOfCoverLetters,
-                    TotalCertificateCount = batch.NumberOfCertificates,
-                    PrintedDate = batch.PrintedDate,
-                    PostedDate = batch.PostedDate,
-                    DateOfResponse = batch.DateOfResponse
-                });
+            return messages;
         }
 
-        private Certificate Map(CertificateToBePrintedSummary certificateToBePrinted)
+        private Certificate Map(CertificatePrintSummary certificateToBePrinted)
         {
             var certificate = new Certificate
             {

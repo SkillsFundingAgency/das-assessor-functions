@@ -41,11 +41,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         public async Task ThenItShouldReturnAnEmailTemplate()
         {
             // Arrange
-            var certificatesToPrintedResponse = new CertificatesToBePrintedResponse()
+            var certificatesToPrintedResponse = new CertificatesForBatchNumberResponse()
             {
-                Certificates = Builder<CertificateToBePrintedSummary>
+                Certificates = Builder<CertificatePrintSummary>
                     .CreateListOfSize(10)
-                    .Build() as List<CertificateToBePrintedSummary>
+                    .Build() as List<CertificatePrintSummary>
             };
 
             _mockHttpMessageHandler

@@ -1,14 +1,12 @@
 ﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -67,27 +65,27 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     return;
                 }
 
-                var nextBatchNumber = await _batchService.CreateNextBatchToBePrinted(schedule.RunTime);
-                while (nextBatchNumber != null)
+                var nextPrintBatchNumber = await _batchService.GetOrCreatePrintBatchReadyToPrint(schedule.RunTime);
+                if (nextPrintBatchNumber != null)
                 {
-                    var certificates = (await _batchService.GetCertificatesToBePrinted(nextBatchNumber.Value)).Sanitise(_logger);
+                    var certificates = (await _batchService.GetCertificatesForBatchNumber(nextPrintBatchNumber.Value)).Sanitise(_logger);
+                    if (certificates.Count > 0)
+                    {
+                        var batch = await _batchService.Get(nextPrintBatchNumber.Value);
 
-                    if (certificates.Count == 0)
-                    {
-                        _logger.Log(LogLevel.Information, "No certificates to process");
-                    }
-                    else
-                    {
-                        var batch = await _batchService.Get(nextBatchNumber.Value);
-                        
                         batch.Status = "SentToPrinter";
-                        batch.FileUploadStartTime = DateTime.UtcNow;
-                        batch.Period = DateTime.UtcNow.UtcToTimeZoneTime().ToString("MMyy");
-                        batch.CertificatesFileName = $"PrintBatch-{nextBatchNumber.Value.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
-                        batch.Certificates = certificates;
-                        
-                        var fileContents = _printCreator.Create(batch.BatchNumber, batch.Certificates);
 
+                        batch.BatchCreated = DateTime.UtcNow;
+                        batch.CertificatesFileName = $"PrintBatch-{nextPrintBatchNumber.Value.ToString().PadLeft(3, '0')}-{batch.BatchCreated.UtcToTimeZoneTime():ddMMyyHHmm}.json";
+                        batch.Certificates = certificates;
+
+                        var printOutput = _printCreator.Create(batch.BatchNumber, batch.Certificates);
+                        var fileContents = JsonConvert.SerializeObject(printOutput);
+
+                        batch.NumberOfCertificates = printOutput.Batch.TotalCertificateCount;
+                        batch.NumberOfCoverLetters = printOutput.Batch.PostalContactCount;
+
+                        batch.FileUploadStartTime = DateTime.UtcNow;
                         var uploadDirectory = _settings.PrintRequestDirectory;
                         var uploadPath = $"{uploadDirectory}/{batch.CertificatesFileName}";
                         await _externalFileTransferClient.UploadFile(fileContents, uploadPath);
@@ -99,8 +97,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         await _internalFileTransferClient.UploadFile(fileContents, archivePath);
 
                         batch.FileUploadEndTime = DateTime.UtcNow;
-                        batch.NumberOfCertificates = certificates.Count;
-                        batch.NumberOfCoverLetters = 0;
 
                         LogUploadedFiles(uploadedFileNames, uploadDirectory);
 
@@ -108,11 +104,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                         await _notificationService.Send(batch.Certificates.Count, batch.CertificatesFileName);
                     }
-                    
-                    nextBatchNumber = await _batchService.GetNextBatchNumberToBePrinted();
+
+                    await _scheduleService.Save(schedule);
                 }
-                
-                await _scheduleService.Save(schedule);
             }
             catch (Exception e)
             {

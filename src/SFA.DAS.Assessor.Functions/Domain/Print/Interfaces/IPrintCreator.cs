@@ -5,6 +5,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
     public interface IPrintCreator
     {
-        string Create(int batchNumber, IEnumerable<Certificate> certificates);
+        PrintOutput Create(int batchNumber, IEnumerable<Certificate> certificates);
     }
 }

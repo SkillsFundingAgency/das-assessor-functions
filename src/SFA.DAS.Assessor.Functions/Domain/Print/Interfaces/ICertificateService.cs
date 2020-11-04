@@ -7,7 +7,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
     public interface ICertificateService
     {
-        void QueueCertificatePrintStatusUpdates(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates, ICollector<string> storageQueue);
+        void QueueCertificatePrintStatusUpdateMessages(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates, ICollector<string> storageQueue);
         Task ProcessCertificatesPrintStatusUpdates(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates);
     }
 }

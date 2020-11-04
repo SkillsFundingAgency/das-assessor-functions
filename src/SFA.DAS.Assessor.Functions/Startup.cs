@@ -124,6 +124,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintCommand, PrintCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
+            builder.Services.AddTransient<ICertificatePrintStatusUpdateCommand, CertificatePrintStatusUpdateCommand>();
             builder.Services.AddTransient<IBlobStorageSamplesCommand, BlobStorageSamplesCommand>();
             
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();

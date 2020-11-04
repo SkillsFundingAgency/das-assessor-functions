@@ -92,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 
             });
 
-            _certificateService.QueueCertificatePrintStatusUpdates(receipt.DeliveryNotifications.Select(n => new CertificatePrintStatusUpdate
+            _certificateService.QueueCertificatePrintStatusUpdateMessages(receipt.DeliveryNotifications.Select(n => new CertificatePrintStatusUpdate
             {
                 CertificateReference = n.CertificateNumber,
                 BatchNumber = n.BatchID,
