@@ -17,7 +17,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly ILogger<PrintCommand> _logger;
         private readonly IPrintCreator _printCreator;
         private readonly IBatchService _batchService;
-        private readonly ICertificateService _certificateService;
         private readonly IScheduleService _scheduleService;
         
         private readonly INotificationService _notificationService;
@@ -29,7 +28,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             ILogger<PrintCommand> logger,
             IPrintCreator printCreator,
             IBatchService batchService,
-            ICertificateService certificateService,
             IScheduleService scheduleService,
             INotificationService notificationService,
             IFileTransferClient externalFileTransferClient,
@@ -38,7 +36,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         {
             _logger = logger;
             _printCreator = printCreator;
-            _certificateService = certificateService;
             _batchService = batchService;
             _scheduleService = scheduleService;
             _notificationService = notificationService;
@@ -65,7 +62,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     return;
                 }
 
-                var nextPrintBatchNumber = await _batchService.GetOrCreatePrintBatchReadyToPrint(schedule.RunTime);
+                var nextPrintBatchNumber = await _batchService.BuildPrintBatchReadyToPrint(schedule.RunTime, _settings.AddReadyToPrintChunkSize);
                 if (nextPrintBatchNumber != null)
                 {
                     var certificates = (await _batchService.GetCertificatesForBatchNumber(nextPrintBatchNumber.Value)).Sanitise(_logger);
@@ -100,7 +97,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                         LogUploadedFiles(uploadedFileNames, uploadDirectory);
 
-                        await _batchService.Update(batch, StorageQueue);
+                        await _batchService.Update(batch, StorageQueue, _settings.PrintStatusUpdateChunkSize);
 
                         await _notificationService.Send(batch.Certificates.Count, batch.CertificatesFileName);
                     }

@@ -1,13 +1,9 @@
 ﻿using FizzWare.NBuilder;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Net.Http;
@@ -17,28 +13,16 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
 {
-    public class WhenSystemGetsEmailTemplate
+    public class When_GetEmailTemplate_Called : AssessorServiceApiTestBase
     {
-        private AssessorServiceApiClient _sut;
-
-        private Mock<HttpMessageHandler> _mockHttpMessageHandler;
-        private Mock<IOptions<AssessorApiAuthentication>> _mockOptions;
-        private Mock<ILogger<AssessorServiceApiClient>> _mockLogger;
-
         [SetUp]
-        public void Arrange()
+        public override void Arrange()
         {
-            _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-            _mockOptions = new Mock<IOptions<AssessorApiAuthentication>>();
-            _mockLogger = new Mock<ILogger<AssessorServiceApiClient>>();
-
-            _mockOptions.Setup(m => m.Value).Returns(new AssessorApiAuthentication { ApiBaseAddress = "http://localhost:8080" });
-
-            _sut = new AssessorServiceApiClient(new HttpClient(_mockHttpMessageHandler.Object), _mockOptions.Object, _mockLogger.Object);
+            base.Arrange();
         }
 
         [Test]
-        public async Task ThenItShouldReturnAnEmailTemplate()
+        public async Task Then_ApiCalled_ToGetEmailTemplate()
         {
             // Arrange
             var emailTemplate = Builder<EmailTemplateSummary>.CreateNew().Build();

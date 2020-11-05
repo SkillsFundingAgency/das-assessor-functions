@@ -8,5 +8,6 @@
         public string PrintResponseDirectory { get; set; }
         public string ArchivePrintResponseDirectory { get; set; }
         public string ErrorArchivePrintResponseDirectory { get; set; }
+        public int PrintStatusUpdateChunkSize { get; set; }
     }
 }

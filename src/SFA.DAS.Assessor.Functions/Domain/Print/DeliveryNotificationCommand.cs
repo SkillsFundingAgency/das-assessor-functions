@@ -71,12 +71,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private async Task ProcessFile(string fileName)
         {
-            var fileContents = await _externalFileTransferClient.DownloadFile($"{_settings.DeliveryNotificationDirectory}/{fileName}");
+            var fileContents = await _externalFileTransferClient.DownloadFile($"{_settings.DeliveryNotificationDirectory}/{fileName}");   
             var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileContents);
 
             if (receipt?.DeliveryNotifications == null)
             {
-                _logger.Log(LogLevel.Information, $"Could not process delivery receipt file due to invalid format [{fileName}]");
+                _logger.LogInformation($"Could not process delivery notification file '{fileName}' due to invalid format");
                 return;
             }
 
@@ -88,18 +88,21 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         
             invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
             {
-                _logger.Log(LogLevel.Information, $"The certificate status {invalidDeliveryNotificationStatus} is not a valid delivery notification status.");
-                
+                _logger.LogError($"The delivery notification file '{fileName}' contained invalid delivery status '{invalidDeliveryNotificationStatus}'");
             });
 
-            _certificateService.QueueCertificatePrintStatusUpdateMessages(receipt.DeliveryNotifications.Select(n => new CertificatePrintStatusUpdate
+            var validDeliveryNotifications = receipt.DeliveryNotifications
+                .Where(deliveryNotificationStatus => !DeliveryNotificationStatus.Contains(deliveryNotificationStatus.Status))
+                .ToList();
+
+            _certificateService.QueueCertificatePrintStatusUpdateMessages(validDeliveryNotifications.Select(n => new CertificatePrintStatusUpdate
             {
                 CertificateReference = n.CertificateNumber,
                 BatchNumber = n.BatchID,
                 Status = n.Status,
                 StatusAt = n.StatusChangeDate,
                 ReasonForChange = n.Reason
-            }).ToList(), StorageQueue);
+            }).ToList(), StorageQueue, _settings.PrintStatusUpdateChunkSize);
 
             await ArchiveFile(fileContents, fileName, _settings.DeliveryNotificationDirectory, _settings.ArchiveDeliveryNotificationDirectory);
         }

@@ -7,5 +7,7 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure
         public string PrintRequestInternalBlobContainer { get; set; }
         public string PrintRequestDirectory { get; set; }
         public string ArchivePrintRequestDirectory { get; set; }
+        public int AddReadyToPrintChunkSize { get; set; }
+        public int PrintStatusUpdateChunkSize { get; set; }
     }
 }

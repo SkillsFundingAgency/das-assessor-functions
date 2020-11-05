@@ -23,9 +23,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _logger = logger;
         }
 
-        public void QueueCertificatePrintStatusUpdateMessages(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates, ICollector<string> storageQueue)
+        public void QueueCertificatePrintStatusUpdateMessages(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates, ICollector<string> storageQueue, int maxCertificatesToUpdate)
         {
-            var messages = certificatePrintStatusUpdates.ChunkBy(10).Select(chunk => new CertificatePrintStatusUpdateMessage()
+            var messages = certificatePrintStatusUpdates.ChunkBy(maxCertificatesToUpdate).Select(chunk => new CertificatePrintStatusUpdateMessage()
             {
                 CertificatePrintStatusUpdates = chunk
             }).ToList();
@@ -42,10 +42,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 CertificatePrintStatusUpdates = certificatePrintStatusUpdates
             };
 
-            var response = await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
-            if(response.Errors.Count > 0)
-            {
-            }
+            await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
         }
     }
 }

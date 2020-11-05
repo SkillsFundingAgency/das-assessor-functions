@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificationCommand
 {
-    public class WhenCommandIsExecuted
+    public class WhenExecuted_Called
     {
         private Domain.Print.DeliveryNotificationCommand _sut;
 
@@ -108,7 +108,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var logMessage = $"Could not process delivery receipt file due to invalid format [{fileName}]";
+            var logMessage = $"Could not process delivery notification file '{fileName}' due to invalid format";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))

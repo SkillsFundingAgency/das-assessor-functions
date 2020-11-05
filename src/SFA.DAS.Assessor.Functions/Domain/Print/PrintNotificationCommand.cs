@@ -66,7 +66,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
 
                     var batch = await ProcessFile(fileInfo);
-                    await _batchService.Update(batch, StorageQueue);
+                    await _batchService.Update(batch, StorageQueue, _settings.PrintStatusUpdateChunkSize);
 
                     await ArchiveFile(fileContents, fileName, downloadDirectoryName, _settings.ArchivePrintResponseDirectory);
                 }

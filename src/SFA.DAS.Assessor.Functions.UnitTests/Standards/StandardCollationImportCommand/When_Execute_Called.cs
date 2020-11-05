@@ -6,7 +6,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardCollationImportCommand
 {
-    public class WhenCommandIsExecuted
+    public class When_Execute_Called
     {
         private Domain.Standards.StandardCollationImportCommand _sut;
         private Mock<IAssessorServiceApiClient> _assessorServiceApiClient;

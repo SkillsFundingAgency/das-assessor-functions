@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCommand
 {
-    public class WhenCommandIsExecuted
+    public class WhenExecute_Called
     {
         private Domain.Print.PrintNotificationCommand _sut;
 

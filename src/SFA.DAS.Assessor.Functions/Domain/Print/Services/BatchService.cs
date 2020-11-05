@@ -48,10 +48,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return null;
         }
 
-        public async Task<int?> GetOrCreatePrintBatchReadyToPrint(DateTime scheduledDate)
+        public async Task<int?> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded)
         {
-            var chunkSize = 50;
-
             var nextBatchNumberReadyToPrint = await _assessorServiceApiClient.GetBatchNumberReadyToPrint();
             if (await _assessorServiceApiClient.GetCertificatesReadyToPrintCount() > 0)
             {
@@ -69,7 +67,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 {
                     var model = new UpdateBatchLogReadyToPrintAddCertificatesRequest()
                     {
-                        MaxCertificatesToBeAdded = chunkSize
+                        MaxCertificatesToBeAdded = maxCertificatesToBeAdded
                     };
 
                     var addedCount = await _assessorServiceApiClient.UpdateBatchLogReadyToPrintAddCertifictes(nextBatchNumberReadyToPrint.Value, model);
@@ -88,7 +86,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.Certificates.Select(Map).ToList();
         }
 
-        public async Task Update(Batch batch, ICollector<string> storageQueue)
+        public async Task Update(Batch batch, ICollector<string> storageQueue, int maxCertificatesToUpdate)
         {
             if (batch.Status == "SentToPrinter")
             {
