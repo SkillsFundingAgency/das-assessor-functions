@@ -92,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             });
 
             var validDeliveryNotifications = receipt.DeliveryNotifications
-                .Where(deliveryNotificationStatus => !DeliveryNotificationStatus.Contains(deliveryNotificationStatus.Status))
+                .Where(deliveryNotificationStatus => DeliveryNotificationStatus.Contains(deliveryNotificationStatus.Status))
                 .ToList();
 
             _certificateService.QueueCertificatePrintStatusUpdateMessages(validDeliveryNotifications.Select(n => new CertificatePrintStatusUpdate
