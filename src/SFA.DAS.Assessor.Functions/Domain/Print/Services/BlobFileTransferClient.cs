@@ -44,6 +44,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error listing filenames from {directory}");
+                throw;
             }
 
             return fileNames;
@@ -69,6 +70,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error uploading file {path}");
+                throw;
             }
         }
 
@@ -97,6 +99,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error downloading {path} from blob storage {ContainerName}");
+                throw;
             }
 
             return fileContent;
@@ -118,6 +121,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error deleting {path} from blob storage {ContainerName}");
+                throw;
             }
         }
 
@@ -138,6 +142,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error checking {path} exists in blob storage {ContainerName}");
+                throw;
             }
 
             return exists;
@@ -188,7 +193,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 : directoryName += '/';
         }
 
-        private static async Task<List<CloudBlob>> GetBlobsHierarchicalListingAsync(CloudBlobDirectory directory, bool recursive)
+        private async Task<List<CloudBlob>> GetBlobsHierarchicalListingAsync(CloudBlobDirectory directory, bool recursive)
         {
             var blobs = new List<CloudBlob>();
 
@@ -217,9 +222,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                 } while (continuationToken != null);
             }
-            catch (StorageException e)
+            catch (StorageException ex)
             {
-                Console.WriteLine(e.Message);
+                _logger.LogError(ex, $"Error listing file in blob storage {ContainerName}");
                 throw;
             }
 
