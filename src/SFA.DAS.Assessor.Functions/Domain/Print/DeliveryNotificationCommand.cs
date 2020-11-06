@@ -4,8 +4,8 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System.Collections.Generic;
@@ -19,9 +19,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         // DeliveryNotifications-ddMMyyHHmm.json
         private static readonly string DateTimePattern = "[0-9]{10}";
         private static readonly string FilePattern = $@"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-{DateTimePattern}.json";
-        public const string Delivered = "Delivered";
-        public const string NotDelivered = "NotDelivered";
-        public static string[] DeliveryNotificationStatus = new[] { Delivered, NotDelivered };
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
@@ -83,7 +80,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var invalidDeliveryNotificationStatuses = receipt.DeliveryNotifications
                    .GroupBy(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Status)
                    .Select(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Key)
-                   .Where(deliveryNotificationStatus => !DeliveryNotificationStatus.Contains(deliveryNotificationStatus))
+                   .Where(deliveryNotificationStatus => !CertificateStatus.HasDeliveryNotificationStatus(deliveryNotificationStatus))
                    .ToList();
                         
             invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
@@ -92,7 +89,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             });
 
             var validDeliveryNotifications = receipt.DeliveryNotifications
-                .Where(deliveryNotificationStatus => DeliveryNotificationStatus.Contains(deliveryNotificationStatus.Status))
+                .Where(deliveryNotification => CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
                 .ToList();
 
             _certificateService.QueueCertificatePrintStatusUpdateMessages(validDeliveryNotifications.Select(n => new CertificatePrintStatusUpdate

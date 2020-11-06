@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -69,9 +70,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     if (certificates.Count > 0)
                     {
                         var batch = await _batchService.Get(nextPrintBatchNumber.Value);
-
-                        batch.Status = "SentToPrinter";
-
+                        batch.Status = CertificateStatus.SentToPrinter;
                         batch.BatchCreated = DateTime.UtcNow;
                         batch.CertificatesFileName = $"PrintBatch-{nextPrintBatchNumber.Value.ToString().PadLeft(3, '0')}-{batch.BatchCreated.UtcToTimeZoneTime():ddMMyyHHmm}.json";
                         batch.Certificates = certificates;

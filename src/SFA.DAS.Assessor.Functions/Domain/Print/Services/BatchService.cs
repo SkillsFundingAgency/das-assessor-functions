@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
@@ -88,7 +89,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public async Task Update(Batch batch, ICollector<string> storageQueue, int maxCertificatesToUpdate)
         {
-            if (batch.Status == "SentToPrinter")
+            if (batch.Status == CertificateStatus.SentToPrinter)
             {
                 _logger.LogInformation($"Requested batch log {batch.BatchNumber} is updated to sent to printer");
 
@@ -105,13 +106,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var response = await _assessorServiceApiClient.UpdateBatchLogSentToPrinter(batch.BatchNumber, updateRequest);
                 if (response.Errors.Count == 0)
                 {
-                    var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, DateTime.UtcNow);
+                    var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, DateTime.UtcNow, maxCertificatesToUpdate);
                     messages.ForEach(p => storageQueue.Add(p));
 
                     _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as sent to printer");
                 }
             }
-            else if (batch.Status == "Printed")
+            else if (batch.Status == CertificateStatus.Printed)
             {
                 _logger.LogInformation($"Requested batch log {batch.BatchNumber} is updated as printed");
 
@@ -127,9 +128,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var response = await _assessorServiceApiClient.UpdateBatchLogPrinted(batch.BatchNumber, updateRequest);
                 if (response.Errors.Count == 0)
                 {
-                    batch.Certificates = await GetCertificatesForBatchNumber(batch.BatchNumber);
-
-                    var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, batch.PrintedDate.Value);
+                    var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, batch.PrintedDate.Value, maxCertificatesToUpdate);
                     messages.ForEach(p => storageQueue.Add(p));
 
                     _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as printed");
@@ -137,11 +136,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
         }
         
-        private List<string> QueueCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt)
+        private List<string> QueueCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt, int maxCertificatesToUpdate)
         {
             var messages = new List<string>();
 
-            foreach (var chunk in certificates.ChunkBy(50))
+            foreach (var chunk in certificates.ChunkBy(maxCertificatesToUpdate))
             {
                 var message = new CertificatePrintStatusUpdateMessage()
                 {

@@ -7,6 +7,7 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Linq;
@@ -98,8 +99,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             batch.NumberOfCertificates = receipt.Batch.TotalCertificateCount;
             batch.PrintedDate = receipt.Batch.ProcessedDate;
             batch.DateOfResponse = DateTime.UtcNow;
-            batch.Status = "Printed";
-
+            batch.Status = CertificateStatus.Printed;
+            
+            batch.Certificates = await _batchService.GetCertificatesForBatchNumber(batch.BatchNumber);
+            
             return batch;
         }
     }

@@ -19,9 +19,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.Services.BatchServi
         public override void Arrange()
         {
             base.Arrange();
-
-            // Arrange
-            Rearrange();
         }
         private void Rearrange()
         {
@@ -50,31 +47,39 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.Services.BatchServi
                 });
         }
 
-        [Test]
-        public async Task Then_AssessorApiCalled_ToGetBatchNumberReadyToPrint()
+        [TestCase(110, 50)]
+        public async Task Then_AssessorApiCalled_ToGetBatchNumberReadyToPrint(
+            int certificateReadyToPrintCount, 
+            int maxCertificatesToAdd)
         {
             // Arrange
-            _certificateReadyToPrintCount = 110;
+            _certificateReadyToPrintCount = certificateReadyToPrintCount;
+            Rearrange();
 
             // Act
-            var result = await _sut.BuildPrintBatchReadyToPrint(_scheduledDateTime, 50);
+            var result = await _sut.BuildPrintBatchReadyToPrint(_scheduledDateTime, maxCertificatesToAdd);
 
             // Assert
             _mockAssessorServiceApiClient.Verify(v => v.GetBatchNumberReadyToPrint(), Times.Once);
             result.Should().Equals(_batchNumber);
         }
 
-        [Test]
-        public async Task Then_AssessorApiCalled_ToGetCertificatesReadyToPrintCount()
+        [TestCase(110, 50, 4)]
+        [TestCase(110, 15, 9)]
+        public async Task Then_AssessorApiCalled_ToGetCertificatesReadyToPrintCount(
+            int certificateReadyToPrintCount,
+            int maxCertificatesToAdd,
+            int verifyReadyToPrintCount)
         {
             // Arrange
-            _certificateReadyToPrintCount = 110;
+            _certificateReadyToPrintCount = certificateReadyToPrintCount;
+            Rearrange();
 
             // Act
-            var result = await _sut.BuildPrintBatchReadyToPrint(_scheduledDateTime, 50);
+            var result = await _sut.BuildPrintBatchReadyToPrint(_scheduledDateTime, maxCertificatesToAdd);
 
             // Assert
-            _mockAssessorServiceApiClient.Verify(v => v.GetCertificatesReadyToPrintCount(), Times.Exactly(4));
+            _mockAssessorServiceApiClient.Verify(v => v.GetCertificatesReadyToPrintCount(), Times.Exactly(verifyReadyToPrintCount));
             result.Should().Equals(_batchNumber);
         }
     }

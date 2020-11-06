@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -80,7 +82,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     {
                         BatchID = 1,
                         CertificateNumber = "00000001",
-                        Status = "Delivered",
+                        Status = CertificateStatus.Delivered,
                         Reason = "",
                         StatusChangeDate = DateTime.Parse("2020-04-03T16:31:40.0000000Z")
                     },
@@ -88,7 +90,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     {
                         BatchID = 1,
                         CertificateNumber = "00000001",
-                        Status = "NotDelivered",
+                        Status = CertificateStatus.NotDelivered,
                         Reason = "Reason why certificate wasn't delivered",
                         StatusChangeDate = DateTime.Parse("2020-04-04T11:22:00.0000000Z")
                     }

@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
 using Microsoft.OData.UriParser;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.Services.BatchService
 {
@@ -13,13 +15,16 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.Services.BatchServi
         protected Mock<ILogger<Domain.Print.Services.BatchService>> _mockLogger;
         protected Mock<IAssessorServiceApiClient> _mockAssessorServiceApiClient;
 
+        protected ValidationResponse _validResponse = new ValidationResponse();
+        protected ValidationResponse _invalidResponse = new ValidationResponse(new ValidationErrorDetail());
+
         protected int _batchNumber = 111;
 
         public virtual void Arrange()
         {
             _mockLogger = new Mock<ILogger<Domain.Print.Services.BatchService>>();
             _mockAssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
-            
+
             _sut = new Domain.Print.Services.BatchService(
                 _mockAssessorServiceApiClient.Object,
                 _mockLogger.Object
