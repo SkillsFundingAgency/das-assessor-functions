@@ -1,4 +1,5 @@
 ﻿using FizzWare.NBuilder;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCommand
 {
-    public class WhenExecute_Called
+    public class When_Execute_Called
     {
         private Domain.Print.PrintNotificationCommand _sut;
 
@@ -176,7 +177,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             await _sut.Execute();
 
             // Assert
-            //_mockBatchService.Verify(m => m.Update(It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
+            _mockBatchService.Verify(m => m.Update(
+                It.Is<Batch>(b => b.BatchNumber == _batchNumber), 
+                It.IsAny<ICollector<string>>(),
+                It.IsAny<int>()), Times.Exactly(_downloadedFiles.Count));
             
             foreach (var filename in _downloadedFiles)
             {
