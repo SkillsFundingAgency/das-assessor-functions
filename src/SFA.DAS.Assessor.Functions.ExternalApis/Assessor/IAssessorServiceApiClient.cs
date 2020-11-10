@@ -15,7 +15,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         
         Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest);
         Task<BatchLogResponse> GetBatchLog(int batchNumber);
-        Task<int> UpdateBatchLogReadyToPrintAddCertifictes(int batchNumber, UpdateBatchLogReadyToPrintAddCertificatesRequest model);
+        Task<int> UpdateBatchLogReadyToPrintAddCertifictes(int batchNumber, int maxCertificatesToBeAdded);
         Task<ValidationResponse> UpdateBatchLogSentToPrinter(int batchNumber, UpdateBatchLogSentToPrinterRequest model);
         Task<ValidationResponse> UpdateBatchLogPrinted(int batchNumber, UpdateBatchLogPrintedRequest model);
         Task<int?> GetBatchNumberReadyToPrint();

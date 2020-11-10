@@ -25,6 +25,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IFileTransferClient _internalFileTransferClient;
         private readonly CertificatePrintFunctionSettings _settings;
 
+        private ICollector<string> _messageQueue;
+
         public PrintCommand(
             ILogger<PrintCommand> logger,
             IPrintCreator printCreator,
@@ -48,13 +50,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _internalFileTransferClient.ContainerName = _settings.PrintRequestInternalBlobContainer;
         }
 
-        public ICollector<string> StorageQueue { get; set; }
-
-        public async Task Execute()
+        public async Task Execute(ICollector<string> messageQueue)
         {
             try
             {
                 _logger.Log(LogLevel.Information, "Print command started");
+
+                _messageQueue = messageQueue;
 
                 var schedule = await _scheduleService.Get();
                 if (schedule == null)
@@ -96,7 +98,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                         LogUploadedFiles(uploadedFileNames, uploadDirectory);
 
-                        await _batchService.Update(batch, StorageQueue, _settings.PrintStatusUpdateChunkSize);
+                        await _batchService.Update(batch, _messageQueue, _settings.PrintStatusUpdateChunkSize);
 
                         await _notificationService.Send(batch.Certificates.Count, batch.CertificatesFileName);
                     }

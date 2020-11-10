@@ -69,11 +69,13 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task<int> UpdateBatchLogReadyToPrintAddCertifictes(int batchNumber, UpdateBatchLogReadyToPrintAddCertificatesRequest model)
+        public async Task<int> UpdateBatchLogReadyToPrintAddCertifictes(int batchNumber, int maxCertificatesToBeAdded)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-ready-to-print-add-certificates"))
             {
-                return await PostPutRequestWithResponse<UpdateBatchLogReadyToPrintAddCertificatesRequest, int>(request, model);
+                return await PostPutRequestWithResponse<UpdateBatchLogReadyToPrintAddCertificatesRequest, int>(
+                    request, 
+                    new UpdateBatchLogReadyToPrintAddCertificatesRequest { MaxCertificatesToBeAdded = maxCertificatesToBeAdded });
             }
         }
 

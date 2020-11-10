@@ -31,17 +31,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.Services.BatchServi
                 .ReturnsAsync(_certificateReadyToPrintCount);
 
             _mockAssessorServiceApiClient
-                .Setup(m => m.UpdateBatchLogReadyToPrintAddCertifictes(_batchNumber, It.IsAny<UpdateBatchLogReadyToPrintAddCertificatesRequest>()))
-                .Callback((int batchNumber, UpdateBatchLogReadyToPrintAddCertificatesRequest request) =>
+                .Setup(m => m.UpdateBatchLogReadyToPrintAddCertifictes(_batchNumber, It.IsAny<int>()))
+                .Callback((int batchNumber, int maxCertificatesToBeAdded) =>
                 {
-                    _certifictesAddedReadyToPrint = _certificateReadyToPrintCount >= request.MaxCertificatesToBeAdded
-                        ? request.MaxCertificatesToBeAdded
+                    _certifictesAddedReadyToPrint = _certificateReadyToPrintCount >= maxCertificatesToBeAdded
+                        ? maxCertificatesToBeAdded
                         : _certificateReadyToPrintCount;
 
                     _certificateReadyToPrintCount -= _certifictesAddedReadyToPrint;
                     Rearrange(); // Ensure arranged values are updated in mocks
                 })
-                .ReturnsAsync((int batchNumber, UpdateBatchLogReadyToPrintAddCertificatesRequest request) => 
+                .ReturnsAsync((int batchNumber, int maxCertificatesToBeAdded) => 
                 {
                     return _certifictesAddedReadyToPrint;
                 });

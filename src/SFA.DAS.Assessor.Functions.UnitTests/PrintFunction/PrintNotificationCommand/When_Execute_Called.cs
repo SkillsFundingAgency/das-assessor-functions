@@ -25,6 +25,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         private Mock<IFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<CertificatePrintNotificationFunctionSettings>> _mockSettings;
 
+        private Mock<ICollector<string>> _mockMessageQueue;
+
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
         private CertificatePrintNotificationFunctionSettings _settings;
@@ -37,6 +39,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
             _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
             _mockSettings = new Mock<IOptions<CertificatePrintNotificationFunctionSettings>>();
+            _mockMessageQueue = new Mock<ICollector<string>>();
 
             _settings = new CertificatePrintNotificationFunctionSettings {
                 PrintResponseDirectory = "MockPrintResponseDirectory",
@@ -90,7 +93,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
             var logMessage = "Print Response Notification Function Started";
 
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -106,7 +109,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                 .ReturnsAsync(new List<string>());
 
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -128,7 +131,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                 .ReturnsAsync("{}");
 
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -164,7 +167,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
                .Returns(Task.FromResult<Batch>(null));
 
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -174,7 +177,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         public async Task ThenItShouldProcessAndArchivePrintNotificationFiles()
         {
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockBatchService.Verify(m => m.Update(

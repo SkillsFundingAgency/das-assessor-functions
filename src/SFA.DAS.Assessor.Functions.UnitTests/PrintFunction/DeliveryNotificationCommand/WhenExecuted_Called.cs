@@ -1,4 +1,5 @@
 ﻿using FizzWare.NBuilder;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -24,6 +25,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         private Mock<IFileTransferClient> _mockExternalFileTransferClient;
         private Mock<IFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>> _mockSettings;
+        private Mock<ICollector<string>> _mockMessageQueue;
 
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
@@ -37,6 +39,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
             _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
             _mockSettings = new Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>>();
+            _mockMessageQueue = new Mock<ICollector<string>>();
 
             _settings = new CertificateDeliveryNotificationFunctionSettings 
             {
@@ -81,7 +84,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
             var logMessage = "Print Delivery Notification Function Started";
 
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -97,7 +100,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
                 .ReturnsAsync(new List<string>());
 
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -119,7 +122,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
                 .ReturnsAsync("{}");
 
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -129,11 +132,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         public async Task ThenItShouldProcessAndMoveToArchiveDeliveryNotificationFiles()
         {
             // Act
-            await _sut.Execute();
+            await _sut.Execute(_mockMessageQueue.Object);
 
             // Assert
-//            _mockCertificateService.Verify(m => m.UpdateBatchStatus(It.Is<IEnumerable<Certificate>>(c => c.ToList().Where(i => i.BatchId == _batchNumber).Count().Equals(1))), Times.Exactly(_downloadedFiles.Count));
-            
             foreach (var filename in _downloadedFiles)
             {
                 var downloadedFilename = $"{_settings.DeliveryNotificationDirectory}/{filename}";

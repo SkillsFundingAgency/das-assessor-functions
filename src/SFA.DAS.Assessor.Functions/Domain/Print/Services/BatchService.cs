@@ -51,31 +51,30 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public async Task<int?> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded)
         {
-            var nextBatchNumberReadyToPrint = await _assessorServiceApiClient.GetBatchNumberReadyToPrint();
-            if (await _assessorServiceApiClient.GetCertificatesReadyToPrintCount() > 0)
+            var nextBatchNumberReadyToPrint = await GetExistingReadyToPrintBatchNumber();
+            if (await ReadyToPrintCertificatesNotInBatch())
             {
-                if (nextBatchNumberReadyToPrint == null)
+                if (!nextBatchNumberReadyToPrint.HasValue)
                 {
-                    var response = await _assessorServiceApiClient.CreateBatchLog(new CreateBatchLogRequest
-                    {
-                        ScheduledDate = scheduledDate
-                    });
-
-                    nextBatchNumberReadyToPrint = response.BatchNumber;
+                    nextBatchNumberReadyToPrint = await CreateNewBatchNumber(scheduledDate);
                 }
 
-                do
+                if (nextBatchNumberReadyToPrint.HasValue)
                 {
-                    var model = new UpdateBatchLogReadyToPrintAddCertificatesRequest()
+                    do
                     {
-                        MaxCertificatesToBeAdded = maxCertificatesToBeAdded
-                    };
+                        var addedCount = await _assessorServiceApiClient.UpdateBatchLogReadyToPrintAddCertifictes(
+                            nextBatchNumberReadyToPrint.Value,
+                            maxCertificatesToBeAdded);
 
-                    var addedCount = await _assessorServiceApiClient.UpdateBatchLogReadyToPrintAddCertifictes(nextBatchNumberReadyToPrint.Value, model);
-
-                    _logger.LogInformation($"Added {addedCount} ready to print certificates to batch {nextBatchNumberReadyToPrint.Value}");
+                        _logger.LogInformation($"Added {addedCount} ready to print certificates to batch {nextBatchNumberReadyToPrint.Value}");
+                    }
+                    while (await ReadyToPrintCertificatesNotInBatch());
                 }
-                while (await _assessorServiceApiClient.GetCertificatesReadyToPrintCount() > 0);
+                else
+                {
+                    _logger.LogError($"Unable to create a new batch log for scheduled date {scheduledDate}");
+                }
             }
 
             return nextBatchNumberReadyToPrint;
@@ -87,7 +86,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.Certificates.Select(Map).ToList();
         }
 
-        public async Task Update(Batch batch, ICollector<string> storageQueue, int maxCertificatesToUpdate)
+        public async Task Update(Batch batch, ICollector<string> messageQueue, int maxCertificatesToUpdate)
         {
             if (batch.Status == CertificateStatus.SentToPrinter)
             {
@@ -106,8 +105,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var response = await _assessorServiceApiClient.UpdateBatchLogSentToPrinter(batch.BatchNumber, updateRequest);
                 if (response.Errors.Count == 0)
                 {
-                    var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, DateTime.UtcNow, maxCertificatesToUpdate);
-                    messages.ForEach(p => storageQueue.Add(p));
+                    var messages = BuildCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, DateTime.UtcNow, maxCertificatesToUpdate);
+                    messages.ForEach(p => messageQueue.Add(p));
 
                     _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as sent to printer");
                 }
@@ -128,15 +127,35 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var response = await _assessorServiceApiClient.UpdateBatchLogPrinted(batch.BatchNumber, updateRequest);
                 if (response.Errors.Count == 0)
                 {
-                    var messages = QueueCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, batch.PrintedDate.Value, maxCertificatesToUpdate);
-                    messages.ForEach(p => storageQueue.Add(p));
+                    var messages = BuildCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, batch.PrintedDate.Value, maxCertificatesToUpdate);
+                    messages.ForEach(p => messageQueue.Add(p));
 
                     _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as printed");
                 }
             }
         }
-        
-        private List<string> QueueCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt, int maxCertificatesToUpdate)
+
+        private async Task<int?> GetExistingReadyToPrintBatchNumber()
+        {
+            return await _assessorServiceApiClient.GetBatchNumberReadyToPrint(); ;
+        }
+
+        private async Task<bool> ReadyToPrintCertificatesNotInBatch()
+        {
+            return (await _assessorServiceApiClient.GetCertificatesReadyToPrintCount() > 0);
+        }
+
+        private async Task<int> CreateNewBatchNumber(DateTime scheduledDate)
+        {
+            var response = await _assessorServiceApiClient.CreateBatchLog(new CreateBatchLogRequest
+            {
+                ScheduledDate = scheduledDate
+            });
+
+            return response.BatchNumber;
+        }
+
+        private List<string> BuildCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt, int maxCertificatesToUpdate)
         {
             var messages = new List<string>();
 

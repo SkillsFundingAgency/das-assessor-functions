@@ -32,8 +32,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
                     log.LogInformation($"CertificatePrintFunction has started");
                 }
 
-                _command.StorageQueue = storageQueue;
-                await _command.Execute();
+                await _command.Execute(storageQueue);
 
                 log.LogInformation("CertificatePrintFunction has completed");
             }

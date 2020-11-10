@@ -27,11 +27,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
             // Arrange
             var batchNumber = 222;
             var certificatesAdded = 20;
-            
-            var request = new UpdateBatchLogReadyToPrintAddCertificatesRequest()
-            {
-                MaxCertificatesToBeAdded = 50
-            };
+            var maxCertificatesToBeAdded = 50;
 
             _mockHttpMessageHandler
                 .Protected()
@@ -45,7 +41,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
                 .Verifiable();
 
             // Act
-            var result = await _sut.UpdateBatchLogReadyToPrintAddCertifictes(batchNumber, request);
+            var result = await _sut.UpdateBatchLogReadyToPrintAddCertifictes(batchNumber, maxCertificatesToBeAdded);
 
             // Assert
             result.Should().Be(certificatesAdded);

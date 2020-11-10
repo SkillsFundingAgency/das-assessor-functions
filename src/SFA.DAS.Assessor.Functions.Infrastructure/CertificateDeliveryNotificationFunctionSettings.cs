@@ -8,6 +8,6 @@
         public string DeliveryNotificationDirectory { get; set; }
         public string ArchiveDeliveryNotificationDirectory { get; set; }
         public string ErrorDeliveryNotificationDirectory { get; set; }
-		public int PrintStatusUpdateChunkSize { get; set; }
+        public int PrintStatusUpdateChunkSize { get; set; }
     }
 }

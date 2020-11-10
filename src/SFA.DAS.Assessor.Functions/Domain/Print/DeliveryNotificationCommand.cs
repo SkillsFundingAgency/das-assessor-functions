@@ -24,6 +24,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly ICertificateService _certificateService;
         private readonly CertificateDeliveryNotificationFunctionSettings _settings;
 
+        private ICollector<string> _messageQueue;
+
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
             ICertificateService certificateService,
@@ -40,11 +42,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _internalFileTransferClient.ContainerName = _settings.DeliveryNotificationInternalBlobContainer;
         }
 
-        public ICollector<string> StorageQueue { get; set; }
-
-        public async Task Execute()
+        public async Task Execute(ICollector<string> messageQueue)
         {
             _logger.Log(LogLevel.Information, "Print Delivery Notification Function Started");
+
+            _messageQueue = messageQueue;
 
             var fileNames = await _externalFileTransferClient.GetFileNames(_settings.DeliveryNotificationDirectory, FilePattern, false);
 
@@ -99,7 +101,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 Status = n.Status,
                 StatusAt = n.StatusChangeDate,
                 ReasonForChange = n.Reason
-            }).ToList(), StorageQueue, _settings.PrintStatusUpdateChunkSize);
+            }).ToList(), _messageQueue, _settings.PrintStatusUpdateChunkSize);
 
             await ArchiveFile(fileContents, fileName, _settings.DeliveryNotificationDirectory, _settings.ArchiveDeliveryNotificationDirectory);
         }

@@ -10,6 +10,7 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
+using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,6 +25,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
         private static readonly string DateTimePattern = "[0-9]{10}";
         private static readonly string FilePattern = $@"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{{1,6}}-{DateTimePattern}.json";
+
+        private ICollector<string> _messageQueue;
 
         public PrintNotificationCommand(
             ILogger<PrintNotificationCommand> logger,
@@ -41,11 +44,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _internalFileTransferClient.ContainerName = _settings.PrintResponseInternalBlobContainer;
         }
 
-        public ICollector<string> StorageQueue { get; set; }
-
-        public async Task Execute()
+        public async Task Execute(ICollector<string> messageQueue)
         {
             _logger.Log(LogLevel.Information, "Print Response Notification Function Started");
+
+            _messageQueue = messageQueue;
+
             await Process(_settings.PrintResponseDirectory, FilePattern, DateTimePattern, "ddMMyyHHmm");
         }
 
@@ -67,7 +71,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
 
                     var batch = await ProcessFile(fileInfo);
-                    await _batchService.Update(batch, StorageQueue, _settings.PrintStatusUpdateChunkSize);
+                    await _batchService.Update(batch, _messageQueue, _settings.PrintStatusUpdateChunkSize);
 
                     await ArchiveFile(fileContents, fileName, downloadDirectoryName, _settings.ArchivePrintResponseDirectory);
                 }

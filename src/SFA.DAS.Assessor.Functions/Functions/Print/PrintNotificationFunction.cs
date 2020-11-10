@@ -30,8 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
 
                 log.LogInformation($"Epao CertificatePrintNotificationFunction started");
 
-                _command.StorageQueue = storageQueue;
-                await _command.Execute();
+                await _command.Execute(storageQueue);
 
                 log.LogInformation("Epao CertificatePrintNotificationFunction function completed");
             }

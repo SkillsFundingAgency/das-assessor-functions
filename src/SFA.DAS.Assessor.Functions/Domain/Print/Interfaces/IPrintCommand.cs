@@ -1,10 +1,8 @@
-﻿using Microsoft.Azure.WebJobs;
-using SFA.DAS.Assessor.Functions.Domain.Interfaces;
+﻿using SFA.DAS.Assessor.Functions.Domain.Interfaces;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
-    public interface IPrintCommand : ICommand
+    public interface IPrintCommand : IQueueCommand
     {
-        ICollector<string> StorageQueue { get; set; }
     }
 }
