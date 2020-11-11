@@ -10,5 +10,6 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure
         public DateTime ProviderInitialRunDate { get; set; }
         public int LearnerPageSize { get; set; }
         public string LearnerFundModels { get; set; }
+        public string AcademicYearsOverride { get; set; }
     }
 }
