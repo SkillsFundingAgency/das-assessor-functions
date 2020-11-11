@@ -170,7 +170,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.Services.RefreshIlrsL
             });
 
             DataCollectionServiceApiClient = new Mock<IDataCollectionServiceApiClient>();
-            DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(l => Learners1920.ContainsKey(new Tuple<int, int>(l, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels,  int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
+            DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(l => Learners1920.ContainsKey(new Tuple<int, int>(l, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? progType,  int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
            
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
             Logger = new Mock<ILogger<RefreshIlrsLearnerService>>();

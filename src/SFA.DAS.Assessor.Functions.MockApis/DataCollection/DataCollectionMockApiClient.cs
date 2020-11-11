@@ -53,7 +53,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
             return await Task.FromResult(new List<string>() { _optionsDataCollectionMock.Value.AcademicYear });
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber)
         {
             var learners = _learnerMockDataList;
 
@@ -75,7 +75,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
             return await Task.FromResult(page);
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber)
         {
             _learnerMockDataDictionary.TryGetValue(ukprn, out List<DataCollectionLearner> learners);
             if (learners == null)
