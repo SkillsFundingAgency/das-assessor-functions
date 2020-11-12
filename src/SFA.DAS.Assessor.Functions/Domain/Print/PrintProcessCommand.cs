@@ -66,6 +66,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 var batchNumber = await _batchService.NextBatchId();                
                 var certificates = (await _certificateService.Get(CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
 
+                if (certificates.Count >= 0)
+                {
+                    _logger.Log(LogLevel.Information, "Dummy exception thrown for testing purposes.");
+                    throw new Exception("Dummy exception thrown for testing purposes");
+                }
+
                 if (certificates.Count == 0)
                 {
                     _logger.Log(LogLevel.Information, "No certificates to process");
