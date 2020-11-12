@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Polly;
 using Polly.Extensions.Http;
@@ -219,7 +216,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
         protected async Task Delete(HttpRequestMessage requestMessage)
         {
-            if(requestMessage.Method != HttpMethod.Delete)
+            if (requestMessage.Method != HttpMethod.Delete)
             {
                 throw new ArgumentOutOfRangeException(nameof(requestMessage), $"Request must be {nameof(HttpMethod.Delete)}");
             }

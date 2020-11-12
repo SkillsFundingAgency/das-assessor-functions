@@ -6,6 +6,7 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,36 +16,39 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     public class PrintProcessCommand : IPrintProcessCommand
     {
         private readonly ILogger<PrintProcessCommand> _logger;
-        private readonly IPrintingSpreadsheetCreator _printingSpreadsheetCreator;
-        private readonly IPrintingJsonCreator _printingJsonCreator;
+        private readonly IPrintCreator _printCreator;
         private readonly IBatchService _batchService;
         private readonly ICertificateService _certificateService;
         private readonly IScheduleService _scheduleService;
         
         private readonly INotificationService _notificationService;
-        private readonly IFileTransferClient _fileTransferClient;
-        private readonly SftpSettings _sftpSettings;
+        private readonly IFileTransferClient _externalFileTransferClient;
+        private readonly IFileTransferClient _internalFileTransferClient;
+        private readonly CertificatePrintFunctionSettings _settings;
 
         public PrintProcessCommand(
             ILogger<PrintProcessCommand> logger,
-            IPrintingJsonCreator printingJsonCreator,
-            IPrintingSpreadsheetCreator printingSpreadsheetCreator,
+            IPrintCreator printCreator,
             IBatchService batchService,
             ICertificateService certificateService,
             IScheduleService scheduleService,
             INotificationService notificationService,
-            IFileTransferClient fileTransferClient,
-            IOptions<SftpSettings> options)
+            IFileTransferClient externalFileTransferClient,
+            IFileTransferClient internalFileTransferClient,
+            IOptions<CertificatePrintFunctionSettings> options)
         {
             _logger = logger;
-            _printingJsonCreator = printingJsonCreator;
-            _printingSpreadsheetCreator = printingSpreadsheetCreator;
+            _printCreator = printCreator;
             _certificateService = certificateService;
             _batchService = batchService;
             _scheduleService = scheduleService;
             _notificationService = notificationService;
-            _fileTransferClient = fileTransferClient;
-            _sftpSettings = options?.Value;
+            _externalFileTransferClient = externalFileTransferClient;
+            _internalFileTransferClient = internalFileTransferClient;
+            _settings = options?.Value;
+
+            _externalFileTransferClient.ContainerName = _settings.PrintRequestExternalBlobContainer;
+            _internalFileTransferClient.ContainerName = _settings.PrintRequestInternalBlobContainer;
         }
 
         public async Task Execute()
@@ -60,7 +64,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     return;
                 }
 
-                var batchNumber = await _batchService.NextBatchId();                
+                var batchNumber = await _batchService.NextBatchId();
                 var certificates = (await _certificateService.Get(CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
 
                 if (certificates.Count == 0)
@@ -70,7 +74,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 else
                 {
                     var uploadedFileNames = new List<string>();
-                    string uploadDirectory = "";
 
                     var batch = new Batch
                     {
@@ -80,31 +83,31 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         Period = DateTime.UtcNow.UtcToTimeZoneTime().ToString("MMyy"),
                         BatchCreated = DateTime.UtcNow,
                         ScheduledDate = schedule.RunTime,
+                        CertificatesFileName = $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json",
                         Certificates = certificates
                     };
 
-                    if (_sftpSettings.UseJson)
-                    {
-                        uploadDirectory = _sftpSettings.PrintRequestDirectory;
-                        batch.CertificatesFileName = $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
-                        _printingJsonCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
-                    }
-                    else
-                    {
-                        uploadDirectory = _sftpSettings.UploadDirectory;
-                        batch.CertificatesFileName = $"IFA-Certificate-{DateTime.UtcNow.UtcToTimeZoneTime():MMyy}-{batchNumber.ToString().PadLeft(3, '0')}.xlsx";
-                        _printingSpreadsheetCreator.Create(batchNumber, certificates, $"{uploadDirectory}/{batch.CertificatesFileName}");
-                    }
-                    
-                    await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
-                    uploadedFileNames = await _fileTransferClient.GetFileNames(uploadDirectory);                    
+                    var fileContents = _printCreator.Create(batch.BatchNumber, batch.Certificates);
 
+                    var uploadDirectory = _settings.PrintRequestDirectory;
+                    var uploadPath = $"{uploadDirectory}/{batch.CertificatesFileName}";
+                    await _externalFileTransferClient.UploadFile(fileContents, uploadPath);
+                    
+                    uploadedFileNames = await _externalFileTransferClient.GetFileNames(uploadDirectory, false);
+
+                    var archiveDirectory = _settings.ArchivePrintRequestDirectory;
+                    var archivePath = $"{archiveDirectory}/{batch.CertificatesFileName}";
+                    await _internalFileTransferClient.UploadFile(fileContents, archivePath);
+                   
+                    await _notificationService.Send(batchNumber, certificates, batch.CertificatesFileName);
+                    
                     batch.FileUploadEndTime = DateTime.UtcNow;
                     batch.NumberOfCertificates = certificates.Count;
                     batch.NumberOfCoverLetters = 0;
                     batch.ScheduledDate = schedule.RunTime;
 
                     LogUploadedFiles(uploadedFileNames, uploadDirectory);
+                    
                     await _batchService.Save(batch);
                 }
                 await _scheduleService.Save(schedule);

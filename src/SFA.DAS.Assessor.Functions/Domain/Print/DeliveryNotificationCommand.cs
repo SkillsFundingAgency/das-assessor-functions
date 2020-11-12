@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
-    public class DeliveryNotificationCommand : IDeliveryNotificationCommand
+    public class DeliveryNotificationCommand : NotificationCommand, IDeliveryNotificationCommand
     {
         // DeliveryNotifications-ddMMyyHHmm.json
         private static readonly string DateTimePattern = "[0-9]{10}";
@@ -23,26 +23,29 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
-        private readonly IFileTransferClient _fileTransferClient;
-        private readonly SftpSettings _sftpSettings;        
+        private readonly CertificateDeliveryNotificationFunctionSettings _settings;
 
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
             ICertificateService certificateService,
-            IFileTransferClient fileTransferClient,
-            IOptions<SftpSettings> options)
+            IFileTransferClient externalFileTransferClient,
+            IFileTransferClient internalFileTransferClient,
+            IOptions<CertificateDeliveryNotificationFunctionSettings> options)
+            : base (externalFileTransferClient, internalFileTransferClient)
         {
             _logger = logger;
             _certificateService = certificateService;
-            _fileTransferClient = fileTransferClient;
-            _sftpSettings = options?.Value;
+            _settings = options?.Value;
+
+            _externalFileTransferClient.ContainerName = _settings.DeliveryNotificationExternalBlobContainer;
+            _internalFileTransferClient.ContainerName = _settings.DeliveryNotificationInternalBlobContainer;
         }
 
         public async Task Execute()
         {
             _logger.Log(LogLevel.Information, "Print Delivery Notification Function Started");
 
-            var fileNames = await _fileTransferClient.GetFileNames(_sftpSettings.DeliveryNotificationDirectory, FilePattern);
+            var fileNames = await _externalFileTransferClient.GetFileNames(_settings.DeliveryNotificationDirectory, FilePattern, false);
 
             if (!fileNames.Any())
             {
@@ -64,7 +67,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private async Task ProcessFile(string fileName)
         {
-            var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(_fileTransferClient.DownloadFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}"));
+            var fileContents = await _externalFileTransferClient.DownloadFile($"{_settings.DeliveryNotificationDirectory}/{fileName}");
+            var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileContents);
 
             if (receipt?.DeliveryNotifications == null)
             {
@@ -92,7 +96,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 StatusDate = n.StatusChangeDate,
                 Reason = n.Reason
             }));
-            _fileTransferClient.MoveFile($"{_sftpSettings.DeliveryNotificationDirectory}/{fileName}", _sftpSettings.ArchiveDeliveryNotificationDirectory);
+
+            await ArchiveFile(fileContents, fileName, _settings.DeliveryNotificationDirectory, _settings.ArchiveDeliveryNotificationDirectory);
         }
     }
 }

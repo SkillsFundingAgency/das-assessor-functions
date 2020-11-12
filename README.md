@@ -6,7 +6,7 @@
 
 #### Requirements
 
-- Install [.NET Core 2.1](https://www.microsoft.com/net/download)
+- Install [.NET Core 3.1](https://www.microsoft.com/net/download)
 - Install [Azure Functions SDK](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
 
 ### Configuration
@@ -23,13 +23,6 @@
         "AppName": "das-assessor-functions",
         "EnvironmentName": "LOCAL",
         "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
-
-        "CertificatePrintFunctionSchedule": "*/15 * * * *",
-        "CertificatePrintNotificationFunctionSchedule": "0 13 * * *",
-        "CertificateDeliveryNotificationFunctionSchedule": "0 15 * * *",
-        "StandardCollationImportFlowFunctionSchedule": "30 6 * * *",
-        "StandardSummaryUpdateFlowFunctionSchedule": "0 7 * * *",
-        "RefreshIlrsEnqueueProvidersFunctionFlowSchedule":  "0 19 * * *"
     }
 }
 ```
