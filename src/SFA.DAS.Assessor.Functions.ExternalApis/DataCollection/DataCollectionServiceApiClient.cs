@@ -82,23 +82,23 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             }
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/learners/{source}?" +
                 $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}";
 
-            return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
+            return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, progType, pageSize, pageNumber);
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber)
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/learners/{source}?" +
                 $"ukprn={ukprn}";
 
-            return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, pageSize, pageNumber);
+            return await GetLearnersInternal(requestUri, aimType, standardCode, fundModels, progType, pageSize, pageNumber);
         }
 
-        private async Task<DataCollectionLearnersPage> GetLearnersInternal(string learnersRequestUri, int? aimType = null, int? standardCode = null, List<int> fundModels = null, int? pageSize = null, int? pageNumber = null)
+        private async Task<DataCollectionLearnersPage> GetLearnersInternal(string learnersRequestUri, int? aimType = null, int? standardCode = null, List<int> fundModels = null, int? progType = null, int? pageSize = null, int? pageNumber = null)
         {
             var requestUri = learnersRequestUri
                 + (aimType != null
@@ -109,6 +109,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                     : string.Empty)
                 + (fundModels != null
                     ? string.Join(string.Empty, fundModels.ConvertAll(p => $"&fundModel={p}"))
+                    : string.Empty)
+                + (progType != null
+                    ? $"&progType={progType.Value}"
                     : string.Empty)
                 + (pageSize != null
                     ? $"&pageSize={pageSize.Value}"

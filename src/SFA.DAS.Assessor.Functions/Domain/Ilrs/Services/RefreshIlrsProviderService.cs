@@ -98,12 +98,20 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 
         private async Task<List<string>> ValidateAllAcademicYears(DateTime lastRunDateTime, DateTime currentRunDateTime)
         {
-            var sourcesLast = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
-            var sourceCurrent = await _dataCollectionServiceApiClient.GetAcademicYears(currentRunDateTime);
+            IEnumerable<string> sources;
+            if (string.IsNullOrEmpty(_refreshIlrsOptions.AcademicYearsOverride))
+            {
+                var sourcesLast = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
+                var sourceCurrent = await _dataCollectionServiceApiClient.GetAcademicYears(currentRunDateTime);
 
-            var sources = sourcesLast
-                .Union(sourceCurrent)
-                .Distinct();
+                sources = sourcesLast
+                    .Union(sourceCurrent)
+                    .Distinct();
+            }
+            else
+            {
+                sources = ConfigurationHelper.ConvertCsvValueToList<string>(_refreshIlrsOptions.AcademicYearsOverride);
+            }
 
             var sourceValidations = sources.Select(source => ValidateAcademicYear(source));
             bool[] results = await Task.WhenAll(sourceValidations);
