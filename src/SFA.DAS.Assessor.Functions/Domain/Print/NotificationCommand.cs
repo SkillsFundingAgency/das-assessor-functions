@@ -6,10 +6,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
     public class NotificationCommand
     {
-        protected readonly IFileTransferClient _externalFileTransferClient;
-        protected readonly IFileTransferClient _internalFileTransferClient;
+        protected readonly IBlobFileTransferClient _externalFileTransferClient;
+        protected readonly IBlobFileTransferClient _internalFileTransferClient;
 
-        public NotificationCommand(IFileTransferClient externalFileTransferClient, IFileTransferClient internalFileTransferClient)
+        public NotificationCommand(IBlobFileTransferClient externalFileTransferClient, IBlobFileTransferClient internalFileTransferClient)
         {
             _externalFileTransferClient = externalFileTransferClient;
             _internalFileTransferClient = internalFileTransferClient;

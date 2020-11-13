@@ -22,8 +22,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IScheduleService _scheduleService;
         
         private readonly INotificationService _notificationService;
-        private readonly IFileTransferClient _externalFileTransferClient;
-        private readonly IFileTransferClient _internalFileTransferClient;
+        private readonly IBlobFileTransferClient _externalFileTransferClient;
+        private readonly IBlobFileTransferClient _internalFileTransferClient;
         private readonly CertificatePrintFunctionSettings _settings;
 
         public PrintProcessCommand(
@@ -33,8 +33,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             ICertificateService certificateService,
             IScheduleService scheduleService,
             INotificationService notificationService,
-            IFileTransferClient externalFileTransferClient,
-            IFileTransferClient internalFileTransferClient,
+            IBlobFileTransferClient externalFileTransferClient,
+            IBlobFileTransferClient internalFileTransferClient,
             IOptions<CertificatePrintFunctionSettings> options)
         {
             _logger = logger;

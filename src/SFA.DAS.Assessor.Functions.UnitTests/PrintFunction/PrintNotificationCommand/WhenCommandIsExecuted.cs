@@ -20,8 +20,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
 
         private Mock<ILogger<Domain.Print.PrintNotificationCommand>> _mockLogger;
         private Mock<IBatchService> _mockBatchService;
-        private Mock<IFileTransferClient> _mockExternalFileTransferClient;
-        private Mock<IFileTransferClient> _mockInternalFileTransferClient;
+        private Mock<IBlobFileTransferClient> _mockExternalFileTransferClient;
+        private Mock<IBlobFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<CertificatePrintNotificationFunctionSettings>> _mockSettings;
 
         private int _batchNumber = 1;
@@ -33,8 +33,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.PrintNotificationCo
         {
             _mockLogger = new Mock<ILogger<Domain.Print.PrintNotificationCommand>>();
             _mockBatchService = new Mock<IBatchService>();
-            _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
-            _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
+            _mockExternalFileTransferClient = new Mock<IBlobFileTransferClient>();
+            _mockInternalFileTransferClient = new Mock<IBlobFileTransferClient>();
             _mockSettings = new Mock<IOptions<CertificatePrintNotificationFunctionSettings>>();
 
             _settings = new CertificatePrintNotificationFunctionSettings {

@@ -21,8 +21,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
 
         private Mock<ILogger<Domain.Print.DeliveryNotificationCommand>> _mockLogger;
         private Mock<ICertificateService> _mockCertificateService;
-        private Mock<IFileTransferClient> _mockExternalFileTransferClient;
-        private Mock<IFileTransferClient> _mockInternalFileTransferClient;
+        private Mock<IBlobFileTransferClient> _mockExternalFileTransferClient;
+        private Mock<IBlobFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>> _mockSettings;
 
         private int _batchNumber = 1;
@@ -34,8 +34,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.PrintFunction.DeliveryNotificatio
         {
             _mockLogger = new Mock<ILogger<Domain.Print.DeliveryNotificationCommand>>();
             _mockCertificateService = new Mock<ICertificateService>();
-            _mockExternalFileTransferClient = new Mock<IFileTransferClient>();
-            _mockInternalFileTransferClient = new Mock<IFileTransferClient>();
+            _mockExternalFileTransferClient = new Mock<IBlobFileTransferClient>();
+            _mockInternalFileTransferClient = new Mock<IBlobFileTransferClient>();
             _mockSettings = new Mock<IOptions<CertificateDeliveryNotificationFunctionSettings>>();
 
             _settings = new CertificateDeliveryNotificationFunctionSettings 

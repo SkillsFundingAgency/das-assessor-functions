@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class BlobFileTransferClient : IFileTransferClient
+    public class BlobFileTransferClient : IBlobFileTransferClient
     {
         private readonly ILogger<BlobFileTransferClient> _logger;
         private string _connectionString { get; }
@@ -229,6 +229,31 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
 
             return blobs;
+        }
+
+        public string GetContainerSasUri(string ipAddress, DateTime expiryTime, SharedAccessBlobPermissions? permissions = null)
+        {
+            var account = CloudStorageAccount.Parse(_connectionString);
+            var client = account.CreateCloudBlobClient();
+            var container = client.GetContainerReference(ContainerName);
+
+            SharedAccessBlobPolicy adHocPolicy = new SharedAccessBlobPolicy()
+            {
+                SharedAccessExpiryTime = expiryTime,
+                Permissions = permissions ??
+                    SharedAccessBlobPermissions.Read |
+                    SharedAccessBlobPermissions.Write |
+                    SharedAccessBlobPermissions.Create |
+                    SharedAccessBlobPermissions.List |
+                    SharedAccessBlobPermissions.Delete
+            };
+
+            var ipAddressOrRange = !string.IsNullOrEmpty(ipAddress)
+                ? new IPAddressOrRange(ipAddress)
+                : null;
+
+            var sasContainerToken = container.GetSharedAccessSignature(adHocPolicy, null, null, ipAddressOrRange);
+            return container.Uri + sasContainerToken;
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Azure.Storage.Blob;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
-    public interface IFileTransferClient
+    public interface IBlobFileTransferClient
     {
         string ContainerName { get; set; }
         Task<List<string>> GetFileNames(string directory, bool recursive);
@@ -12,5 +14,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
         Task<bool?> FileExists(string path);
         Task<string> DownloadFile(string path);
         Task DeleteFile(string path);
+        string GetContainerSasUri(string ipAddress, DateTime expiryTime, SharedAccessBlobPermissions? permissions = null);
     }
 }

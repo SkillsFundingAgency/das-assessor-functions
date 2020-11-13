@@ -26,8 +26,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         public PrintNotificationCommand(
             ILogger<PrintNotificationCommand> logger,
             IBatchService batchService,
-            IFileTransferClient externalFileTransferClient,
-            IFileTransferClient internalFileTransferClient,
+            IBlobFileTransferClient externalFileTransferClient,
+            IBlobFileTransferClient internalFileTransferClient,
             IOptions<CertificatePrintNotificationFunctionSettings> options)
             : base(externalFileTransferClient, internalFileTransferClient)
         {

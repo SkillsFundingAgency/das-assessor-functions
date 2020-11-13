@@ -28,8 +28,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
             ICertificateService certificateService,
-            IFileTransferClient externalFileTransferClient,
-            IFileTransferClient internalFileTransferClient,
+            IBlobFileTransferClient externalFileTransferClient,
+            IBlobFileTransferClient internalFileTransferClient,
             IOptions<CertificateDeliveryNotificationFunctionSettings> options)
             : base (externalFileTransferClient, internalFileTransferClient)
         {
