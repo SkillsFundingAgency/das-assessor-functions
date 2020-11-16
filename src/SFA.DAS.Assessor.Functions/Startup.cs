@@ -18,8 +18,12 @@ using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage;
 using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Authentication;
+using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Config;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using System;
 using System.Net.Http;
@@ -65,14 +69,20 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddOptions();
             
-            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection("AssessorApiAuthentication"));
-            builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection("DataCollectionApiAuthentication"));
-            builder.Services.Configure<DataCollectionMock>(config.GetSection("DataCollectionMock"));
-            builder.Services.Configure<CertificateDetails>(config.GetSection("CertificateDetails"));
-            builder.Services.Configure<RefreshIlrsSettings>(config.GetSection("FunctionsSettings:RefreshIlrs"));
-            builder.Services.Configure<CertificatePrintFunctionSettings>(config.GetSection("FunctionsSettings:CertificatePrintFunction"));
-            builder.Services.Configure<CertificatePrintNotificationFunctionSettings>(config.GetSection("FunctionsSettings:CertificatePrintNotificationFunction"));
-            builder.Services.Configure<CertificateDeliveryNotificationFunctionSettings>(config.GetSection("FunctionsSettings:CertificateDeliveryNotificationFunction"));
+            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection(nameof(AssessorApiAuthentication)));
+            builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection(nameof(DataCollectionApiAuthentication)));
+            builder.Services.Configure<SecureMessageApiAuthentication>(config.GetSection(nameof(SecureMessageApiAuthentication)));
+            builder.Services.Configure<DataCollectionMock>(config.GetSection(nameof(DataCollectionMock)));
+
+            var functionsOptions = nameof(FunctionsOptions);
+            builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
+            
+            var printCertificatesOptions = $"{functionsOptions}:{nameof(PrintCertificatesOptions)}";
+            builder.Services.Configure<PrintRequestOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}"));
+            builder.Services.Configure<CertificateDetails>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}:{nameof(CertificateDetails)}"));
+            builder.Services.Configure<PrintResponseOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintResponseOptions)}"));
+            builder.Services.Configure<DeliveryNotificationOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(DeliveryNotificationOptions)}"));
+            builder.Services.Configure<BlobSasTokenGeneratorOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(BlobSasTokenGeneratorOptions)}"));
 
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
@@ -84,7 +94,7 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddScoped<DataCollectionTokenHandler>();
 
-            var dataCollectionMock = config.GetSection("DataCollectionMock").Get<DataCollectionMock>();
+            var dataCollectionMock = config.GetSection(nameof(DataCollectionMock)).Get<DataCollectionMock>();
             if (dataCollectionMock.Enabled)
             {
                 builder.Services.AddSingleton<IDataCollectionServiceApiClient, DataCollectionMockApiClient>();
@@ -124,13 +134,22 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
             var storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
-            builder.Services.AddTransient<IBlobFileTransferClient>(s =>
-                new BlobFileTransferClient(s.GetRequiredService<ILogger<BlobFileTransferClient>>(), storageConnectionString));
+            var optionsCertificateFunctions = config.GetSection(functionsOptions).GetSection(nameof(printCertificatesOptions)).Get<PrintCertificatesOptions>();
+
+            builder.Services.AddTransient(s => new BlobFileTransferClient(
+                s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
+                storageConnectionString,
+                optionsCertificateFunctions.ExternalBlobContainer) as IExternalBlobFileTransferClient);
+            
+            builder.Services.AddTransient(s => new BlobFileTransferClient(
+                s.GetRequiredService<ILogger<BlobFileTransferClient>>(), 
+                storageConnectionString,
+                optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
-            builder.Services.AddTransient<IPrintProcessCommand, PrintProcessCommand>();
+            builder.Services.AddTransient<IPrintRequestCommand, PrintRequestCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
-            builder.Services.AddTransient<IPrintNotificationCommand, PrintNotificationCommand>();
+            builder.Services.AddTransient<IPrintResponseCommand, PrintResponseCommand>();
             builder.Services.AddTransient<IBlobStorageSamplesCommand, BlobStorageSamplesCommand>();
             builder.Services.AddTransient<IBlobSasTokenGeneratorCommand, BlobSasTokenGeneratorCommand>();
 

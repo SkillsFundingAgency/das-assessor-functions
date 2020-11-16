@@ -15,25 +15,25 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("BlobStorageSamplesFunction")]
-        public async Task Run([TimerTrigger("%FunctionsSettings:BlobStorageSamplesFunction:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        [FunctionName("BlobStorageSamples")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:BlobStorageSamplesOptions:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("Epao BlobStorageSamplesFunction timer trigger is running later than scheduled");
+                    log.LogInformation("BlobStorageSamples timer trigger has started later than scheduled");
                 }
 
-                log.LogInformation($"Epao BlobStorageSamplesFunction started");
+                log.LogInformation($"BlobStorageSamples started");
 
                 await _command.Execute();
 
-                log.LogInformation("Epao BlobStorageSamplesFunction function completed");
+                log.LogInformation("BlobStorageSamples finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Epao BlobStorageSamplesFunction function failed");
+                log.LogError(ex, "BlobStorageSamples failed");
             }
         }
     }

@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage
             HttpClient httpClient,
             IOptions<SecureMessageApiAuthentication> options,
             ILogger<SecureMessageServiceApiClient> logger)
-            : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
+            : base(httpClient, new Uri(options?.Value?.ApiBaseAddress), logger)
         {
         }
 

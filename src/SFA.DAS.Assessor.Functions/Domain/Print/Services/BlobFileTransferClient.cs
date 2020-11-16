@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -13,17 +12,17 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class BlobFileTransferClient : IBlobFileTransferClient
+    public class BlobFileTransferClient : IExternalBlobFileTransferClient, IInternalBlobFileTransferClient
     {
         private readonly ILogger<BlobFileTransferClient> _logger;
         private string _connectionString { get; }
-        
-        public string ContainerName { get; set; }
+        private string _containerName { get; set; }
 
-        public BlobFileTransferClient(ILogger<BlobFileTransferClient> logger, string connectionString)
+        public BlobFileTransferClient(ILogger<BlobFileTransferClient> logger, string connectionString, string containerName)
         {
             _logger = logger;
             _connectionString = connectionString;
+            _containerName = containerName;
         }
 
         public async Task<List<string>> GetFileNames(string directory, string pattern, bool recursive)
@@ -57,7 +56,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogDebug($"Uploading {path} to blob storage {ContainerName}");
+                _logger.LogDebug($"Uploading {path} to blob storage {_containerName}");
 
                 byte[] array = Encoding.ASCII.GetBytes(fileContents);
                 using (var stream = new MemoryStream(array))
@@ -65,7 +64,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     await blob.UploadFromStreamAsync(stream);
                 }
 
-                _logger.LogDebug($"Uploaded {path} to blob storage {ContainerName}");
+                _logger.LogDebug($"Uploaded {path} to blob storage {_containerName}");
             }
             catch (Exception ex)
             {
@@ -83,7 +82,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogDebug($"Downloading {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Downloading {path} from blob storage {_containerName}");
 
                 using (var stream = new MemoryStream())
                 {
@@ -94,11 +93,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     }
                 }
 
-                _logger.LogDebug($"Downloaded {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Downloaded {path} from blob storage {_containerName}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error downloading {path} from blob storage {ContainerName}");
+                _logger.LogError(ex, $"Error downloading {path} from blob storage {_containerName}");
                 throw;
             }
 
@@ -112,15 +111,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogDebug($"Deleting {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Deleting {path} from blob storage {_containerName}");
 
                 await blob.DeleteAsync();
 
-                _logger.LogDebug($"Deleted {path} from blob storage {ContainerName}");
+                _logger.LogDebug($"Deleted {path} from blob storage {_containerName}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error deleting {path} from blob storage {ContainerName}");
+                _logger.LogError(ex, $"Error deleting {path} from blob storage {_containerName}");
                 throw;
             }
         }
@@ -133,15 +132,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogDebug($"Checking for {path} exists in blob storage {ContainerName}");
+                _logger.LogDebug($"Checking for {path} exists in blob storage {_containerName}");
 
                 exists = await blob.ExistsAsync();
 
-                _logger.LogDebug($"Checked for {path} exists in blob storage {ContainerName}");
+                _logger.LogDebug($"Checked for {path} exists in blob storage {_containerName}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error checking {path} exists in blob storage {ContainerName}");
+                _logger.LogError(ex, $"Error checking {path} exists in blob storage {_containerName}");
                 throw;
             }
 
@@ -167,7 +166,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             var account = CloudStorageAccount.Parse(_connectionString);
             var client = account.CreateCloudBlobClient();
-            var container = client.GetContainerReference(ContainerName);
+            var container = client.GetContainerReference(_containerName);
 
             var directory = container.GetDirectoryReference(GetBlobDirectoryName(path));
             container.CreateIfNotExists();
@@ -224,7 +223,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
             catch (StorageException ex)
             {
-                _logger.LogError(ex, $"Error listing file in blob storage {ContainerName}");
+                _logger.LogError(ex, $"Error listing file in blob storage {_containerName}");
                 throw;
             }
 
@@ -235,7 +234,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             var account = CloudStorageAccount.Parse(_connectionString);
             var client = account.CreateCloudBlobClient();
-            var container = client.GetContainerReference(ContainerName);
+            var container = client.GetContainerReference(_containerName);
 
             SharedAccessBlobPolicy adHocPolicy = new SharedAccessBlobPolicy()
             {

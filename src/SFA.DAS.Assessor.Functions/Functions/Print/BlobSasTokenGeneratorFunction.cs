@@ -15,25 +15,25 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("BlobSasTokenGeneratorFunction")]
-        public async Task Run([TimerTrigger("%FunctionsSettings:BlobSasTokenGeneratorFunction:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
+        [FunctionName("BlobSasTokenGenerator")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:BlobSasTokenGeneratorOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("BlobSasTokenGeneratorFunction timer trigger is running later than scheduled");
+                    log.LogInformation("BlobSasTokenGenerator has started later than scheduled");
                 }
 
-                log.LogInformation($"BlobSasTokenGeneratorFunction started");
+                log.LogInformation($"BlobSasTokenGenerator started");
 
                 await _command.Execute();
 
-                log.LogInformation("BlobSasTokenGeneratorFunction function completed");
+                log.LogInformation("BlobSasTokenGenerator finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "BlobSasTokenGeneratorFunction function failed");
+                log.LogError(ex, "BlobSasTokenGenerator failed");
             }
         }
     }

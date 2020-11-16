@@ -10,17 +10,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 {
     public class RefreshIlrsLearnerService : IRefreshIlrsLearnerService
     {
-        private readonly RefreshIlrsSettings _refreshIlrsOptions;
+        private readonly RefreshIlrsOptions _refreshIlrsOptions;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
         private readonly ILogger<RefreshIlrsLearnerService> _logger;
 
-        public RefreshIlrsLearnerService(IOptions<RefreshIlrsSettings> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
+        public RefreshIlrsLearnerService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
             IAssessorServiceApiClient assessorServiceApiClient, ILogger<RefreshIlrsLearnerService> logger)
         {
             _refreshIlrsOptions = options?.Value;
