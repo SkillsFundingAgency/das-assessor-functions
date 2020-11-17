@@ -6,16 +6,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Exceptions
     {
         public EntityNotFoundException()
         {
-
         }
 
         public EntityNotFoundException(string message) : base(message)
         {
-
         }
+
         public EntityNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
-
         }
     }
 }

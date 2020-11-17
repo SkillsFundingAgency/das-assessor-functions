@@ -15,24 +15,32 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
     public class NotificationService : INotificationService
     {        
         private readonly ILogger<NotificationService> _logger;
-        private readonly SftpSettings _sftpSettings;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
+
+        private string _printRequestDirectory;
+        private string _printResponseDirectory;
+        private string _deliveryNotificationDirectory;
 
         public NotificationService(
             ILogger<NotificationService> logger,
-            IOptions<SftpSettings> options,
+            IOptions<CertificatePrintFunctionSettings> optionsCertificatePrintFunctionSettings,
+            IOptions<CertificatePrintNotificationFunctionSettings> optionsCertificatePrintNotificationFunctionSettings,
+            IOptions<CertificateDeliveryNotificationFunctionSettings> optionsCertificateDeliveryNotificationFunctionSettings,
             IAssessorServiceApiClient assessorServiceApi)
         {            
             _logger = logger;
-            _sftpSettings = options?.Value;
             _assessorServiceApi = assessorServiceApi;
+
+            _printRequestDirectory = optionsCertificatePrintFunctionSettings.Value.PrintRequestDirectory;
+            _printResponseDirectory = optionsCertificatePrintNotificationFunctionSettings.Value.PrintResponseDirectory;
+            _deliveryNotificationDirectory = optionsCertificateDeliveryNotificationFunctionSettings.Value.DeliveryNotificationDirectory;
         }
 
         public async Task Send(int batchNumber, List<Certificate> certificates, string certificatesFileName)
         {
             _logger.Log(LogLevel.Information, $"Inside NotificationService certificatesFileName :: {certificatesFileName}  CertificatesCount :: {certificates.Count()} ");
 
-            var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);            
+            var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
             
             var personalisationTokens = CreatePersonalisationTokens(certificates, certificatesFileName);
 
@@ -43,6 +51,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         private Dictionary<string, string> CreatePersonalisationTokens(List<Certificate> certificates, string certificatesFileName)
         {
+            // TODO: The template which is sent need to be re-worked including the parameters below
             var personalisation = new Dictionary<string, string>
             {
                 {"fileName", $"{certificatesFileName}"},
@@ -52,18 +61,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 }
             };
 
-            if (_sftpSettings.UseJson)
-            {
-                personalisation.Add("SftpPrintRequestDirectory", _sftpSettings.PrintRequestDirectory);
-                personalisation.Add("SftpPrintResponseDirectory", _sftpSettings.PrintResponseDirectory);
-                personalisation.Add("SftpDeliveryNotificationDirectory", _sftpSettings.DeliveryNotificationDirectory);
-            }
-            else
-            {
-                //these are compatible with the old template and need to be removed as part of tech debt.
-                personalisation.Add("sftpUploadDirectory", _sftpSettings.UploadDirectory);
-                personalisation.Add("proofDirectory", _sftpSettings.ProofDirectory);
-            }
+            personalisation.Add("SftpPrintRequestDirectory", _printRequestDirectory);
+            personalisation.Add("SftpPrintResponseDirectory", _printResponseDirectory);
+            personalisation.Add("SftpDeliveryNotificationDirectory", _deliveryNotificationDirectory);
 
             return personalisation;
         }
