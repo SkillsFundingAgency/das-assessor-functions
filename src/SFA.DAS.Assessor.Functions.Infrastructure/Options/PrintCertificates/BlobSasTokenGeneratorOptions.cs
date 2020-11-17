@@ -4,6 +4,6 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates
     {
         public int SasExpiryDays { get; set; }
         public string SasIPAddress { get; set; }
-		public string SecureMessageTtl { get; set; }
+        public string SecureMessageTtl { get; set; }
     }
 }
