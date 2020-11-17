@@ -118,8 +118,15 @@ namespace SFA.DAS.Assessor.Functions
             }
 
             builder.Services.AddScoped<SecureMessageTokenHandler>();
-            builder.Services.AddHttpClient<ISecureMessageServiceApiClient, SecureMessageServiceApiClient>()
-                .AddHttpMessageHandler<SecureMessageTokenHandler>();
+            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
+            {
+                builder.Services.AddHttpClient<ISecureMessageServiceApiClient, SecureMessageServiceApiClientStub>();
+            }
+            else
+            {
+                builder.Services.AddHttpClient<ISecureMessageServiceApiClient, SecureMessageServiceApiClient>()
+                    .AddHttpMessageHandler<SecureMessageTokenHandler>();
+            }
 
             builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
 
