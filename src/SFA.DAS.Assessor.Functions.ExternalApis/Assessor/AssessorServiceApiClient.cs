@@ -192,6 +192,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                     importLearnerDetailRequest);
             }
         }
+
+        public async Task UpdateLastRunStatus(UpdateLastRunStatusRequest updateLastRunStatusRequest)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule/updatelaststatus"))
+            {
+                await PostPutRequest(request, updateLastRunStatusRequest);
+            }
+        }
     }
 }
     
