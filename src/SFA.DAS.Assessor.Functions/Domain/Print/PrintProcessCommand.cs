@@ -65,13 +65,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     return;
                 }
 
-<<<<<<< HEAD
                 await _scheduleService.Start(schedule);
 
                 var batchNumber = await _batchService.NextBatchId();                
-=======
-                var batchNumber = await _batchService.NextBatchId();
->>>>>>> master
+
                 var certificates = (await _certificateService.Get(CertificateStatus.ToBePrinted)).ToList().Sanitise(_logger);
 
                 if (certificates.Count == 0)
