@@ -34,10 +34,32 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         {
             try
             {
-                var sasToken = _blobFileTransferClient.GetContainerSasUri(_options.SasIPAddress, DateTime.UtcNow.AddDays(_options.SasExpiryDays));
-                
+                if(!_options.Enabled)
+                {
+                    _logger.LogInformation($"BlobSasTokenGeneratorCommand cannot be started, it is not enabled");
+                    return;
+                }
+
+                _logger.LogInformation($"BlobSasTokenGeneratorCommand started");
+
+                if(string.IsNullOrEmpty(_options.SasIPAddress))
+                {
+                    _logger.LogError("BlobSasTokenGeneratorCommand failed - the IP address restriction for a SAS token must be specified");
+                    return;
+                }
+
+                var sasToken = _blobFileTransferClient.GetContainerSasUri(
+                    _options.SasGroupPolicyIdentifier, 
+                    DateTime.UtcNow, 
+                    DateTime.UtcNow.AddDays(_options.SasExpiryDays), 
+                    _options.SasIPAddress);
+
+                _logger.LogInformation($"BlobSasTokenGeneratorCommand - generated '{_options.SasGroupPolicyIdentifier}' Sas token on '{_blobFileTransferClient.ContainerName}' restricted to '{_options.SasIPAddress}' for {_options.SasExpiryDays} days");
+
                 var secureMessage = await _secureMessageServiceApiClient.CreateMessage(sasToken, _options.SecureMessageTtl);
-                
+
+                _logger.LogInformation($"BlobSasTokenGeneratorCommand - generated secure message for Sas token");
+
                 await _notificationService.SendSasToken(secureMessage.Links.Web);
             }
             catch (Exception ex)

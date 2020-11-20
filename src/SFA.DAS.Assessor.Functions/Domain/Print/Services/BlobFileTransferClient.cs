@@ -25,6 +25,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _containerName = containerName;
         }
 
+        public string ContainerName => _containerName;
+
         public async Task<List<string>> GetFileNames(string directory, string pattern, bool recursive)
         {
             var fileList = await GetFileNames(directory, recursive);
@@ -230,28 +232,32 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return blobs;
         }
 
-        public string GetContainerSasUri(string ipAddress, DateTime expiryTime, SharedAccessBlobPermissions? permissions = null)
+        public string GetContainerSasUri(string groupPolicyIdentifier, DateTime startTime, DateTime expiryTime, string ipAddress, SharedAccessBlobPermissions? permissions = null)
         {
             var account = CloudStorageAccount.Parse(_connectionString);
             var client = account.CreateCloudBlobClient();
             var container = client.GetContainerReference(_containerName);
 
-            SharedAccessBlobPolicy adHocPolicy = new SharedAccessBlobPolicy()
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy()
             {
-                SharedAccessExpiryTime = expiryTime,
-                Permissions = permissions ??
-                    SharedAccessBlobPermissions.Read |
-                    SharedAccessBlobPermissions.Write |
-                    SharedAccessBlobPermissions.Create |
-                    SharedAccessBlobPermissions.List |
-                    SharedAccessBlobPermissions.Delete
+                SharedAccessStartTime = startTime,
+                SharedAccessExpiryTime = expiryTime
             };
+
+            if(permissions.HasValue)
+            {
+                policy.Permissions = permissions.Value;
+            }
+            else if(string.IsNullOrEmpty(groupPolicyIdentifier))
+            {
+                throw new Exception("A Sas token cannot be generated when permissions are not specified unless a group policy is used");
+            }
 
             var ipAddressOrRange = !string.IsNullOrEmpty(ipAddress)
                 ? new IPAddressOrRange(ipAddress)
                 : null;
 
-            var sasContainerToken = container.GetSharedAccessSignature(adHocPolicy, null, null, ipAddressOrRange);
+            var sasContainerToken = container.GetSharedAccessSignature(policy, groupPolicyIdentifier, null, ipAddressOrRange);
             return container.Uri + sasContainerToken;
         }
     }
