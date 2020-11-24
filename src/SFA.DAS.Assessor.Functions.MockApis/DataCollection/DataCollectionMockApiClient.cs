@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator;
 
 namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
@@ -23,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
         private DataCollectionMockDataGenerator _generator;
         
         public DataCollectionMockApiClient(IOptions<DataCollectionMock> optionsDataCollectionMock,
-            IOptions<RefreshIlrsSettings> optionsRefeshIlrs,
+            IOptions<RefreshIlrsOptions> optionsRefeshIlrs,
             ILogger<DataCollectionMockApiClient> logger)
         {
             _logger = logger;

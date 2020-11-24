@@ -27,6 +27,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
         protected ApiClientBase(HttpClient httpClient, Uri baseAddress, ILogger<ApiClientBase> logger)
         {
+            if(string.IsNullOrEmpty(baseAddress.AbsolutePath))
+            {
+                throw new Exception("Must specify base address");
+            }
+            
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
