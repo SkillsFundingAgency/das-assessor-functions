@@ -8,7 +8,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardCollationImport
 {
     public class WhenFlowIsRun
     {
-        private Functions.Standards.StandardCollationImportFlow _sut;
+        private Functions.Standards.StandardCollationImportFunction _sut;
         private Mock<ILogger> _logger;
         private Mock<IStandardCollationImportCommand> _command;
 
@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardCollationImport
             _logger = new Mock<ILogger>();
             _command = new Mock<IStandardCollationImportCommand>();
 
-            _sut = new Functions.Standards.StandardCollationImportFlow(_command.Object);
+            _sut = new Functions.Standards.StandardCollationImportFunction(_command.Object);
         }
 
         [Test]

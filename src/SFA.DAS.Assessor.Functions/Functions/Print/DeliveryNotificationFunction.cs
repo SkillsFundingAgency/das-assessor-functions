@@ -15,25 +15,25 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("CertificateDeliveryNotificationFunction")]
-        public async Task Run([TimerTrigger("%CertificateDeliveryNotificationFunctionSchedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        [FunctionName("CertificateDeliveryNotification")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:DeliveryNotificationOptions:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("Epao Importer DeliveryNotificationFunction timer trigger is running later than scheduled");
+                    log.LogInformation("CertificateDeliveryNotification has started later than scheduled");
                 }
 
-                log.LogInformation($"Epao Importer DeliveryNotificationFunction started");
+                log.LogInformation($"CertificateDeliveryNotification started");
 
                 await _command.Execute();
 
-                log.LogInformation("Epao Importer DeliveryNotificationFunction function completed");
+                log.LogInformation("CertificateDeliveryNotification finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Epao Importer DeliveryNotificationFunction function failed");
+                log.LogError(ex, "CertificateDeliveryNotification failed");
             }
         }
     }

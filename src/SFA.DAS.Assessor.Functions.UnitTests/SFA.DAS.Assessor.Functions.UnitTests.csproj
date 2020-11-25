@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -13,7 +13,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
     <PackageReference Include="coverlet.collector" Version="1.0.1" />
-    <PackageReference Include="NBuilder" Version="6.0.0" />
+    <PackageReference Include="NBuilder" Version="6.1.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.16.0">
       <PrivateAssets>all</PrivateAssets>
@@ -25,4 +25,5 @@
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.ExternalApis\SFA.DAS.Assessor.Functions.ExternalApis.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions\SFA.DAS.Assessor.Functions.csproj" />
   </ItemGroup>
+
 </Project>

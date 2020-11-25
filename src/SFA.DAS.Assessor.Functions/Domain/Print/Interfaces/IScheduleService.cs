@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
@@ -7,5 +8,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
     {
         Task<Schedule> Get();
         Task Save(Schedule schedule);
+        Task Start(Schedule schedule);
+        Task Fail(Schedule schedule);
     }
 }

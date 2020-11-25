@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
@@ -24,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
             if (_accessToken != null)
                 return _accessToken;
 
-            if (string.Equals("LOCAL", ConfigurationHelper.GetEnvironmentName(_configuration)))
+            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
             {
                 _accessToken = string.Empty;
             }

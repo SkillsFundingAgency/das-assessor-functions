@@ -21,6 +21,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
         {
         }
+
         public async Task UpdateStandards()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/update-standards"))
@@ -181,6 +182,23 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/emailTemplates"))
             {                
                 await PostPutRequest(request, sendEmailRequest);
+            }
+        }
+
+        public async Task<ImportLearnerDetailResponse> ImportLearnerDetails(ImportLearnerDetailRequest importLearnerDetailRequest)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/learnerdetails/import"))
+            {
+                return await PostPutRequestWithResponse<ImportLearnerDetailRequest, ImportLearnerDetailResponse>(request,
+                    importLearnerDetailRequest);
+            }
+        }
+
+        public async Task UpdateLastRunStatus(UpdateLastRunStatusRequest updateLastRunStatusRequest)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/schedule/updatelaststatus"))
+            {
+                await PostPutRequest(request, updateLastRunStatusRequest);
             }
         }
 

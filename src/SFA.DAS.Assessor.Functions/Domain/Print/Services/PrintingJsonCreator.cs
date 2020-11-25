@@ -1,36 +1,27 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using Microsoft.Extensions.Options;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class PrintingJsonCreator : IPrintingJsonCreator
+    public class PrintingJsonCreator : IPrintCreator
     {
-        private readonly ILogger<PrintingJsonCreator> _logger;
-        private readonly IFileTransferClient _fileTransferClient;
         private readonly CertificateDetails _certificateDetails;
 
         public PrintingJsonCreator(
-            ILogger<PrintingJsonCreator> logger,
-            IFileTransferClient fileTransferClient,
             IOptions<CertificateDetails> options)
         {
-            _logger = logger;
-            _fileTransferClient = fileTransferClient;
             _certificateDetails = options?.Value;
         }
 
-        public void Create(int batchNumber, IEnumerable<Certificate> certificates, string file)
+        public string Create(int batchNumber, IEnumerable<Certificate> certificates)
         {
             var printOutput = new PrintOutput
             {
@@ -122,20 +113,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 printOutput.PrintData.Add(printData);
             });
 
-            _logger.Log(LogLevel.Information, "Completed Certificates to print Json ....");
-            var serializedPrintOutput = JsonConvert.SerializeObject(printOutput);
-            byte[] array = Encoding.ASCII.GetBytes(serializedPrintOutput);
-            using (var mystream = new MemoryStream(array))
-            {
-                _logger.Log(LogLevel.Information, "Sending Certificates to print Json ....");
-                _fileTransferClient.Send(mystream, file);
-            }
-
-            // update certificates status
-            foreach(var certificate in certificates)
-            {                
-                certificate.Status = "SentToPrinter";                
-            }
+            return JsonConvert.SerializeObject(printOutput);
         }
     }
 }

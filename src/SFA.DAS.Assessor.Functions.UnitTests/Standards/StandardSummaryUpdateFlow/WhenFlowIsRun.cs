@@ -8,7 +8,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardSummaryUpdateFl
 {
     public class WhenFlowIsRun
     {
-        private Functions.Standards.StandardSummaryUpdateFlow _sut;
+        private Functions.Standards.StandardSummaryUpdateFunction _sut;
         private Mock<ILogger> _logger;
         private Mock<IStandardSummaryUpdateCommand> _command;
 
@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardSummaryUpdateFl
             _logger = new Mock<ILogger>();
             _command = new Mock<IStandardSummaryUpdateCommand>();
 
-            _sut = new Functions.Standards.StandardSummaryUpdateFlow(_command.Object);
+            _sut = new Functions.Standards.StandardSummaryUpdateFunction(_command.Object);
         }
 
         [Test]
