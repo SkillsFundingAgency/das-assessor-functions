@@ -2,10 +2,9 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,29 +14,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     public class BlobStorageSamplesCommand : IBlobStorageSamplesCommand
     {
         private readonly ILogger<BlobStorageSamplesCommand> _logger;
-        private readonly IFileTransferClient _fileTransferClient;
+        private readonly IExternalBlobFileTransferClient _blobFileTransferClient;
 
-        private string _printResponseDirectory;
-        private string _printReponseBlobContainerName;
-
-        private string _deliveryNotificationDirectory;
-        private string _deliveryNotificationBlobContainerName;
-
+        private readonly string _printResponseDirectory;
+        private readonly string _deliveryNotificationDirectory;
+        
         public BlobStorageSamplesCommand(
             ILogger<BlobStorageSamplesCommand> logger,
-            IFileTransferClient fileTransferClient,
-            IOptions<CertificatePrintNotificationFunctionSettings> optionsCertificatePrintNotificationFunction,
-            IOptions<CertificateDeliveryNotificationFunctionSettings> optionsCertificateDeliveryNotificationFunction)
+            
+            IExternalBlobFileTransferClient blobFileTransferClient,
+            IOptions<PrintResponseOptions> optionsPrintResponse,
+            IOptions<DeliveryNotificationOptions> optionsDeliveryNotification)
         {
             _logger = logger;
-            
-            _fileTransferClient = fileTransferClient;
-
-            _printResponseDirectory = optionsCertificatePrintNotificationFunction.Value.PrintResponseDirectory;
-            _printReponseBlobContainerName = optionsCertificatePrintNotificationFunction.Value.PrintResponseExternalBlobContainer;
-
-            _deliveryNotificationDirectory = optionsCertificateDeliveryNotificationFunction.Value.DeliveryNotificationDirectory;
-            _deliveryNotificationBlobContainerName = optionsCertificateDeliveryNotificationFunction.Value.DeliveryNotificationExternalBlobContainer;
+            _blobFileTransferClient = blobFileTransferClient;
+            _printResponseDirectory = optionsPrintResponse?.Value.Directory;
+            _deliveryNotificationDirectory = optionsDeliveryNotification?.Value.Directory;
         }
 
         public async Task Execute()
@@ -68,8 +60,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var filename = "PrintBatchResponse-001-3101201330.json";
             var path = $"{_printResponseDirectory}/Samples/{filename}";
 
-            _fileTransferClient.ContainerName = _printReponseBlobContainerName;
-            await _fileTransferClient.UploadFile(JsonConvert.SerializeObject(samplePrintResponse), path);
+            await _blobFileTransferClient.UploadFile(JsonConvert.SerializeObject(samplePrintResponse), path);
         }
 
         private async Task UploadSampleDeliveryNotificationFile()
@@ -100,8 +91,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             var filename = "DeliveryNotifications-0702201530.json";
             var path = $"{_deliveryNotificationDirectory}/Samples/{filename}";
 
-            _fileTransferClient.ContainerName = _deliveryNotificationBlobContainerName;
-            await _fileTransferClient.UploadFile(JsonConvert.SerializeObject(sampleDeliveryNotification), path);
+            await _blobFileTransferClient.UploadFile(JsonConvert.SerializeObject(sampleDeliveryNotification), path);
         }
     }
 }

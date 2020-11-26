@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardCollationImportCommand
 {
@@ -21,10 +21,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardCollationImport
         }
 
         [Test]
-        public void ThenItShouldUpdateStandards()
+        public async Task ThenItShouldUpdateStandards()
         {
             // Act
-            _sut.Execute();
+            await _sut.Execute();
 
             // Assert
             _assessorServiceApiClient.Verify(p => p.UpdateStandards(), Times.Once());

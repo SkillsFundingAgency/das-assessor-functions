@@ -2,6 +2,7 @@
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardSummaryUpdateCommand
 {
@@ -20,10 +21,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardSummaryUpdateCo
         }
 
         [Test]
-        public void ThenItShouldUpdateStandardSummary()
+        public async Task ThenItShouldUpdateStandardSummary()
         {
             // Act
-            _sut.Execute();
+            await _sut.Execute();
 
             // Assert
             _assessorServiceApiClient.Verify(p => p.UpdateStandardSummary(), Times.Once());

@@ -5,6 +5,7 @@ using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 {
     public class RefreshIlrsProviderService : IRefreshIlrsProviderService
     {
-        private readonly RefreshIlrsSettings _refreshIlrsOptions;
+        private readonly RefreshIlrsOptions _refreshIlrsOptions;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorApiClient;
         private readonly IDateTimeHelper _dateTimeHelper;
@@ -23,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 
         private const string RefreshIlrsLastRunDate = "RefreshIlrsLastRunDate";
 
-        public RefreshIlrsProviderService(IOptions<RefreshIlrsSettings> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
+        public RefreshIlrsProviderService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
             IAssessorServiceApiClient assessorServiceApiClient, IDateTimeHelper dateTimeHelper, ILogger<RefreshIlrsProviderService> logger)
         {
             _refreshIlrsOptions = options?.Value;
@@ -98,12 +99,20 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 
         private async Task<List<string>> ValidateAllAcademicYears(DateTime lastRunDateTime, DateTime currentRunDateTime)
         {
-            var sourcesLast = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
-            var sourceCurrent = await _dataCollectionServiceApiClient.GetAcademicYears(currentRunDateTime);
+            IEnumerable<string> sources;
+            if (string.IsNullOrEmpty(_refreshIlrsOptions.AcademicYearsOverride))
+            {
+                var sourcesLast = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
+                var sourceCurrent = await _dataCollectionServiceApiClient.GetAcademicYears(currentRunDateTime);
 
-            var sources = sourcesLast
-                .Union(sourceCurrent)
-                .Distinct();
+                sources = sourcesLast
+                    .Union(sourceCurrent)
+                    .Distinct();
+            }
+            else
+            {
+                sources = ConfigurationHelper.ConvertCsvValueToList<string>(_refreshIlrsOptions.AcademicYearsOverride);
+            }
 
             var sourceValidations = sources.Select(source => ValidateAcademicYear(source));
             bool[] results = await Task.WhenAll(sourceValidations);

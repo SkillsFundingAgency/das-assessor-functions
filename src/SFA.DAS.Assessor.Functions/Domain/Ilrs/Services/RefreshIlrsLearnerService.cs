@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 {
     public class RefreshIlrsLearnerService : IRefreshIlrsLearnerService
     {
-        private readonly RefreshIlrsSettings _refreshIlrsOptions;
+        private readonly RefreshIlrsOptions _refreshIlrsOptions;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
         private readonly ILogger<RefreshIlrsLearnerService> _logger;
 
-        public RefreshIlrsLearnerService(IOptions<RefreshIlrsSettings> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
+        public RefreshIlrsLearnerService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
             IAssessorServiceApiClient assessorServiceApiClient, ILogger<RefreshIlrsLearnerService> logger)
         {
             _refreshIlrsOptions = options?.Value;
@@ -49,9 +50,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
             var aimType = 1;
             var allStandards = -1;
             var fundModels = ConfigurationHelper.ConvertCsvValueToList<int>(_refreshIlrsOptions.LearnerFundModels);
+            var allProgTypes = -1;
             var pageSize = _refreshIlrsOptions.LearnerPageSize;
 
-            var learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, pageSize, providerMessage.LearnerPageNumber);
+            var learnersPage = await _dataCollectionServiceApiClient.GetLearners(providerMessage.Source, providerMessage.Ukprn, aimType, allStandards, fundModels, allProgTypes, pageSize, providerMessage.LearnerPageNumber);
             if (learnersPage != null)
             {
                 if (learnersPage.PagingInfo.TotalPages > learnersPage.PagingInfo.PageNumber)

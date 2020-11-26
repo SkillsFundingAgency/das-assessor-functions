@@ -6,6 +6,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
     public interface INotificationService
     {
-        Task Send(int certificatesCount, string certificatesFileName);
+        Task SendPrintRequest(int batchNumber, List<Certificate> certificates, string certificatesFileName);
+        Task SendSasToken(string message);
     }
 }

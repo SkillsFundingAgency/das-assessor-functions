@@ -1,0 +1,38 @@
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
+using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using System.Threading.Tasks;
+
+namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
+{
+    public class When_Run_Called
+    {
+        private Functions.Print.PrintRequestFunction _sut;
+        
+        private Mock<ILogger> _mockLogger;
+        private Mock<IPrintRequestCommand> _mockCommand;
+        private Mock<ICollector<string>> _mockCollector;
+
+        [SetUp]
+        public void Arrange()
+        {
+            _mockLogger = new Mock<ILogger>();
+            _mockCommand = new Mock<IPrintRequestCommand>();
+            _mockCollector = new Mock<ICollector<string>>();
+
+            _sut = new Functions.Print.PrintRequestFunction(_mockCommand.Object);
+        }
+
+        [Test]
+        public async Task ThenItShouldExecuteCommand()
+        {
+            // Act - TimerSchedule is not used so null allowed
+            await _sut.Run(new TimerInfo(default, default, false), _mockCollector.Object, _mockLogger.Object);
+
+            // Assert
+            _mockCommand.Verify(p => p.Execute(_mockCollector.Object), Times.Once());
+        }
+    }
+}

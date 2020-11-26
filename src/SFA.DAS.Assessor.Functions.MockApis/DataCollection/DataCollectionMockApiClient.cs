@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator;
 
 namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
@@ -23,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
         private DataCollectionMockDataGenerator _generator;
         
         public DataCollectionMockApiClient(IOptions<DataCollectionMock> optionsDataCollectionMock,
-            IOptions<RefreshIlrsSettings> optionsRefeshIlrs,
+            IOptions<RefreshIlrsOptions> optionsRefeshIlrs,
             ILogger<DataCollectionMockApiClient> logger)
         {
             _logger = logger;
@@ -53,7 +54,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
             return await Task.FromResult(new List<string>() { _optionsDataCollectionMock.Value.AcademicYear });
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, DateTime startDateTime, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber)
         {
             var learners = _learnerMockDataList;
 
@@ -75,7 +76,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
             return await Task.FromResult(page);
         }
 
-        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? pageSize, int? pageNumber)
+        public async Task<DataCollectionLearnersPage> GetLearners(string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber)
         {
             _learnerMockDataDictionary.TryGetValue(ukprn, out List<DataCollectionLearner> learners);
             if (learners == null)
