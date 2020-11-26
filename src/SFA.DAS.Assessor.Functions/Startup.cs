@@ -16,6 +16,8 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication;
+using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage;
+using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Config;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
@@ -84,6 +86,7 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
+            builder.Services.AddSingleton<ISecureMessageTokenService, SecureMessageTokenService>();
 
             builder.Services.AddScoped<AssessorTokenHandler>();
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>()
@@ -91,7 +94,7 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddScoped<DataCollectionTokenHandler>();
 
-            var dataCollectionMock = config.GetSection("DataCollectionMock").Get<DataCollectionMock>();
+            var dataCollectionMock = config.GetSection(nameof(DataCollectionMock)).Get<DataCollectionMock>();
             if (dataCollectionMock.Enabled)
             {
                 builder.Services.AddSingleton<IDataCollectionServiceApiClient, DataCollectionMockApiClient>();
@@ -112,6 +115,17 @@ namespace SFA.DAS.Assessor.Functions
                         }
                         return handler;
                     });
+            }
+
+            builder.Services.AddScoped<SecureMessageTokenHandler>();
+            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
+            {
+                builder.Services.AddHttpClient<ISecureMessageServiceApiClient, SecureMessageServiceApiClientStub>();
+            }
+            else
+            {
+                builder.Services.AddHttpClient<ISecureMessageServiceApiClient, SecureMessageServiceApiClient>()
+                    .AddHttpMessageHandler<SecureMessageTokenHandler>();
             }
 
             builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
@@ -145,7 +159,8 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintResponseCommand, PrintResponseCommand>();
             builder.Services.AddTransient<IPrintStatusUpdateCommand, PrintStatusUpdateCommand>();
             builder.Services.AddTransient<IBlobStorageSamplesCommand, BlobStorageSamplesCommand>();
-            
+            builder.Services.AddTransient<IBlobSasTokenGeneratorCommand, BlobSasTokenGeneratorCommand>();
+
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
             
