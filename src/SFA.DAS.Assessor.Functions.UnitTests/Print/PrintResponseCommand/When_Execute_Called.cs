@@ -77,6 +77,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
                 .Setup(m => m.Get(_batchNumber))
                 .ReturnsAsync(new Batch { BatchNumber = _batchNumber });
 
+            _mockBatchService
+                .Setup(m => m.Update(It.IsAny<Batch>()))
+                .ReturnsAsync(new List<string>());
+
             _sut = new Domain.Print.PrintResponseCommand(
                 _mockLogger.Object,
                 _mockBatchService.Object,
@@ -90,10 +94,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         public async Task ThenItShouldLogTheStartOfTheProcess()
         {
             // Arrange
-            var logMessage = "Print Response Notification Function Started";
+            var logMessage = "PrintResponseCommand - Started";
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -109,7 +113,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
                 .ReturnsAsync(new List<string>());
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -131,7 +135,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
                 .ReturnsAsync("{}");
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -167,7 +171,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
                .Returns(Task.FromResult<Batch>(null));
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -177,13 +181,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         public async Task ThenItShouldProcessAndArchivePrintNotificationFiles()
         {
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockBatchService.Verify(m => m.Update(
-                It.Is<Batch>(b => b.BatchNumber == _batchNumber), 
-                It.IsAny<ICollector<string>>(),
-                It.IsAny<int>()), Times.Exactly(_downloadedFiles.Count));
+                It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
             
             foreach (var filename in _downloadedFiles)
             {

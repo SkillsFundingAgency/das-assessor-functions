@@ -14,6 +14,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -26,8 +27,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
         private static readonly string DateTimePattern = "[0-9]{10}";
         private static readonly string FilePattern = $@"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{{1,6}}-{DateTimePattern}.json";
-
-        private ICollector<string> _messageQueue;
 
         public PrintResponseCommand(
             ILogger<PrintResponseCommand> logger,
@@ -42,22 +41,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = printReponseOptions?.Value;
         }
 
-        public async Task Execute(ICollector<string> messageQueue)
+        public async Task<List<string>> Execute()
         {
-            _logger.Log(LogLevel.Information, "Print Response Notification Function Started");
+            _logger.Log(LogLevel.Information, "PrintResponseCommand - Started");
 
-            _messageQueue = messageQueue;
-
-            await Process(_options.Directory, FilePattern, DateTimePattern, "ddMMyyHHmm");
+            return await Process(_options.Directory, FilePattern, DateTimePattern, "ddMMyyHHmm");
         }
 
-        private async Task Process(string downloadDirectoryName, string filePattern, string dateTimePattern, string dateTimeFormat)
+        private async Task<List<string>> Process(string downloadDirectoryName, string filePattern, string dateTimePattern, string dateTimeFormat)
         {
+            List<string> printStatusUpdateMessages = new List<string>();
+
             var fileNames = await _externalFileTransferClient.GetFileNames(downloadDirectoryName, filePattern, false);
             if (!fileNames.Any())
             {
                 _logger.Log(LogLevel.Information, "There are no certificate print notifications from the printer to process");
-                return;
+                return null;
             }
 
             var sortedFileNames = fileNames.ToList().SortByDateTimePattern(dateTimePattern, dateTimeFormat);
@@ -69,7 +68,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
 
                     var batch = await ProcessFile(fileInfo);
-                    await _batchService.Update(batch, _messageQueue, _options.PrintStatusUpdateChunkSize);
+                    printStatusUpdateMessages.AddRange(await _batchService.Update(batch));
 
                     await ArchiveFile(fileContents, fileName, downloadDirectoryName, _options.ArchiveDirectory);
                 }
@@ -78,6 +77,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     _logger.Log(LogLevel.Information, ex.Message);
                 }
             }
+
+            return printStatusUpdateMessages;
         }
 
         private async Task<Batch> ProcessFile(PrintNotificationFileInfo file)

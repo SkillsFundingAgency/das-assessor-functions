@@ -1,4 +1,5 @@
 ﻿using FizzWare.NBuilder;
+using FluentAssertions;
 using Microsoft.Azure.WebJobs;
 using Moq;
 using NUnit.Framework;
@@ -50,7 +51,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
 
             // Act
             var maxCertificatesToUpdate = _batch.Certificates.Count / 2;
-            await _sut.Update(_batch, _mockStorageQueue.Object, maxCertificatesToUpdate);
+            await _sut.Update(_batch);
 
             // Assert
             _mockAssessorServiceApiClient.Verify(v => v.UpdateBatchLogSentToPrinter(_batchNumber, It.IsAny<UpdateBatchLogSentToPrinterRequest>()), Times.Once);
@@ -66,12 +67,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
                 .ReturnsAsync(_validResponse);
 
             // Act
-            var maxCertificatesToUpdate = _batch.Certificates.Count / 2;
-            await _sut.Update(_batch, _mockStorageQueue.Object, maxCertificatesToUpdate);
+            var printStatusUpdateMessages = await _sut.Update(_batch);
 
             // Assert
-            var messageCount = _batch.Certificates.Count / maxCertificatesToUpdate;
-            _mockStorageQueue.Verify(v => v.Add(It.IsAny<string>()), Times.Exactly(messageCount + 1));
+            printStatusUpdateMessages.Count.Should().Be(_batch.Certificates.Count);
         }
 
         [Test]
@@ -83,11 +82,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
                 .ReturnsAsync(_invalidResponse);
 
             // Act
-            var maxCertificatesToUpdate = _batch.Certificates.Count / 2;
-            await _sut.Update(_batch, _mockStorageQueue.Object, maxCertificatesToUpdate);
+            var printStatusUpdateMessages = await _sut.Update(_batch);
 
             // Assert
-            _mockStorageQueue.Verify(v => v.Add(It.IsAny<string>()), Times.Never);
+            printStatusUpdateMessages.Count.Should().Be(0);
         }
     }
 }

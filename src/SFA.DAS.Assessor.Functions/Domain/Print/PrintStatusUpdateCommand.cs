@@ -25,7 +25,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 _logger.LogDebug($"PrintStatusUpdateCommand - Started for message {message}");
 
                 var certificatePrintStatusUpdateMessage = JsonConvert.DeserializeObject<CertificatePrintStatusUpdateMessage>(message);
-                await _certificateService.ProcessCertificatesPrintStatusUpdates(certificatePrintStatusUpdateMessage.CertificatePrintStatusUpdates);
+                await _certificateService.ProcessCertificatesPrintStatusUpdate(certificatePrintStatusUpdateMessage);
                 
                 _logger.LogDebug($"PrintStatusUpdateCommand - Completed for message {message}");
             }

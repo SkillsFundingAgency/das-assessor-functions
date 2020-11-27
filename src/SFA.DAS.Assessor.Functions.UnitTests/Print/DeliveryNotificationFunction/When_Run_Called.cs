@@ -32,7 +32,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationFunctio
             await _sut.Run(new TimerInfo(default, default, false), _mockCollector.Object, _mockLogger.Object);
 
             // Assert
-            _mockCommand.Verify(p => p.Execute(_mockCollector.Object), Times.Once());
+            _mockCommand.Verify(p => p.Execute(), Times.Once());
         }
     }
 }

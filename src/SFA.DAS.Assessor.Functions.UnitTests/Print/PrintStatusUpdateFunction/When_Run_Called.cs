@@ -13,7 +13,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
         
         private Mock<ILogger> _mockLogger;
         private Mock<IPrintStatusUpdateCommand> _mockCommand;
-        private Mock<ICollector<string>> _mockCollector;
 
         [SetUp]
         public void Arrange()

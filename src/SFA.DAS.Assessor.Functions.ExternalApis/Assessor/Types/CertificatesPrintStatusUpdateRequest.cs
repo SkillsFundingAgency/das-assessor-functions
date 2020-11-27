@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types
+﻿namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types
 {
-    public class CertificatesPrintStatusUpdateRequest
+    public class CertificatesPrintStatusUpdateRequest : CertificatePrintStatusUpdate
     {
-        public List<CertificatePrintStatusUpdate> CertificatePrintStatusUpdates { get; set; }
     }
 }

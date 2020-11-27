@@ -24,8 +24,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly ICertificateService _certificateService;
         private readonly DeliveryNotificationOptions _options;
 
-        private ICollector<string> _messageQueue;
-
         public DeliveryNotificationCommand(
             ILogger<DeliveryNotificationCommand> logger,
             ICertificateService certificateService,
@@ -39,68 +37,66 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = options?.Value;
         }
 
-        public async Task Execute(ICollector<string> messageQueue)
+        public async Task<List<string>> Execute()
         {
-            _logger.Log(LogLevel.Information, "Print Delivery Notification Function Started");
-
-            _messageQueue = messageQueue;
+            _logger.Log(LogLevel.Information, "PrintDeliveryNotificationCommand - Started");
 
             var fileNames = await _externalFileTransferClient.GetFileNames(_options.Directory, FilePattern, false);
 
             if (!fileNames.Any())
             {
                 _logger.Log(LogLevel.Information, "No certificate delivery notifications from the printer are available to process");
-                return;
+                return null;
             }
 
-            await ProcessFiles(fileNames);
+            return await ProcessFiles(fileNames);
         }
 
-        private async Task ProcessFiles(IEnumerable<string> fileNames)
+        private async Task<List<string>> ProcessFiles(IEnumerable<string> fileNames)
         {
+            var printprintStatusUpdateMessages = new List<string>();
+
             var sortedFileNames = fileNames.ToList().SortByDateTimePattern(DateTimePattern, "ddMMyyHHmm");
             foreach (var fileName in sortedFileNames)
             {
-                await ProcessFile(fileName);
+                var fileContents = await _externalFileTransferClient.DownloadFile($"{_options.Directory}/{fileName}");
+                var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileContents);
+
+                if (receipt?.DeliveryNotifications == null)
+                {
+                    _logger.LogInformation($"Could not process delivery notification file '{fileName}' due to invalid format");
+                    return null;
+                }
+
+                var invalidDeliveryNotificationStatuses = receipt.DeliveryNotifications
+                       .GroupBy(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Status)
+                       .Select(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Key)
+                       .Where(deliveryNotificationStatus => !CertificateStatus.HasDeliveryNotificationStatus(deliveryNotificationStatus))
+                       .ToList();
+
+                invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
+                {
+                    _logger.LogError($"The delivery notification file '{fileName}' contained invalid delivery status '{invalidDeliveryNotificationStatus}'");
+                });
+
+                var validDeliveryNotifications = receipt.DeliveryNotifications
+                    .Where(deliveryNotification => CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
+                    .ToList();
+
+                await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
+
+                printprintStatusUpdateMessages.AddRange(
+                    validDeliveryNotifications.Select(n => JsonConvert.SerializeObject(new CertificatePrintStatusUpdate
+                    {
+                        CertificateReference = n.CertificateNumber,
+                        BatchNumber = n.BatchID,
+                        Status = n.Status,
+                        StatusAt = n.StatusChangeDate,
+                        ReasonForChange = n.Reason
+                    })));
             }
-        }
 
-        private async Task ProcessFile(string fileName)
-        {
-            var fileContents = await _externalFileTransferClient.DownloadFile($"{_options.Directory}/{fileName}");
-            var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileContents);
-
-            if (receipt?.DeliveryNotifications == null)
-            {
-                _logger.LogInformation($"Could not process delivery notification file '{fileName}' due to invalid format");
-                return;
-            }
-
-            var invalidDeliveryNotificationStatuses = receipt.DeliveryNotifications
-                   .GroupBy(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Status)
-                   .Select(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Key)
-                   .Where(deliveryNotificationStatus => !CertificateStatus.HasDeliveryNotificationStatus(deliveryNotificationStatus))
-                   .ToList();
-                        
-            invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
-            {
-                _logger.LogError($"The delivery notification file '{fileName}' contained invalid delivery status '{invalidDeliveryNotificationStatus}'");
-            });
-
-            var validDeliveryNotifications = receipt.DeliveryNotifications
-                .Where(deliveryNotification => CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
-                .ToList();
-
-            _certificateService.QueueCertificatePrintStatusUpdateMessages(validDeliveryNotifications.Select(n => new CertificatePrintStatusUpdate
-            {
-                CertificateReference = n.CertificateNumber,
-                BatchNumber = n.BatchID,
-                Status = n.Status,
-                StatusAt = n.StatusChangeDate,
-                ReasonForChange = n.Reason
-            }).ToList(), _messageQueue, _options.PrintStatusUpdateChunkSize);
-
-            await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
+            return printprintStatusUpdateMessages;
         }
     }
 }

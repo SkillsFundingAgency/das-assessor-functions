@@ -30,16 +30,21 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         private Mock<IOptions<PrintRequestOptions>> _mockOptions;
         private Mock<ICollector<string>> _mockMessageQueue;
 
-        private int _batchNumber = 1;
-        private Guid _scheduleId = Guid.NewGuid();
+        private int _batchNumberWithCertificates = 1;
+        private Guid _batchWithCertificatesId;
+        private Batch _batchWithCertificates;
+
+        private int _batchNumberWithoutCertificates = 2;
+        private Guid _batchWithoutCertificatesId;
+        private Batch _batchWithoutCertificates;
+
         private List<Certificate> _certificates;
+
+        private Guid _scheduleId = Guid.NewGuid();
         private List<string> _uploadedFiles;
-        private Batch _batch;
-        private Guid _batchId;
         private PrintRequestOptions _options;
 
-        [SetUp]
-        public void Arrange()
+        public void Arrange(bool batchWithCertificates = true)
         {
             _mockLogger = new Mock<ILogger<Domain.Print.PrintRequestCommand>>();
             _mockPrintCreator = new Mock<IPrintCreator>();
@@ -51,7 +56,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
             _mockOptions = new Mock<IOptions<PrintRequestOptions>>();
             _mockMessageQueue = new Mock<ICollector<string>>();
 
-            _options = new PrintRequestOptions {
+            _options = new PrintRequestOptions
+            {
                 Directory = "MockPrintRequestDirectory",
                 ArchiveDirectory = "MockArchivePrintRequestDirectory",
                 AddReadyToPrintChunkSize = 50
@@ -70,7 +76,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
 
                 _mockExternalFileTransferClient
                     .Setup(m => m.DownloadFile($"{_options.Directory}/{filename}"))
-                    .ReturnsAsync(JsonConvert.SerializeObject(new BatchResponse { Batch = new BatchDataResponse { BatchNumber = _batchNumber.ToString(), BatchDate = DateTime.Now } }));
+                    .ReturnsAsync(JsonConvert.SerializeObject(new BatchResponse { Batch = new BatchDataResponse { BatchNumber = _batchNumberWithCertificates.ToString(), BatchDate = DateTime.Now } }));
             };
 
             _mockExternalFileTransferClient
@@ -92,44 +98,64 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
                 {
                     Batch = Builder<BatchData>.CreateNew().Build(),
                     PrintData = Builder<PrintData>.CreateListOfSize(10).All().Build() as List<PrintData>
-                }); ;
+                });
 
 
-            _batchId = Guid.NewGuid();
-            _batch = new Batch { Id = _batchId, BatchNumber = _batchNumber };
+            _batchWithCertificatesId = Guid.NewGuid();
+            _batchWithCertificates = new Batch { Id = _batchWithCertificatesId, BatchNumber = _batchNumberWithCertificates, Certificates = _certificates };
 
-            _mockBatchService
-                .Setup(m => m.Get(_batchNumber))
-                .ReturnsAsync(_batch);
+            _batchWithoutCertificatesId = Guid.NewGuid();
+            _batchWithoutCertificates = new Batch { Id = _batchWithoutCertificatesId, BatchNumber = _batchNumberWithoutCertificates, Certificates = new List<Certificate>() };
 
-            _mockBatchService
-                .Setup(m => m.GetCertificatesForBatchNumber(_batchNumber))
-                .ReturnsAsync(_certificates);
+            if (batchWithCertificates)
+            {
+                _mockBatchService
+                    .Setup(m => m.Get(_batchNumberWithCertificates))
+                    .ReturnsAsync(_batchWithCertificates);
 
-            _mockBatchService
+                _mockBatchService
+                    .Setup(m => m.GetCertificatesForBatchNumber(_batchNumberWithCertificates))
+                    .ReturnsAsync(_batchWithCertificates.Certificates);
+
+                _mockBatchService
                 .Setup(m => m.BuildPrintBatchReadyToPrint(It.IsAny<DateTime>(), It.IsAny<int>()))
-                .ReturnsAsync(_batchNumber);
+                .ReturnsAsync(_batchWithCertificates);
+            }
+            else
+            {
+                _mockBatchService
+                    .Setup(m => m.Get(_batchNumberWithoutCertificates))
+                    .ReturnsAsync(_batchWithoutCertificates);
+
+                _mockBatchService
+                    .Setup(m => m.GetCertificatesForBatchNumber(_batchNumberWithoutCertificates))
+                    .ReturnsAsync(_batchWithoutCertificates.Certificates);
+
+                _mockBatchService
+                .Setup(m => m.BuildPrintBatchReadyToPrint(It.IsAny<DateTime>(), It.IsAny<int>()))
+                .ReturnsAsync(_batchWithoutCertificates);
+            }
 
             _sut = new Domain.Print.PrintRequestCommand(
-                _mockLogger.Object,
-                _mockPrintCreator.Object,
-                _mockBatchService.Object,
-                _mockScheduleService.Object,
-                _mockNotificationService.Object,
-                _mockExternalFileTransferClient.Object,
-                _mockInternalFileTransferClient.Object,
-                _mockOptions.Object
-                );
+            _mockLogger.Object,
+            _mockPrintCreator.Object,
+            _mockBatchService.Object,
+            _mockScheduleService.Object,
+            _mockNotificationService.Object,
+            _mockExternalFileTransferClient.Object,
+            _mockInternalFileTransferClient.Object,
+            _mockOptions.Object
+            );
         }
-
+        
         [Test]
         public async Task ThenItShouldLogTheStartOfTheProcess()
         {
-            // Arrange
+            Arrange();
             var logMessage = "PrintRequestCommand - Started";
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -138,7 +164,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         [Test]
         public async Task ThenItShouldLogIfNotScheduledToRun()
         {
-            // Arrange
+            Arrange();
             _mockScheduleService
                 .Setup(m => m.Get())
                 .Returns(Task.FromResult<Schedule>(null));
@@ -146,7 +172,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
             var logMessage = "There is no print schedule which allows printing at this time";
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -155,13 +181,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         [Test]
         public async Task ThenItShouldNotCallTheNotificationServiceIfNotScheduledToRun()
         {
-            // Arrange
+            Arrange();
             _mockScheduleService
                 .Setup(m => m.Get())
                 .Returns(Task.FromResult<Schedule>(null));
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockNotificationService.Verify(m => m.SendPrintRequest(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
@@ -170,29 +196,29 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         [Test]
         public async Task ThenItShouldNotChangeAnyDataIfNotScheduledToRun()
         {
-            // Arrange
+            Arrange();
             _mockScheduleService
                 .Setup(m => m.Get())
                 .Returns(Task.FromResult<Schedule>(null));
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
-            _mockBatchService.Verify(m => m.Update(It.IsAny<Batch>(), It.IsAny<ICollector<string>>(), It.IsAny<int>()), Times.Never);
+            _mockBatchService.Verify(m => m.Update(It.IsAny<Batch>()), Times.Never);
             _mockScheduleService.Verify(q => q.Save(It.IsAny<Schedule>()), Times.Never());
         }
 
         [Test]
         public async Task ThenItShouldNotCreateAJsonPrintOutputIfNotScheduledToRun()
         {
-            // Arrange
+            Arrange();
             _mockScheduleService
                 .Setup(m => m.Get())
                 .Returns(Task.FromResult<Schedule>(null));
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockPrintCreator.Verify(m => m.Create(It.IsAny<int>(), It.IsAny<List<Certificate>>()), Times.Never);
@@ -201,56 +227,57 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         [Test]
         public async Task ThenItShouldCompleteScheduleIfThereAreNoCertificatesToProcess()
         {
-            // Arrange
-            _mockBatchService
-                .Setup(m => m.GetCertificatesForBatchNumber(It.IsAny<int>()))
-                .ReturnsAsync(new List<Certificate>());
-
+            Arrange(false);
+            
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockScheduleService.Verify(q => q.Save(It.Is<Schedule>(s => s.Id ==_scheduleId)), Times.Once());
 
-            _mockBatchService.Verify(m => m.Update(It.IsAny<Batch>(), It.IsAny<ICollector<string>>(), It.IsAny<int>()), Times.Never);
+            _mockBatchService.Verify(m => m.Update(It.IsAny<Batch>()), Times.Never);
             _mockNotificationService.Verify(m => m.SendPrintRequest(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
         public async Task ThenItShouldCompleteScheduleIfThereAreCertificatesToProcess()
         {
+            Arrange();
+
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockScheduleService.Verify(q => q.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once());
 
-            _mockBatchService.Verify(m => m.Update(It.IsAny<Batch>(), It.IsAny<ICollector<string>>(), It.IsAny<int>()), Times.Once);
+            _mockBatchService.Verify(m => m.Update(It.IsAny<Batch>()), Times.Once);
             _mockNotificationService.Verify(m => m.SendPrintRequest(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Once);
         }
 
         [Test]
         public async Task ThenItShouldCreateAJsonPrint()
         {
+            Arrange();
+
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
-            _mockPrintCreator.Verify(m => m.Create(_batchNumber, _certificates), Times.Once);
-            _mockNotificationService.Verify(m => m.SendPrintRequest(_batchNumber, _certificates, It.IsAny<string>()), Times.Once);
+            _mockPrintCreator.Verify(m => m.Create(_batchNumberWithCertificates, _certificates), Times.Once);
+            _mockNotificationService.Verify(m => m.SendPrintRequest(_batchNumberWithCertificates, _certificates, It.IsAny<string>()), Times.Once);
             
-            _mockBatchService.Verify(m => m.Update(It.Is<Batch>(b => b.BatchNumber.Equals(_batchNumber)), It.IsAny<ICollector<string>>(), It.IsAny<int>()), Times.Once);
+            _mockBatchService.Verify(m => m.Update(It.Is<Batch>(b => b.BatchNumber.Equals(_batchNumberWithCertificates))), Times.Once);
             _mockScheduleService.Verify(m => m.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once);
         }
 
         [Test]
         public async Task ThenItShouldUploadAndArchivePrintRequest()
         {
-            // Arrange
-            var fileName = $"PrintBatch-{_batchNumber.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
+            Arrange();
+            var fileName = $"PrintBatch-{_batchNumberWithCertificates.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
             
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<string>(), It.Is<string>(s => s == $"{_options.Directory}/{fileName}")));

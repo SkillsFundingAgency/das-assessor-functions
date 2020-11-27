@@ -79,10 +79,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
         public async Task ThenItShouldLogTheStartOfTheProcess()
         {
             // Arrange
-            var logMessage = "Print Delivery Notification Function Started";
+            var logMessage = "PrintDeliveryNotificationCommand - Started";
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -98,7 +98,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
                 .ReturnsAsync(new List<string>());
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -120,7 +120,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
                 .ReturnsAsync("{}");
 
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
@@ -130,7 +130,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
         public async Task ThenItShouldProcessAndMoveToArchiveDeliveryNotificationFiles()
         {
             // Act
-            await _sut.Execute(_mockMessageQueue.Object);
+            await _sut.Execute();
 
             // Assert
             foreach (var filename in _downloadedFiles)

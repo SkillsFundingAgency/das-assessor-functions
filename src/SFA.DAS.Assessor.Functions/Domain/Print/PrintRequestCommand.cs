@@ -26,8 +26,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IInternalBlobFileTransferClient _internalFileTransferClient;
         private readonly PrintRequestOptions _options;
 
-        private ICollector<string> _messageQueue;
-
         public PrintRequestCommand(
             ILogger<PrintRequestCommand> logger,
             IPrintCreator printCreator,
@@ -48,90 +46,88 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = options?.Value;
         }
 
-        public async Task Execute(ICollector<string> messageQueue)
+        public async Task<List<string>> Execute()
         {
             Schedule schedule = null;
+            List<string> printStatusUpdateMessages = null;
 
             try
             {
-                _logger.Log(LogLevel.Information, "PrintRequestCommand - Started");
-
-                _messageQueue = messageQueue;
+                _logger.LogInformation("PrintRequestCommand - Started");
 
                 schedule = await _scheduleService.Get();
                 if (schedule == null)
                 {
-                    _logger.Log(LogLevel.Information, "There is no print schedule which allows printing at this time");
-                    return;
+                    _logger.LogInformation("There is no print schedule which allows printing at this time");
+                    return null;
                 }
 
                 await _scheduleService.Start(schedule);
 
-                var nextPrintBatchNumber = await _batchService.BuildPrintBatchReadyToPrint(schedule.RunTime, _options.AddReadyToPrintChunkSize);
-                if (nextPrintBatchNumber != null)
+                var nextBatchReadyToPrint = await _batchService.BuildPrintBatchReadyToPrint(schedule.RunTime, _options.AddReadyToPrintChunkSize);
+                if (nextBatchReadyToPrint != null)
                 {
-                    var certificates = (await _batchService.GetCertificatesForBatchNumber(nextPrintBatchNumber.Value)).Sanitise(_logger);
-                    if (certificates.Count > 0)
+                    if((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)
                     {
-                        var batch = await _batchService.Get(nextPrintBatchNumber.Value);
-                        batch.Status = CertificateStatus.SentToPrinter;
-                        batch.BatchCreated = DateTime.UtcNow;
-                        batch.CertificatesFileName = $"PrintBatch-{nextPrintBatchNumber.Value.ToString().PadLeft(3, '0')}-{batch.BatchCreated.UtcToTimeZoneTime():ddMMyyHHmm}.json";
-                        batch.Certificates = certificates;
+                        _logger.LogInformation("There are certificates ready to print at this time");
+                    }
+                    else
+                    {
+                        nextBatchReadyToPrint.Status = CertificateStatus.SentToPrinter;
+                        nextBatchReadyToPrint.BatchCreated = DateTime.UtcNow;
+                        nextBatchReadyToPrint.CertificatesFileName = GetCertificatesFileName(nextBatchReadyToPrint.BatchNumber, nextBatchReadyToPrint.BatchCreated);
 
-                        var printOutput = _printCreator.Create(batch.BatchNumber, batch.Certificates);
+                        var printOutput = _printCreator.Create(nextBatchReadyToPrint.BatchNumber, nextBatchReadyToPrint.Certificates);
                         var fileContents = JsonConvert.SerializeObject(printOutput);
 
-                        batch.NumberOfCertificates = printOutput.Batch.TotalCertificateCount;
-                        batch.NumberOfCoverLetters = printOutput.Batch.PostalContactCount;
+                        nextBatchReadyToPrint.NumberOfCertificates = printOutput.Batch.TotalCertificateCount;
+                        nextBatchReadyToPrint.NumberOfCoverLetters = printOutput.Batch.PostalContactCount;
 
-                        batch.FileUploadStartTime = DateTime.UtcNow;
+                        nextBatchReadyToPrint.FileUploadStartTime = DateTime.UtcNow;
                         var uploadDirectory = _options.Directory;
-                        var uploadPath = $"{uploadDirectory}/{batch.CertificatesFileName}";
+                        var uploadPath = $"{uploadDirectory}/{nextBatchReadyToPrint.CertificatesFileName}";
                         await _externalFileTransferClient.UploadFile(fileContents, uploadPath);
 
-                        var uploadedFileNames = await _externalFileTransferClient.GetFileNames(uploadDirectory, false);
-
                         var archiveDirectory = _options.ArchiveDirectory;
-                        var archivePath = $"{archiveDirectory}/{batch.CertificatesFileName}";
+                        var archivePath = $"{archiveDirectory}/{nextBatchReadyToPrint.CertificatesFileName}";
                         await _internalFileTransferClient.UploadFile(fileContents, archivePath);
 
-                        batch.FileUploadEndTime = DateTime.UtcNow;
+                        nextBatchReadyToPrint.FileUploadEndTime = DateTime.UtcNow;
 
-                        LogUploadedFiles(uploadedFileNames, uploadDirectory);
+                        printStatusUpdateMessages = await _batchService.Update(nextBatchReadyToPrint);
 
-                        await _batchService.Update(batch, _messageQueue, _options.PrintStatusUpdateChunkSize);
-
-                        await _notificationService.SendPrintRequest(batch.BatchNumber, batch.Certificates, batch.CertificatesFileName);
+                        await _notificationService.SendPrintRequest(
+                            nextBatchReadyToPrint.BatchNumber, 
+                            nextBatchReadyToPrint.Certificates, 
+                            nextBatchReadyToPrint.CertificatesFileName);
                     }
                 }
 
                 await _scheduleService.Save(schedule);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _logger.Log(LogLevel.Error, $"Function Errored Message:: {e.Message} InnerException :: {e.InnerException} ", e);
-
-                if (schedule != null && schedule.Id != Guid.Empty)
+                try
                 {
-                    await _scheduleService.Fail(schedule);
+                    _logger.LogError(ex, "PrintRequestCommand - Failed");
                 }
+                finally
+                {
+                    if (schedule != null && schedule.Id != Guid.Empty)
+                    {
+                        await _scheduleService.Fail(schedule);
+                    }
+                }
+                
                 throw;
             }
+
+            return printStatusUpdateMessages;
         }
 
-        private void LogUploadedFiles(List<string> fileNames, string directory)
+        private string GetCertificatesFileName(int batchNumber, DateTime batchCreated)
         {
-            var fileDetails = new StringBuilder();
-            foreach (var file in fileNames)
-            {
-                fileDetails.Append(file + "\r\n");
-            }
-
-            if (fileDetails.Length > 0)
-            {
-                _logger.Log(LogLevel.Information, $"Uploaded Files to {directory} Contains\r\n{fileDetails}");
-            }
+            return $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{batchCreated.UtcToTimeZoneTime():ddMMyyHHmm}.json";
         }
     }
 }

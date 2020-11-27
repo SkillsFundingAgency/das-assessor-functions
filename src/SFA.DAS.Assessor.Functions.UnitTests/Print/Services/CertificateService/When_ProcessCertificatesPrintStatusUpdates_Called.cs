@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.CertificateService
 {
@@ -28,24 +29,21 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.CertificateService
         {
             // Arrange
             var sut = new Domain.Print.Services.CertificateService(_mockAssessorServiceApiClient.Object, _mockLogger.Object);
-            var certificatePrintStatusUpdates = new List<CertificatePrintStatusUpdate>
+            var certificatePrintStatusUpdate = new CertificatePrintStatusUpdate
             {
-                    new CertificatePrintStatusUpdate
-                    {
-                        BatchNumber = 1,
-                        CertificateReference = "00010111",
-                        ReasonForChange = "",
-                        Status = CertificateStatus.Delivered,
-                        StatusAt = DateTime.UtcNow
-                    }
+                BatchNumber = 1,
+                CertificateReference = "00010111",
+                ReasonForChange = "",
+                Status = CertificateStatus.Delivered,
+                StatusAt = DateTime.UtcNow
             };
-
+            
             // Act
-            await sut.ProcessCertificatesPrintStatusUpdates(certificatePrintStatusUpdates);
+            await sut.ProcessCertificatesPrintStatusUpdate(certificatePrintStatusUpdate);
 
             // Assert
             _mockAssessorServiceApiClient.Verify(v => v.UpdateCertificatesPrintStatus(
-                It.Is<CertificatesPrintStatusUpdateRequest>(c => c.CertificatePrintStatusUpdates.SequenceEqual(certificatePrintStatusUpdates))),
+                It.Is<CertificatesPrintStatusUpdateRequest>(c => JsonConvert.SerializeObject(c).Equals(JsonConvert.SerializeObject(certificatePrintStatusUpdate)))),
                 Times.Once);
         }
     }

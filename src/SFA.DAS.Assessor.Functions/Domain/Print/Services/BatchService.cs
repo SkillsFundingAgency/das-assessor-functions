@@ -1,11 +1,10 @@
-﻿using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
 using System.Collections.Generic;
@@ -49,7 +48,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return null;
         }
 
-        public async Task<int?> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded)
+        public async Task<Batch> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded)
         {
             var nextBatchNumberReadyToPrint = await GetExistingReadyToPrintBatchNumber();
             if (await ReadyToPrintCertificatesNotInBatch())
@@ -77,7 +76,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 }
             }
 
-            return nextBatchNumberReadyToPrint;
+            if(nextBatchNumberReadyToPrint.HasValue)
+            {
+                var batch = await Get(nextBatchNumberReadyToPrint.Value);
+                batch.Certificates = (await GetCertificatesForBatchNumber(nextBatchNumberReadyToPrint.Value)).Sanitise(_logger);
+                return batch;
+            }
+
+            return null;
         }
 
         public async Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber)
@@ -86,11 +92,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.Certificates.Select(Map).ToList();
         }
 
-        public async Task Update(Batch batch, ICollector<string> messageQueue, int maxCertificatesToUpdate)
+        public async Task<List<string>> Update(Batch batch)
         {
+            List<string> printStatusUpdateMessages = new List<string>();
+
             if (batch.Status == CertificateStatus.SentToPrinter)
             {
-                _logger.LogInformation($"Requested batch log {batch.BatchNumber} is updated to sent to printer");
+                _logger.LogInformation($"Batch log {batch.BatchNumber} will be updated as sent to printer");
 
                 var updateRequest = new UpdateBatchLogSentToPrinterRequest()
                 {
@@ -105,15 +113,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var response = await _assessorServiceApiClient.UpdateBatchLogSentToPrinter(batch.BatchNumber, updateRequest);
                 if (response.Errors.Count == 0)
                 {
-                    var messages = BuildCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, DateTime.UtcNow, maxCertificatesToUpdate);
-                    messages.ForEach(p => messageQueue.Add(p));
-
-                    _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as sent to printer");
+                    printStatusUpdateMessages.AddRange(BuildCertificatePrintStatusUpdateMessages(
+                        batch.BatchNumber, batch.Certificates, batch.Status, DateTime.UtcNow));
                 }
             }
             else if (batch.Status == CertificateStatus.Printed)
             {
-                _logger.LogInformation($"Requested batch log {batch.BatchNumber} is updated as printed");
+                _logger.LogInformation($"Batch log {batch.BatchNumber} will be updated as printed");
 
                 var updateRequest = new UpdateBatchLogPrintedRequest()
                 {
@@ -127,17 +133,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 var response = await _assessorServiceApiClient.UpdateBatchLogPrinted(batch.BatchNumber, updateRequest);
                 if (response.Errors.Count == 0)
                 {
-                    var messages = BuildCertificatePrintStatusUpdateMessages(batch.BatchNumber, batch.Certificates, batch.Status, batch.PrintedDate.Value, maxCertificatesToUpdate);
-                    messages.ForEach(p => messageQueue.Add(p));
-
-                    _logger.LogInformation($"Queued {messages.Count} messages for batch log {batch.BatchNumber} to update {batch.Certificates.Count} certificates as printed");
+                    printStatusUpdateMessages.AddRange(BuildCertificatePrintStatusUpdateMessages(
+                        batch.BatchNumber, batch.Certificates, batch.Status, batch.PrintedDate.Value));
                 }
             }
+
+            if(printStatusUpdateMessages.Count > 0)
+            {
+                _logger.LogInformation($"Batch log {batch.BatchNumber} contained {batch.Certificates.Count} certificates, for which {printStatusUpdateMessages.Count} messages will be queued");
+            }
+
+            return printStatusUpdateMessages;
         }
 
         private async Task<int?> GetExistingReadyToPrintBatchNumber()
         {
-            return await _assessorServiceApiClient.GetBatchNumberReadyToPrint(); ;
+            return await _assessorServiceApiClient.GetBatchNumberReadyToPrint();
         }
 
         private async Task<bool> ReadyToPrintCertificatesNotInBatch()
@@ -155,26 +166,23 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.BatchNumber;
         }
 
-        private List<string> BuildCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt, int maxCertificatesToUpdate)
+        private List<string> BuildCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt)
         {
             var messages = new List<string>();
 
-            foreach (var chunk in certificates.ChunkBy(maxCertificatesToUpdate))
+            certificates.ForEach(p =>
             {
-                var message = new CertificatePrintStatusUpdateMessage()
+                var message = JsonConvert.SerializeObject(new CertificatePrintStatusUpdate
                 {
-                    CertificatePrintStatusUpdates = chunk.Select(p => new CertificatePrintStatusUpdate()
-                    {
-                        CertificateReference = p.CertificateReference,
-                        BatchNumber = batchNumber,
-                        Status = status,
-                        StatusAt = statusAt,
-                        ReasonForChange = null
-                    }).ToList()
-                };
+                    CertificateReference = p.CertificateReference,
+                    BatchNumber = batchNumber,
+                    Status = status,
+                    StatusAt = statusAt,
+                    ReasonForChange = null
+                });
 
-                messages.Add(JsonConvert.SerializeObject(message));
-            }
+                messages.Add(message);
+            });
 
             return messages;
         }

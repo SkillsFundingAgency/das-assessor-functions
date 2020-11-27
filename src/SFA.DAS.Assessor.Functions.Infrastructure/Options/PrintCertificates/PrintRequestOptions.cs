@@ -7,6 +7,5 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates
         public string ChairName { get; set; }
         public string ChairTitle { get; set; }
         public int AddReadyToPrintChunkSize { get; set; }
-        public int PrintStatusUpdateChunkSize { get; set; }
     }
 }

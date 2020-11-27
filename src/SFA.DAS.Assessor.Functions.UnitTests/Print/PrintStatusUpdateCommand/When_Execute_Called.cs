@@ -29,17 +29,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
 
             _certificatePrintStatusUpdateMessage = new CertificatePrintStatusUpdateMessage
             {
-                CertificatePrintStatusUpdates = new List<CertificatePrintStatusUpdate>
-                {
-                    new CertificatePrintStatusUpdate
-                    {
-                        BatchNumber = 1,
-                        CertificateReference = "00010111",
-                        ReasonForChange = "",
-                        Status = CertificateStatus.Delivered,
-                        StatusAt = DateTime.UtcNow
-                    }
-                }
+                BatchNumber = 1,
+                CertificateReference = "00010111",
+                ReasonForChange = "",
+                Status = CertificateStatus.Delivered,
+                StatusAt = DateTime.UtcNow
             };
 
             _sut = new Domain.Print.PrintStatusUpdateCommand(
@@ -71,9 +65,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
             await _sut.Execute(message);
 
             // Assert
-            _mockCertificateService.Verify(m => m.ProcessCertificatesPrintStatusUpdates(
-                It.Is<List<CertificatePrintStatusUpdate>>(c => JsonConvert.SerializeObject(c).Equals(
-                    JsonConvert.SerializeObject(_certificatePrintStatusUpdateMessage.CertificatePrintStatusUpdates)))),
+            _mockCertificateService.Verify(m => m.ProcessCertificatesPrintStatusUpdate(
+                It.Is<CertificatePrintStatusUpdate>(c => JsonConvert.SerializeObject(c).Equals(
+                    JsonConvert.SerializeObject(_certificatePrintStatusUpdateMessage)))),
                 Times.Once);
         }
     }

@@ -1,14 +1,8 @@
-﻿using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
-using System.Linq;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using Microsoft.Azure.WebJobs;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
@@ -23,23 +17,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _logger = logger;
         }
 
-        public void QueueCertificatePrintStatusUpdateMessages(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates, ICollector<string> storageQueue, int maxCertificatesToUpdate)
-        {
-            var messages = certificatePrintStatusUpdates.ChunkBy(maxCertificatesToUpdate).Select(chunk => new CertificatePrintStatusUpdateMessage()
-            {
-                CertificatePrintStatusUpdates = chunk
-            }).ToList();
-
-            messages.ForEach(p => storageQueue.Add(JsonConvert.SerializeObject(p)));
-
-            _logger.LogInformation($"Queued {messages.Count} messages to update delivery status for {certificatePrintStatusUpdates.Count} certificates");
-        }
-
-        public async Task ProcessCertificatesPrintStatusUpdates(List<CertificatePrintStatusUpdate> certificatePrintStatusUpdates)
+        public async Task ProcessCertificatesPrintStatusUpdate(CertificatePrintStatusUpdate certificatePrintStatusUpdate)
         {
             var model = new CertificatesPrintStatusUpdateRequest()
             {
-                CertificatePrintStatusUpdates = certificatePrintStatusUpdates
+                BatchNumber = certificatePrintStatusUpdate.BatchNumber,
+                CertificateReference = certificatePrintStatusUpdate.CertificateReference,
+                ReasonForChange = certificatePrintStatusUpdate.ReasonForChange,
+                Status = certificatePrintStatusUpdate.Status,
+                StatusAt = certificatePrintStatusUpdate.StatusAt
             };
 
             await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);

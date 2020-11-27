@@ -9,8 +9,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
     public interface IBatchService
     {
         Task<Batch> Get(int batchNumber);
-        Task<int?> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded);
+        Task<Batch> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded);
         Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber);
-        Task Update(Batch batch, ICollector<string> messageQueue, int maxCertificatesToUpdate);
+        Task<List<string>> Update(Batch batch);
     }
 }

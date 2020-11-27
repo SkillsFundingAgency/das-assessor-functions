@@ -17,7 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         }
 
         [FunctionName("CertificatePrintRequest")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:PrintRequestOptions:Schedule%", RunOnStartup = true)] TimerInfo myTimer,
+        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:PrintRequestOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer,
             [Queue(QueueNames.CertificatePrintStatusUpdate)] ICollector<string> storageQueue,
             ILogger log)
         {
@@ -30,7 +30,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
 
                 log.LogInformation($"CertificatePrintRequest started");
 
-                await _command.Execute(storageQueue);
+                var printStatusUpdateMessages = await _command.Execute();
+                printStatusUpdateMessages?.ForEach(p => storageQueue.Add(p));
 
                 log.LogInformation("CertificatePrintRequest finished");
             }
