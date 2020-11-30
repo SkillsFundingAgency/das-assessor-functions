@@ -64,7 +64,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                 await _scheduleService.Start(schedule);
 
-                var nextBatchReadyToPrint = await _batchService.BuildPrintBatchReadyToPrint(schedule.RunTime, _options.AddReadyToPrintChunkSize);
+                var nextBatchReadyToPrint = await _batchService.BuildPrintBatchReadyToPrint(schedule.RunTime, _options.AddReadyToPrintLimit);
                 if (nextBatchReadyToPrint != null)
                 {
                     if((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)

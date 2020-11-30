@@ -60,7 +60,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
             {
                 Directory = "MockPrintRequestDirectory",
                 ArchiveDirectory = "MockArchivePrintRequestDirectory",
-                AddReadyToPrintChunkSize = 50
+                AddReadyToPrintLimit = 50
             };
 
             _mockOptions
