@@ -11,14 +11,18 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
+using System;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
     public class DeliveryNotificationCommand : NotificationCommand, IDeliveryNotificationCommand
     {
         // DeliveryNotifications-ddMMyyHHmm.json
-        private static readonly string DateTimePattern = "[0-9]{10}";
-        private static readonly string FilePattern = $@"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-{DateTimePattern}.json";
+        private static readonly string DateTimePatternFormat = "ddMMyyHHmm";
+        private static readonly string DateTimePatternRegEx = "[0-9]{10}";
+        private static readonly string FilePatternRegEx = $@"^[Dd][Ee][Ll][Ii][Vv][Ee][Rr][Yy][Nn][Oo][Tt][Ii][Ff][Ii][Cc][Aa][Tt][Ii][Oo][Nn][Ss]-{DateTimePatternRegEx}.json";
 
         private readonly ILogger<DeliveryNotificationCommand> _logger;
         private readonly ICertificateService _certificateService;
@@ -30,7 +34,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             IExternalBlobFileTransferClient externalFileTransferClient,
             IInternalBlobFileTransferClient internalFileTransferClient,
             IOptions<DeliveryNotificationOptions> options)
-            : base (externalFileTransferClient, internalFileTransferClient)
+            : base(externalFileTransferClient, internalFileTransferClient)
         {
             _logger = logger;
             _certificateService = certificateService;
@@ -39,64 +43,95 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         public async Task<List<string>> Execute()
         {
+            var printStatusUpdateMessages = new List<string>();
+
             _logger.Log(LogLevel.Information, "PrintDeliveryNotificationCommand - Started");
 
-            var fileNames = await _externalFileTransferClient.GetFileNames(_options.Directory, FilePattern, false);
+            var fileNames = await _externalFileTransferClient.GetFileNames(_options.Directory, FilePatternRegEx, false);
 
             if (!fileNames.Any())
             {
-                _logger.Log(LogLevel.Information, "No certificate delivery notifications from the printer are available to process");
+                _logger.LogInformation("No certificate delivery notifications from the printer are available to process");
                 return null;
             }
 
-            return await ProcessFiles(fileNames);
-        }
-
-        private async Task<List<string>> ProcessFiles(IEnumerable<string> fileNames)
-        {
-            var printprintStatusUpdateMessages = new List<string>();
-
-            var sortedFileNames = fileNames.ToList().SortByDateTimePattern(DateTimePattern, "ddMMyyHHmm");
+            var sortedFileNames = fileNames.ToList().SortByDateTimePattern(DateTimePatternRegEx, DateTimePatternFormat);
             foreach (var fileName in sortedFileNames)
             {
-                var fileContents = await _externalFileTransferClient.DownloadFile($"{_options.Directory}/{fileName}");
-                var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileContents);
-
-                if (receipt?.DeliveryNotifications == null)
+                try
                 {
-                    _logger.LogInformation($"Could not process delivery notification file '{fileName}' due to invalid format");
-                    return null;
-                }
+                    var fileContents = await _externalFileTransferClient.DownloadFile($"{_options.Directory}/{fileName}");
+                    var fileInfo = new PrintFileInfo(fileContents, fileName);
 
-                var invalidDeliveryNotificationStatuses = receipt.DeliveryNotifications
-                       .GroupBy(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Status)
-                       .Select(certificateDeliveryNotificationStatus => certificateDeliveryNotificationStatus.Key)
-                       .Where(deliveryNotificationStatus => !CertificateStatus.HasDeliveryNotificationStatus(deliveryNotificationStatus))
-                       .ToList();
-
-                invalidDeliveryNotificationStatuses.ForEach(invalidDeliveryNotificationStatus =>
-                {
-                    _logger.LogError($"The delivery notification file '{fileName}' contained invalid delivery status '{invalidDeliveryNotificationStatus}'");
-                });
-
-                var validDeliveryNotifications = receipt.DeliveryNotifications
-                    .Where(deliveryNotification => CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
-                    .ToList();
-
-                await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
-
-                printprintStatusUpdateMessages.AddRange(
-                    validDeliveryNotifications.Select(n => JsonConvert.SerializeObject(new CertificatePrintStatusUpdate
+                    try
                     {
-                        CertificateReference = n.CertificateNumber,
-                        BatchNumber = n.BatchID,
-                        Status = n.Status,
-                        StatusAt = n.StatusChangeDate,
-                        ReasonForChange = n.Reason
-                    })));
+                        var messages = ProcessDeliveryNotifications(fileInfo);
+
+                        if (fileInfo.ValidationMessages.Count > 0)
+                        {
+                            _logger.LogError($"The delivery notification file [{fileInfo.FileName}] contained invalid entries, an error file has been created");
+                            await CreateErrorFile(fileInfo, _options.Directory, _options.ErrorDirectory);
+                        }
+
+                        await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
+                        printStatusUpdateMessages.AddRange(messages);
+                    }
+                    catch(FileFormatValidationException ex)
+                    {
+                        fileInfo.ValidationMessages.Add(ex.Message);
+                        await CreateErrorFile(fileInfo, _options.Directory, _options.ErrorDirectory);
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Could not process delivery notification file [{fileName}]");
+                }
+            }
+            
+            return printStatusUpdateMessages;
+        }
+
+        private List<string> ProcessDeliveryNotifications(PrintFileInfo fileInfo)
+        {
+            var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileInfo.FileContent);
+
+            if (receipt?.DeliveryNotifications == null)
+            {
+                fileInfo.InvalidFileContent = fileInfo.FileContent;
+                throw new FileFormatValidationException($"Could not process delivery notification file [{fileInfo.FileName}] due to invalid file format");
             }
 
-            return printprintStatusUpdateMessages;
+            var validDeliveryNotifications = receipt.DeliveryNotifications
+                .Where(deliveryNotification => CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
+                .ToList();
+
+            var invalidDeliveryNotifications = receipt.DeliveryNotifications
+                .Where(deliveryNotification => !CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
+                .ToList();
+
+            if (invalidDeliveryNotifications.Count > 0)
+            {
+                fileInfo.InvalidFileContent = JsonConvert.SerializeObject(invalidDeliveryNotifications);
+
+                var invalidDeliveryNotificationStatus = invalidDeliveryNotifications.GroupBy(m => m.Status)
+                    .Select(m => m.Key)
+                    .ToList();
+
+                invalidDeliveryNotificationStatus.ForEach(m =>
+                {
+                    fileInfo.ValidationMessages.Add($"The delivery notification file contains the invalid delivery status '{m}'");
+                });
+            }
+
+            return validDeliveryNotifications.Select(n => JsonConvert.SerializeObject(new CertificatePrintStatusUpdate
+            {
+                CertificateReference = n.CertificateNumber,
+                BatchNumber = n.BatchID,
+                Status = n.Status,
+                StatusAt = n.StatusChangeDate,
+                ReasonForChange = n.Reason
+            })).ToList();
         }
     }
 }

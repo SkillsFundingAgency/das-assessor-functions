@@ -18,15 +18,25 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         }
 
         [FunctionName("CertificatePrintStatusUpdate")]
-        public async Task Run([QueueTrigger(QueueNames.CertificatePrintStatusUpdate)] string message, ILogger log)
+        public async Task Run([QueueTrigger(QueueNames.CertificatePrintStatusUpdate)] string message,
+            [Queue(QueueNames.CertificatePrintStatusUpdateErrors)] ICollector<string> storageQueue,
+            ILogger log)
         {
             try
             {
                 log.LogDebug($"CertificatePrintStatusUpdate has started for {message}");
 
-                await _command.Execute(message);
+                var validationErrorMessages = await _command.Execute(message);
+                validationErrorMessages?.ForEach(p => storageQueue.Add(p));
 
-                log.LogDebug($"CertificatePrintStatusUpdate has completed for {message}");
+                if (validationErrorMessages.Count > 0)
+                {
+                    log.LogInformation($"CertificatePrintStatusUpdate has completed for {message} with {validationErrorMessages.Count} error(s)");
+                }
+                else
+                {
+                    log.LogDebug($"CertificatePrintStatusUpdate has completed for {message}");
+                }
             }
             catch (Exception ex)
             {

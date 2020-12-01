@@ -17,7 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _logger = logger;
         }
 
-        public async Task ProcessCertificatesPrintStatusUpdate(CertificatePrintStatusUpdate certificatePrintStatusUpdate)
+        public async Task<ValidationResponse> ProcessCertificatesPrintStatusUpdate(CertificatePrintStatusUpdate certificatePrintStatusUpdate)
         {
             var model = new CertificatesPrintStatusUpdateRequest()
             {
@@ -28,7 +28,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 StatusAt = certificatePrintStatusUpdate.StatusAt
             };
 
-            await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
+            return await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
         }
     }
 }

@@ -50,6 +50,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public async Task<Batch> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded)
         {
+            if(maxCertificatesToBeAdded <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxCertificatesToBeAdded), maxCertificatesToBeAdded, "The value must be greater than zero");
+            }
+            
             var nextBatchNumberReadyToPrint = await GetExistingReadyToPrintBatchNumber();
             if (await ReadyToPrintCertificatesNotInBatch())
             {

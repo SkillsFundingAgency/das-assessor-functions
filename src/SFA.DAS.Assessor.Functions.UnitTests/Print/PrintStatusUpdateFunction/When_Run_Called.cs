@@ -13,12 +13,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
         
         private Mock<ILogger> _mockLogger;
         private Mock<IPrintStatusUpdateCommand> _mockCommand;
+        private Mock<ICollector<string>> _mockCollector;
 
         [SetUp]
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger>();
             _mockCommand = new Mock<IPrintStatusUpdateCommand>();
+            _mockCollector = new Mock<ICollector<string>>();
 
             _sut = new Functions.Print.PrintStatusUpdateFunction(_mockCommand.Object);
         }
@@ -29,7 +31,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
             var message = "{}";
 
             // Act - TimerSchedule is not used so null allowed
-            await _sut.Run(message, _mockLogger.Object);
+            await _sut.Run(message, _mockCollector.Object, _mockLogger.Object);
 
             // Assert
             _mockCommand.Verify(p => p.Execute(message), Times.Once());

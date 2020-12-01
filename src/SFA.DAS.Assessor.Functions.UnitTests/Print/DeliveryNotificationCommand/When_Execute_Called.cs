@@ -109,7 +109,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var logMessage = $"Could not process delivery notification file '{fileName}' due to invalid format";
+            var exceptionLogMessage = $"Could not process delivery notification file [{fileName}] due to invalid file format";
+            var logMessage = $"Could not process delivery notification file [{fileName}]";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
@@ -123,7 +124,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
             await _sut.Execute();
 
             // Assert
-            _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
+            _mockLogger.Verify(m => m.Log(
+                LogLevel.Error, 
+                0, 
+                It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)),
+                It.Is<Exception>(p => p.Message.StartsWith(exceptionLogMessage)),
+                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), 
+                Times.Once);
         }
 
         [Test]

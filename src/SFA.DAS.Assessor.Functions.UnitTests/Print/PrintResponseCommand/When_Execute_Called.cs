@@ -107,7 +107,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         public async Task ThenItShouldLogIfThereAreNoPrintNotificationsToProcess()
         {
             // Arrange
-            var logMessage = "There are no certificate print notifications from the printer to process";
+            var logMessage = "There are no certificate print responses from the printer to process";
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string>());
@@ -124,7 +124,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var logMessage = $"Could not process print notifications due to invalid file format [{fileName}]";
+            var exceptionLogMessage = $"Could not process print response file [{fileName}] due to invalid file format";
+            var logMessage = $"Could not process print response file [{fileName}]";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
@@ -138,7 +139,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
             await _sut.Execute();
 
             // Assert
-            _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
+            _mockLogger.Verify(m => m.Log(
+                LogLevel.Error,
+                0,
+                It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)),
+                It.Is<Exception>(p => p.Message.StartsWith(exceptionLogMessage)),
+                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                Times.Once);
         }
 
         [Test]
@@ -146,7 +153,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var logMessage = $"Could not process print notifications unable to match an existing batch Log Batch Number [{_batchNumber}] in the print notification in the file [{fileName}]";
+            var exceptionLogMessage = $"Could not process print response file [{fileName}] due to non matching Batch Number [{_batchNumber}]";
+            var logMessage = $"Could not process print response file [{fileName}]";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
@@ -174,7 +182,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
             await _sut.Execute();
 
             // Assert
-            _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
+            _mockLogger.Verify(m => m.Log(
+                LogLevel.Error,
+                0,
+                It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)),
+                It.Is<Exception>(p => p.Message.StartsWith(exceptionLogMessage)),
+                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                Times.Once);
         }
 
         [Test]
