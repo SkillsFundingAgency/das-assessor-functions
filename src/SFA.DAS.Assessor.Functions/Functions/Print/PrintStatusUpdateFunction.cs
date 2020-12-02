@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
                 var validationErrorMessages = await _command.Execute(message);
                 validationErrorMessages?.ForEach(p => storageQueue.Add(p));
 
-                if (validationErrorMessages.Count > 0)
+                if ((validationErrorMessages?.Count ?? 0) > 0)
                 {
                     log.LogInformation($"CertificatePrintStatusUpdate has completed for {message} with {validationErrorMessages.Count} error(s)");
                 }
