@@ -201,6 +201,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 await PostPutRequest(request, updateLastRunStatusRequest);
             }
         }
+
+        public async Task RebuildExternalApiSandbox()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/externalapidatasync/rebuild-sandbox"))
+            {
+                await PostPutRequest(request);
+            }
+        }
     }
 }
     

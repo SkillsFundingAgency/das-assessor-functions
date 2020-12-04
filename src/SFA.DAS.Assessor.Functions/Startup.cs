@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync;
+using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Services;
@@ -22,6 +24,7 @@ using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Config;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.ExternalApiDataSync;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
@@ -68,13 +71,14 @@ namespace SFA.DAS.Assessor.Functions
             var config = builder.GetCurrentConfiguration();
 
             builder.Services.AddOptions();
-            
+
             builder.Services.Configure<AssessorApiAuthentication>(config.GetSection(nameof(AssessorApiAuthentication)));
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection(nameof(DataCollectionApiAuthentication)));
             builder.Services.Configure<SecureMessageApiAuthentication>(config.GetSection(nameof(SecureMessageApiAuthentication)));
             builder.Services.Configure<DataCollectionMock>(config.GetSection(nameof(DataCollectionMock)));
 
             var functionsOptions = nameof(FunctionsOptions);
+            builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
             builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
             
             var printCertificatesOptions = $"{functionsOptions}:{nameof(PrintCertificatesOptions)}";
@@ -132,13 +136,11 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddScoped<IRefreshIlrsProviderService, RefreshIlrsProviderService>();
             builder.Services.AddScoped<IRefreshIlrsLearnerService, RefreshIlrsLearnerService>();
-            
-            builder.Services.AddTransient<IRefreshIlrsDequeueProvidersCommand, RefreshIlrsDequeueProvidersCommand>();
-            builder.Services.AddTransient<IRefreshIlrsEnqueueProvidersCommand, RefreshIlrsEnqueueProvidersCommand>();
 
             builder.Services.AddScoped<IBatchService, BatchService>();
             builder.Services.AddScoped<ICertificateService, CertificateService>();
             builder.Services.AddScoped<IScheduleService, ScheduleService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
 
             var storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
             var optionsCertificateFunctions = config.GetSection(functionsOptions).GetSection(nameof(printCertificatesOptions)).Get<PrintCertificatesOptions>();
@@ -154,16 +156,17 @@ namespace SFA.DAS.Assessor.Functions
                 optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
+
             builder.Services.AddTransient<IPrintRequestCommand, PrintRequestCommand>();
-            builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IPrintResponseCommand, PrintResponseCommand>();
+            builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
             builder.Services.AddTransient<IBlobStorageSamplesCommand, BlobStorageSamplesCommand>();
             builder.Services.AddTransient<IBlobSasTokenGeneratorCommand, BlobSasTokenGeneratorCommand>();
-
+            builder.Services.AddTransient<IRebuildExternalApiSandboxCommand, RebuildExternalApiSandboxCommand>();
+            builder.Services.AddTransient<IRefreshIlrsDequeueProvidersCommand, RefreshIlrsDequeueProvidersCommand>();
+            builder.Services.AddTransient<IRefreshIlrsEnqueueProvidersCommand, RefreshIlrsEnqueueProvidersCommand>();
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
-            
-            builder.Services.AddTransient<INotificationService, NotificationService>();
         }
     }
 }
