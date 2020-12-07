@@ -5,6 +5,7 @@ using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,23 +18,23 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
         
         private Mock<ILogger> _mockLogger;
         private Mock<IPrintRequestCommand> _mockCommand;
-        private Mock<ICollector<string>> _mockCollector;
+        private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockCollector;
 
         public void Arrange(int certificatesReadyToPrint)
         {
             _mockLogger = new Mock<ILogger>();
             _mockCommand = new Mock<IPrintRequestCommand>();
-            _mockCollector = new Mock<ICollector<string>>();
+            _mockCollector = new Mock<ICollector<CertificatePrintStatusUpdateMessage>>();
 
             var messages = certificatesReadyToPrint > 0
-                ? Builder<CertificatePrintStatusUpdate>.
+                ? Builder<CertificatePrintStatusUpdateMessage>.
                     CreateListOfSize(certificatesReadyToPrint).Build()
-                    as List<CertificatePrintStatusUpdate>
-                : new List<CertificatePrintStatusUpdate>();
+                    as List<CertificatePrintStatusUpdateMessage>
+                : new List<CertificatePrintStatusUpdateMessage>();
             
             _mockCommand
                 .Setup(m => m.Execute())
-                .ReturnsAsync(messages.ConvertAll(p => JsonConvert.SerializeObject(p)));
+                .ReturnsAsync(messages);
 
             _sut = new Functions.Print.PrintRequestFunction(_mockCommand.Object);
         }
@@ -50,7 +51,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
 
             // Assert
             _mockCommand.Verify(p => p.Execute(), Times.Once());
-            _mockCollector.Verify(p => p.Add(It.IsAny<string>()), Times.Exactly(certificatesReadyToPrint));
+            _mockCollector.Verify(p => p.Add(It.IsAny<CertificatePrintStatusUpdateMessage>()), Times.Exactly(certificatesReadyToPrint));
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
@@ -7,7 +6,6 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,9 +39,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = options?.Value;
         }
 
-        public async Task<List<string>> Execute()
+        public async Task<List<CertificatePrintStatusUpdateMessage>> Execute()
         {
-            var printStatusUpdateMessages = new List<string>();
+            var printStatusUpdateMessages = new List<CertificatePrintStatusUpdateMessage>();
 
             _logger.Log(LogLevel.Information, "PrintDeliveryNotificationCommand - Started");
 
@@ -92,7 +90,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             return printStatusUpdateMessages;
         }
 
-        private List<string> ProcessDeliveryNotifications(PrintFileInfo fileInfo)
+        private List<CertificatePrintStatusUpdateMessage> ProcessDeliveryNotifications(PrintFileInfo fileInfo)
         {
             var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileInfo.FileContent);
 
@@ -124,14 +122,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 });
             }
 
-            return validDeliveryNotifications.Select(n => JsonConvert.SerializeObject(new CertificatePrintStatusUpdate
+            return validDeliveryNotifications.Select(n => new CertificatePrintStatusUpdateMessage
             {
                 CertificateReference = n.CertificateNumber,
                 BatchNumber = n.BatchID,
                 Status = n.Status,
                 StatusAt = n.StatusChangeDate,
                 ReasonForChange = n.Reason
-            })).ToList();
+            }).ToList();
         }
     }
 }

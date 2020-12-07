@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationFunction
@@ -13,14 +14,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationFunctio
         
         private Mock<ILogger> _mockLogger;
         private Mock<IDeliveryNotificationCommand> _mockCommand;
-        private Mock<ICollector<string>> _mockCollector;
+        private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockCollector;
 
         [SetUp]
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger>();
             _mockCommand = new Mock<IDeliveryNotificationCommand>();
-            _mockCollector = new Mock<ICollector<string>>();
+            _mockCollector = new Mock<ICollector<CertificatePrintStatusUpdateMessage>>();
 
             _sut = new Functions.Print.DeliveryNotificationFunction(_mockCommand.Object);
         }

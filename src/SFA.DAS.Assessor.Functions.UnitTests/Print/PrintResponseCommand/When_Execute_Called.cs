@@ -25,7 +25,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         private Mock<IInternalBlobFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<PrintResponseOptions>> _mockOptions;
 
-        private Mock<ICollector<string>> _mockMessageQueue;
+        private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockMessageQueue;
 
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
@@ -39,7 +39,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
             _mockExternalFileTransferClient = new Mock<IExternalBlobFileTransferClient>();
             _mockInternalFileTransferClient = new Mock<IInternalBlobFileTransferClient>();
             _mockOptions = new Mock<IOptions<PrintResponseOptions>>();
-            _mockMessageQueue = new Mock<ICollector<string>>();
+            _mockMessageQueue = new Mock<ICollector<CertificatePrintStatusUpdateMessage>>();
 
             _options = new PrintResponseOptions {
                 Directory = "MockPrintResponseDirectory",
@@ -79,7 +79,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
 
             _mockBatchService
                 .Setup(m => m.Update(It.IsAny<Batch>()))
-                .ReturnsAsync(new List<string>());
+                .ReturnsAsync(new List<CertificatePrintStatusUpdateMessage>());
 
             _sut = new Domain.Print.PrintResponseCommand(
                 _mockLogger.Object,

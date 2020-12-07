@@ -39,9 +39,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = printReponseOptions?.Value;
         }
 
-        public async Task<List<string>> Execute()
+        public async Task<List<CertificatePrintStatusUpdateMessage>> Execute()
         {
-            List<string> printStatusUpdateMessages = new List<string>();
+            List<CertificatePrintStatusUpdateMessage> printStatusUpdateMessages = new List<CertificatePrintStatusUpdateMessage>();
 
             _logger.Log(LogLevel.Information, "PrintResponseCommand - Started");
 

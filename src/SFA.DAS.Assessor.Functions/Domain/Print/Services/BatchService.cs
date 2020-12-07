@@ -97,9 +97,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.Certificates.Select(Map).ToList();
         }
 
-        public async Task<List<string>> Update(Batch batch)
+        public async Task<List<CertificatePrintStatusUpdateMessage>> Update(Batch batch)
         {
-            List<string> printStatusUpdateMessages = new List<string>();
+            List<CertificatePrintStatusUpdateMessage> printStatusUpdateMessages = new List<CertificatePrintStatusUpdateMessage>();
 
             if (batch.Status == CertificateStatus.SentToPrinter)
             {
@@ -171,20 +171,20 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.BatchNumber;
         }
 
-        private List<string> BuildCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt)
+        private List<CertificatePrintStatusUpdateMessage> BuildCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt)
         {
-            var messages = new List<string>();
+            var messages = new List<CertificatePrintStatusUpdateMessage>();
 
             certificates.ForEach(p =>
             {
-                var message = JsonConvert.SerializeObject(new CertificatePrintStatusUpdate
+                var message = new CertificatePrintStatusUpdateMessage
                 {
                     CertificateReference = p.CertificateReference,
                     BatchNumber = batchNumber,
                     Status = status,
                     StatusAt = statusAt,
                     ReasonForChange = null
-                });
+                };
 
                 messages.Add(message);
             });
