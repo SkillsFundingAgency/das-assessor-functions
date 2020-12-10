@@ -2,6 +2,7 @@
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
@@ -28,7 +29,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 StatusAt = certificatePrintStatusUpdate.StatusAt
             };
 
-            await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
+            var validationReponse = await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
+            if(validationReponse?.Errors.Any() ?? false)
+            {
+                foreach(var validationErrorDetail in validationReponse.Errors)
+                {
+                    _logger.LogInformation($"Validation error received for {model.CertificateReference} in batch {model.BatchNumber} message: '{validationErrorDetail.ErrorMessage}' status: '{validationErrorDetail.ValidationStatusCode}'");
+                }
+            }
         }
     }
 }
