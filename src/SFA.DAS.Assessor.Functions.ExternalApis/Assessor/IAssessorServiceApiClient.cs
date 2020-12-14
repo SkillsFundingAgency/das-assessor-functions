@@ -12,18 +12,24 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task UpdateStandardSummary();
         Task SetAssessorSetting(string name, string value);
         Task<string> GetAssessorSetting(string name);
+        
         Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest);
+        Task<BatchLogResponse> GetBatchLog(int batchNumber);
+        Task<int> UpdateBatchLogReadyToPrintAddCertifictes(int batchNumber, int maxCertificatesToBeAdded);
+        Task<ValidationResponse> UpdateBatchLogSentToPrinter(int batchNumber, UpdateBatchLogSentToPrinterRequest model);
+        Task<ValidationResponse> UpdateBatchLogPrinted(int batchNumber, UpdateBatchLogPrintedRequest model);
+        Task<int?> GetBatchNumberReadyToPrint();
+        
+        Task<CertificatesForBatchNumberResponse> GetCertificatesForBatchNumber(int batchNumber);
+        Task<int> GetCertificatesReadyToPrintCount();
+        Task<ValidationResponse> UpdateCertificatesPrintStatus(CertificatesPrintStatusUpdateRequest model);
+        
         Task CompleteSchedule(Guid scheduleRunId);
-        Task<CertificatesToBePrintedResponse> GetCertificatesToBePrinted();
-        Task<BatchLogResponse> GetCurrentBatchLog();
-        Task<BatchLogResponse> GetGetBatchLogByBatchNumber(string batchNumber);
         Task<ScheduleRun> GetSchedule(ScheduleType scheduleType);
-        Task UpdateBatchDataInBatchLog(Guid batchId, BatchData batchData);
-        Task SaveSentToPrinter(int batchNumber, IEnumerable<string> certificateReferences);
-        Task UpdateBatchToPrinted(int batchNumber, DateTime printedDateTime);
-        Task UpdatePrintStatus(IEnumerable<CertificatePrintStatus> certificatePrintStatus);        
+        
         Task<EmailTemplateSummary> GetEmailTemplate(string templateName);
         Task SendEmailWithTemplate(SendEmailRequest sendEmailRequest);
+        
         Task<ImportLearnerDetailResponse> ImportLearnerDetails(ImportLearnerDetailRequest request);
         Task UpdateLastRunStatus(UpdateLastRunStatusRequest updateScheduleRunStatusRequest);
         Task RebuildExternalApiSandbox();

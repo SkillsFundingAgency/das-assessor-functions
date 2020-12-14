@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
@@ -7,9 +8,13 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using System;
+using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -36,19 +41,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = printReponseOptions?.Value;
         }
 
-        public async Task Execute()
+        public async Task<List<string>> Execute()
         {
-            _logger.Log(LogLevel.Information, "Print Response Notification Function Started");
-            await Process(_options.Directory, FilePattern, DateTimePattern, "ddMMyyHHmm");
+            _logger.Log(LogLevel.Information, "PrintResponseCommand - Started");
+
+            return await Process(_options.Directory, FilePattern, DateTimePattern, "ddMMyyHHmm");
         }
 
-        private async Task Process(string downloadDirectoryName, string filePattern, string dateTimePattern, string dateTimeFormat)
+        private async Task<List<string>> Process(string downloadDirectoryName, string filePattern, string dateTimePattern, string dateTimeFormat)
         {
+            List<string> printStatusUpdateMessages = new List<string>();
+
             var fileNames = await _externalFileTransferClient.GetFileNames(downloadDirectoryName, filePattern, false);
             if (!fileNames.Any())
             {
                 _logger.Log(LogLevel.Information, "There are no certificate print notifications from the printer to process");
-                return;
+                return null;
             }
 
             var sortedFileNames = fileNames.ToList().SortByDateTimePattern(dateTimePattern, dateTimeFormat);
@@ -60,7 +68,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
 
                     var batch = await ProcessFile(fileInfo);
-                    await _batchService.Save(batch);
+                    printStatusUpdateMessages.AddRange(await _batchService.Update(batch));
 
                     await ArchiveFile(fileContents, fileName, downloadDirectoryName, _options.ArchiveDirectory);
                 }
@@ -69,6 +77,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     _logger.Log(LogLevel.Information, ex.Message);
                 }
             }
+
+            return printStatusUpdateMessages;
         }
 
         private async Task<Batch> ProcessFile(PrintNotificationFileInfo file)
@@ -92,8 +102,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             batch.NumberOfCertificates = receipt.Batch.TotalCertificateCount;
             batch.PrintedDate = receipt.Batch.ProcessedDate;
             batch.DateOfResponse = DateTime.UtcNow;
-            batch.Status = "Printed";
-
+            batch.Status = CertificateStatus.Printed;
+            
+            batch.Certificates = await _batchService.GetCertificatesForBatchNumber(batch.BatchNumber);
+            
             return batch;
         }
     }

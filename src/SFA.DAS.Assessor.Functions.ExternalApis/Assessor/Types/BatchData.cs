@@ -12,8 +12,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? PrintedDate { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? PostedDate { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? DateOfResponse { get; set; }
     }
 }

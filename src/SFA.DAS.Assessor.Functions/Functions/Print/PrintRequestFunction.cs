@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Print
 {
@@ -16,7 +17,9 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         }
 
         [FunctionName("CertificatePrintRequest")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:PrintRequestOptions:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:PrintRequestOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer,
+            [Queue(QueueNames.CertificatePrintStatusUpdate)] ICollector<string> storageQueue,
+            ILogger log)
         {
             try
             {
@@ -24,18 +27,17 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
                 {
                     log.LogInformation("CertificatePrintRequest has started later than scheduled");
                 }
-                else
-                {
-                    log.LogInformation($"CertificatePrintRequest has started");
-                }
 
-                await _command.Execute();
+                log.LogInformation($"CertificatePrintRequest started");
 
-                log.LogInformation("CertificatePrintRequest has finished");
+                var printStatusUpdateMessages = await _command.Execute();
+                printStatusUpdateMessages?.ForEach(p => storageQueue.Add(p));
+
+                log.LogInformation("CertificatePrintRequest finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "CertificatePrintRequest has failed");
+                log.LogError(ex, "CertificatePrintRequest failed");
             }
         }
     }

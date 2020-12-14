@@ -17,8 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Types
         public int NumberOfCertificates { get; set; }
         public int NumberOfCoverLetters { get; set; }
         public DateTime? PrintedDate { get; set; }
-        public DateTime? PostedDate { get; set; }
         public DateTime? DateOfResponse { get; set; }
-        public IEnumerable<Certificate> Certificates { get; set; }
+        public List<Certificate> Certificates { get; set; }
     }
 }

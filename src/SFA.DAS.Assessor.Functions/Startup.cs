@@ -80,7 +80,7 @@ namespace SFA.DAS.Assessor.Functions
             var functionsOptions = nameof(FunctionsOptions);
             builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
             builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
-            
+
             var printCertificatesOptions = $"{functionsOptions}:{nameof(PrintCertificatesOptions)}";
             builder.Services.Configure<PrintRequestOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}"));
             builder.Services.Configure<CertificateDetails>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}:{nameof(CertificateDetails)}"));
@@ -149,9 +149,9 @@ namespace SFA.DAS.Assessor.Functions
                 s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
                 storageConnectionString,
                 optionsCertificateFunctions.ExternalBlobContainer) as IExternalBlobFileTransferClient);
-            
+
             builder.Services.AddTransient(s => new BlobFileTransferClient(
-                s.GetRequiredService<ILogger<BlobFileTransferClient>>(), 
+                s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
                 storageConnectionString,
                 optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
 
@@ -160,6 +160,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IPrintRequestCommand, PrintRequestCommand>();
             builder.Services.AddTransient<IPrintResponseCommand, PrintResponseCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();
+            builder.Services.AddTransient<IPrintStatusUpdateCommand, PrintStatusUpdateCommand>();
             builder.Services.AddTransient<IBlobStorageSamplesCommand, BlobStorageSamplesCommand>();
             builder.Services.AddTransient<IBlobSasTokenGeneratorCommand, BlobSasTokenGeneratorCommand>();
             builder.Services.AddTransient<IRebuildExternalApiSandboxCommand, RebuildExternalApiSandboxCommand>();

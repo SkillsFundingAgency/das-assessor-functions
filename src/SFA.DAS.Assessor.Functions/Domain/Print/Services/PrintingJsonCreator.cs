@@ -21,7 +21,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _certificateDetails = options?.Value;
         }
 
-        public string Create(int batchNumber, IEnumerable<Certificate> certificates)
+        public PrintOutput Create(int batchNumber, IEnumerable<Certificate> certificates)
         {
             var printOutput = new PrintOutput
             {
@@ -113,7 +113,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 printOutput.PrintData.Add(printData);
             });
 
-            return JsonConvert.SerializeObject(printOutput);
+            return printOutput;
         }
     }
 }

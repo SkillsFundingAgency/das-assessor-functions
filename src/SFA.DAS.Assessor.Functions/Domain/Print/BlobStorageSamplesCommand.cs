@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,14 +13,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
     public class BlobStorageSamplesCommand : IBlobStorageSamplesCommand
     {
-        private readonly ILogger<PrintRequestCommand> _logger;
+        private readonly ILogger<BlobStorageSamplesCommand> _logger;
         private readonly IExternalBlobFileTransferClient _blobFileTransferClient;
 
         private readonly string _printResponseDirectory;
         private readonly string _deliveryNotificationDirectory;
         
         public BlobStorageSamplesCommand(
-            ILogger<PrintRequestCommand> logger,
+            ILogger<BlobStorageSamplesCommand> logger,
+            
             IExternalBlobFileTransferClient blobFileTransferClient,
             IOptions<PrintResponseOptions> optionsPrintResponse,
             IOptions<DeliveryNotificationOptions> optionsDeliveryNotification)
@@ -71,7 +73,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     {
                         BatchID = 1,
                         CertificateNumber = "00000001",
-                        Status = "Delivered",
+                        Status = CertificateStatus.Delivered,
                         Reason = "",
                         StatusChangeDate = DateTime.Parse("2020-04-03T16:31:40.0000000Z")
                     },
@@ -79,7 +81,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     {
                         BatchID = 1,
                         CertificateNumber = "00000001",
-                        Status = "NotDelivered",
+                        Status = CertificateStatus.NotDelivered,
                         Reason = "Reason why certificate wasn't delivered",
                         StatusChangeDate = DateTime.Parse("2020-04-04T11:22:00.0000000Z")
                     }

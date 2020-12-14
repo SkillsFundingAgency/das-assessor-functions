@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
 {
-    public interface IPrintRequestCommand : ICommand
-    {     
+    public interface IPrintRequestCommand : IQueueCommand
+    {
     }
 }

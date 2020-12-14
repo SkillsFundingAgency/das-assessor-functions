@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types
 {
     public class UpdateBatchLogSentToPrinterRequest
     {
-        public int BatchNumber { get; set; }
-        public List<string> CertificateReferences { get; set; }
+        public DateTime BatchCreated { get; set; }
+        public int NumberOfCertificates { get; set; }
+        public int NumberOfCoverLetters { get; set; }
+        public string CertificatesFileName { get; set; }
+        public DateTime FileUploadStartTime { get; set; }
+        public DateTime FileUploadEndTime { get; set; }
     }
 }

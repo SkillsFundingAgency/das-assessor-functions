@@ -6,5 +6,6 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates
         public string ArchiveDirectory { get; set; }
         public string ChairName { get; set; }
         public string ChairTitle { get; set; }
+        public int AddReadyToPrintLimit { get; set; }
     }
 }
