@@ -29,20 +29,31 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 _logger.LogDebug($"PrintStatusUpdateCommand - Started for message {message.ToJson()}");
                 
                 var validationResponse = await _certificateService.ProcessCertificatesPrintStatusUpdate(message);
-                if(validationResponse.Errors.Any(p => p.ValidationStatusCode != ValidationStatusCode.Warning))
+                if(validationResponse.Errors.Any())
                 {
-                    var certificatePrintStatusUpdateErrorMessage = new CertificatePrintStatusUpdateErrorMessage
+                    var errorMessages = validationResponse.Errors.
+                        Where(p => p.ValidationStatusCode != ValidationStatusCode.Warning).
+                        Select(s => s.ErrorMessage);
+
+                    if (errorMessages.Any())
                     {
-                        CertificatePrintStatusUpdate = message,
-                        ErrorMessages = validationResponse.Errors.
-                            Where(p => p.ValidationStatusCode != ValidationStatusCode.Warning).
-                            Select(s => s.ErrorMessage).
-                            ToList()
-                    };
+                        validationErrorMessages.Add(new CertificatePrintStatusUpdateErrorMessage
+                        {
+                            CertificatePrintStatusUpdate = message,
+                            ErrorMessages = errorMessages.ToList()
+                        });
+                    }
 
-                    validationErrorMessages.Add(certificatePrintStatusUpdateErrorMessage);
+                    var warningMessages = validationResponse.Errors.
+                            Where(p => p.ValidationStatusCode == ValidationStatusCode.Warning).
+                            Select(s => s.ErrorMessage);
 
-                    _logger.LogInformation($"PrintStatusUpdateCommand - Completed for message {message.ToJson()} with {certificatePrintStatusUpdateErrorMessage.ErrorMessages.Count} error(s)");
+                    foreach (var warningMessage in warningMessages)
+                    {
+                        _logger.LogWarning($"PrintStatusUpdateCommand - Processed message {message.ToJson()} with warning: {warningMessage}");
+                    }
+
+                    _logger.LogInformation($"PrintStatusUpdateCommand - Completed for message {message.ToJson()} with {errorMessages.Count()} error(s) and {warningMessages.Count()} warning(s)");
                 }
                 else
                 {
