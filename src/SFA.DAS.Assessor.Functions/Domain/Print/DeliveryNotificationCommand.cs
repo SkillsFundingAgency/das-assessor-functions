@@ -100,29 +100,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 throw new FileFormatValidationException($"Could not process delivery notification file [{fileInfo.FileName}] due to invalid file format");
             }
 
-            var validDeliveryNotifications = receipt.DeliveryNotifications
-                .Where(deliveryNotification => CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
-                .ToList();
-
-            var invalidDeliveryNotifications = receipt.DeliveryNotifications
-                .Where(deliveryNotification => !CertificateStatus.HasDeliveryNotificationStatus(deliveryNotification.Status))
-                .ToList();
-
-            if (invalidDeliveryNotifications.Count > 0)
-            {
-                fileInfo.InvalidFileContent = JsonConvert.SerializeObject(invalidDeliveryNotifications);
-
-                var invalidDeliveryNotificationStatus = invalidDeliveryNotifications.GroupBy(m => m.Status)
-                    .Select(m => m.Key)
-                    .ToList();
-
-                invalidDeliveryNotificationStatus.ForEach(m =>
-                {
-                    fileInfo.ValidationMessages.Add($"The delivery notification file contains the invalid delivery status '{m}'");
-                });
-            }
-
-            return validDeliveryNotifications.Select(n => new CertificatePrintStatusUpdateMessage
+            return receipt.DeliveryNotifications.Select(n => new CertificatePrintStatusUpdateMessage
             {
                 CertificateReference = n.CertificateNumber,
                 BatchNumber = n.BatchID,
