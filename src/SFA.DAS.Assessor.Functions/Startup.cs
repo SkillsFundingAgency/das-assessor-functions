@@ -3,6 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using SFA.DAS.Assessor.Functions.Data;
+using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance;
+using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync;
 using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs;
@@ -24,11 +27,14 @@ using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Config;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.ExternalApiDataSync;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Net.Http;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
@@ -80,6 +86,9 @@ namespace SFA.DAS.Assessor.Functions
             var functionsOptions = nameof(FunctionsOptions);
             builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
             builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
+            
+            var databaseMaintenanceOptions = $"{functionsOptions}:{nameof(DatabaseMaintenanceOptions)}";
+            builder.Services.Configure<DatabaseMaintenanceOptions>(config.GetSection(databaseMaintenanceOptions));
 
             var printCertificatesOptions = $"{functionsOptions}:{nameof(PrintCertificatesOptions)}";
             builder.Services.Configure<PrintRequestOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}"));
@@ -156,7 +165,12 @@ namespace SFA.DAS.Assessor.Functions
                 optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
+            
+            var optionsDatabaseMigration = config.GetSection(functionsOptions).GetSection(nameof(databaseMaintenanceOptions)).Get<DatabaseMaintenanceOptions>();
+            builder.Services.AddTransient(s => new SqlConnection(optionsDatabaseMigration.SqlConnectionString) as IDbConnection);
+            builder.Services.AddTransient<IDatabaseMaintenanceRepository, DatabaseMaintenanceRepository>();
 
+            builder.Services.AddTransient<IDatabaseMaintenanceCommand, DatabaseMaintenanceCommand>();
             builder.Services.AddTransient<IPrintRequestCommand, PrintRequestCommand>();
             builder.Services.AddTransient<IPrintResponseCommand, PrintResponseCommand>();
             builder.Services.AddTransient<IDeliveryNotificationCommand, DeliveryNotificationCommand>();

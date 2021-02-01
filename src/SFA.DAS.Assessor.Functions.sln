@@ -19,7 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.ExternalApis.UnitTests", "SFA.DAS.Assessor.Functions.ExternalApis.UnitTests\SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.csproj", "{E333E12A-8726-4C13-AB2A-ABBCD848DE8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.Assessor.Functions.MockApis", "SFA.DAS.Assessor.Functions.MockApis\SFA.DAS.Assessor.Functions.MockApis.csproj", "{9C7783E2-FFCC-489A-B02F-05E667CDCB12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.MockApis", "SFA.DAS.Assessor.Functions.MockApis\SFA.DAS.Assessor.Functions.MockApis.csproj", "{9C7783E2-FFCC-489A-B02F-05E667CDCB12}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.Assessor.Functions.Data", "SFA.DAS.Assessor.Functions.Data\SFA.DAS.Assessor.Functions.Data.csproj", "{1FB3B83D-CC15-4DDA-8DE0-27F8A5F712D4}"
+EndProject
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +58,10 @@ Global
 		{9C7783E2-FFCC-489A-B02F-05E667CDCB12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C7783E2-FFCC-489A-B02F-05E667CDCB12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C7783E2-FFCC-489A-B02F-05E667CDCB12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FB3B83D-CC15-4DDA-8DE0-27F8A5F712D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FB3B83D-CC15-4DDA-8DE0-27F8A5F712D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FB3B83D-CC15-4DDA-8DE0-27F8A5F712D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FB3B83D-CC15-4DDA-8DE0-27F8A5F712D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
