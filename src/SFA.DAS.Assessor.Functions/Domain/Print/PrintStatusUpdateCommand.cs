@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
@@ -18,22 +20,53 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _certificateService = certificateService;
         }
 
-        public async Task Execute(string message)
+        public async Task<List<CertificatePrintStatusUpdateErrorMessage>> Execute(CertificatePrintStatusUpdateMessage message)
         {
+            var validationErrorMessages = new List<CertificatePrintStatusUpdateErrorMessage>();
+
             try
             {
-                _logger.LogDebug($"PrintStatusUpdateCommand - Started for message {message}");
-
-                var certificatePrintStatusUpdateMessage = JsonConvert.DeserializeObject<CertificatePrintStatusUpdateMessage>(message);
-                await _certificateService.ProcessCertificatesPrintStatusUpdate(certificatePrintStatusUpdateMessage);
+                _logger.LogDebug($"PrintStatusUpdateCommand - Started for message {message.ToJson()}");
                 
-                _logger.LogDebug($"PrintStatusUpdateCommand - Completed for message {message}");
+                var validationResponse = await _certificateService.ProcessCertificatesPrintStatusUpdate(message);
+                if(validationResponse.Errors.Any())
+                {
+                    var errorMessages = validationResponse.Errors.
+                        Where(p => p.ValidationStatusCode != ValidationStatusCode.Warning).
+                        Select(s => s.ErrorMessage);
+
+                    if (errorMessages.Any())
+                    {
+                        validationErrorMessages.Add(new CertificatePrintStatusUpdateErrorMessage
+                        {
+                            CertificatePrintStatusUpdate = message,
+                            ErrorMessages = errorMessages.ToList()
+                        });
+                    }
+
+                    var warningMessages = validationResponse.Errors.
+                            Where(p => p.ValidationStatusCode == ValidationStatusCode.Warning).
+                            Select(s => s.ErrorMessage);
+
+                    foreach (var warningMessage in warningMessages)
+                    {
+                        _logger.LogWarning($"PrintStatusUpdateCommand - Processed message {message.ToJson()} with warning: {warningMessage}");
+                    }
+
+                    _logger.LogInformation($"PrintStatusUpdateCommand - Completed for message {message.ToJson()} with {errorMessages.Count()} error(s) and {warningMessages.Count()} warning(s)");
+                }
+                else
+                {
+                    _logger.LogDebug ($"PrintStatusUpdateCommand - Completed for message {message.ToJson()}");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"PrintStatusUpdateCommand - Failed for message {message}");
+                _logger.LogError(ex, $"PrintStatusUpdateCommand - Failed for message {message.ToJson()}");
                 throw;
             }
+
+            return validationErrorMessages;
         }
     }
 }

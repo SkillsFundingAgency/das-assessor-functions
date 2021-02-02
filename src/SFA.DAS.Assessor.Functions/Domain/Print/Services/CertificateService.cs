@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _logger = logger;
         }
 
-        public async Task ProcessCertificatesPrintStatusUpdate(CertificatePrintStatusUpdate certificatePrintStatusUpdate)
+        public async Task<ValidationResponse> ProcessCertificatesPrintStatusUpdate(CertificatePrintStatusUpdate certificatePrintStatusUpdate)
         {
             var model = new CertificatesPrintStatusUpdateRequest()
             {
@@ -29,14 +29,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 StatusAt = certificatePrintStatusUpdate.StatusAt
             };
 
-            var validationReponse = await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
-            if(validationReponse?.Errors.Any() ?? false)
-            {
-                foreach(var validationErrorDetail in validationReponse.Errors)
-                {
-                    _logger.LogInformation($"Validation error received for {model.CertificateReference} in batch {model.BatchNumber} message: '{validationErrorDetail.ErrorMessage}' status: '{validationErrorDetail.ValidationStatusCode}'");
-                }
-            }
+            return await _assessorServiceApiClient.UpdateCertificatesPrintStatus(model);
         }
     }
 }

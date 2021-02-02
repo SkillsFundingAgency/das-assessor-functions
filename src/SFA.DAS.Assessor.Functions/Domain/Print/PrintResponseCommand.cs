@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
@@ -7,14 +6,12 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
-using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
-using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -24,9 +21,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IBatchService _batchService;
         private readonly PrintResponseOptions _options;
 
-        // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc                
-        private static readonly string DateTimePattern = "[0-9]{10}";
-        private static readonly string FilePattern = $@"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{{1,6}}-{DateTimePattern}.json";
+        // PrintBatchResponse-XXXXXX-ddMMyyHHmm.json where XXX = 001, 002... 999999 etc
+        private static readonly string DateTimePatternFormat = "ddMMyyHHmm";
+        private static readonly string DateTimePatternRegEx = "[0-9]{10}";
+        private static readonly string FilePatternRegEx = $@"^[Pp][Rr][Ii][Nn][Tt][Bb][Aa][Tt][Cc][Hh][Rr][Ee][Ss][Pp][Oo][Nn][Ss][Ee]-[0-9]{{1,6}}-{DateTimePatternRegEx}.json";
 
         public PrintResponseCommand(
             ILogger<PrintResponseCommand> logger,
@@ -41,60 +39,68 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = printReponseOptions?.Value;
         }
 
-        public async Task<List<string>> Execute()
+        public async Task<List<CertificatePrintStatusUpdateMessage>> Execute()
         {
+            List<CertificatePrintStatusUpdateMessage> printStatusUpdateMessages = new List<CertificatePrintStatusUpdateMessage>();
+
             _logger.Log(LogLevel.Information, "PrintResponseCommand - Started");
 
-            return await Process(_options.Directory, FilePattern, DateTimePattern, "ddMMyyHHmm");
-        }
-
-        private async Task<List<string>> Process(string downloadDirectoryName, string filePattern, string dateTimePattern, string dateTimeFormat)
-        {
-            List<string> printStatusUpdateMessages = new List<string>();
-
-            var fileNames = await _externalFileTransferClient.GetFileNames(downloadDirectoryName, filePattern, false);
+            var fileNames = await _externalFileTransferClient.GetFileNames(_options.Directory, FilePatternRegEx, false);
             if (!fileNames.Any())
             {
-                _logger.Log(LogLevel.Information, "There are no certificate print notifications from the printer to process");
+                _logger.Log(LogLevel.Information, "There are no certificate print responses from the printer to process");
                 return null;
             }
 
-            var sortedFileNames = fileNames.ToList().SortByDateTimePattern(dateTimePattern, dateTimeFormat);
+            var sortedFileNames = fileNames.ToList().SortByDateTimePattern(DateTimePatternRegEx, DateTimePatternFormat);
             foreach (var fileName in sortedFileNames)
             {
+                var fileContents = await _externalFileTransferClient.DownloadFile($"{_options.Directory}/{fileName}");
+                var fileInfo = new PrintFileInfo(fileContents, fileName);
+
                 try
                 {
-                    var fileContents = await _externalFileTransferClient.DownloadFile($"{downloadDirectoryName}/{fileName}");
-                    var fileInfo = new PrintNotificationFileInfo(fileContents, fileName);
-
-                    var batch = await ProcessFile(fileInfo);
-                    printStatusUpdateMessages.AddRange(await _batchService.Update(batch));
-
-                    await ArchiveFile(fileContents, fileName, downloadDirectoryName, _options.ArchiveDirectory);
+                    try
+                    {
+                        var batch = await ProcessFile(fileInfo);
+                        var messages = await _batchService.Update(batch);
+                        
+                        await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
+                        
+                        printStatusUpdateMessages.AddRange(messages);
+                    }
+                    catch (FileFormatValidationException ex)
+                    {
+                        fileInfo.ValidationMessages.Add(ex.Message);
+                        await CreateErrorFile(fileInfo, _options.Directory, _options.ErrorDirectory);
+                        throw;
+                    }
                 }
-                catch (FileFormatValidationException ex)
+                catch(Exception ex)
                 {
-                    _logger.Log(LogLevel.Information, ex.Message);
+                    _logger.LogError(ex, $"Could not process print response file [{fileName}]");
                 }
             }
 
             return printStatusUpdateMessages;
         }
 
-        private async Task<Batch> ProcessFile(PrintNotificationFileInfo file)
+        private async Task<Batch> ProcessFile(PrintFileInfo fileInfo)
         {
-            var receipt = JsonConvert.DeserializeObject<PrintReceipt>(file.FileContent);
+            var receipt = JsonConvert.DeserializeObject<PrintReceipt>(fileInfo.FileContent);
 
             if (receipt?.Batch == null || receipt.Batch.BatchDate == DateTime.MinValue)
             {
-                throw new FileFormatValidationException($"Could not process print notifications due to invalid file format [{file.FileName}]");
+                fileInfo.InvalidFileContent = fileInfo.FileContent;
+                throw new FileFormatValidationException($"Could not process print response file [{fileInfo.FileName}] due to invalid file format");
             }
 
             var batch = await _batchService.Get(receipt.Batch.BatchNumber);
 
             if (batch == null)
             {
-                throw new FileFormatValidationException($"Could not process print notifications unable to match an existing batch Log Batch Number [{receipt.Batch.BatchNumber}] in the print notification in the file [{file.FileName}]");
+                fileInfo.InvalidFileContent = fileInfo.FileContent;
+                throw new FileFormatValidationException($"Could not process print response file [{fileInfo.FileName}] due to non matching Batch Number [{receipt.Batch.BatchNumber}]");
             }
 
             batch.BatchCreated = receipt.Batch.BatchDate;
@@ -103,9 +109,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             batch.PrintedDate = receipt.Batch.ProcessedDate;
             batch.DateOfResponse = DateTime.UtcNow;
             batch.Status = CertificateStatus.Printed;
-            
             batch.Certificates = await _batchService.GetCertificatesForBatchNumber(batch.BatchNumber);
-            
+
             return batch;
         }
     }

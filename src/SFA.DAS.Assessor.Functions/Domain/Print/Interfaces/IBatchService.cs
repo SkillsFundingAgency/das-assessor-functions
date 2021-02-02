@@ -11,6 +11,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
         Task<Batch> Get(int batchNumber);
         Task<Batch> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded);
         Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber);
-        Task<List<string>> Update(Batch batch);
+        Task<List<CertificatePrintStatusUpdateMessage>> Update(Batch batch);
     }
 }

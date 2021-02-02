@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
@@ -13,12 +14,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
         
         private Mock<ILogger> _mockLogger;
         private Mock<IPrintStatusUpdateCommand> _mockCommand;
+        private Mock<ICollector<CertificatePrintStatusUpdateErrorMessage>> _mockCollector;
 
         [SetUp]
         public void Arrange()
         {
             _mockLogger = new Mock<ILogger>();
             _mockCommand = new Mock<IPrintStatusUpdateCommand>();
+            _mockCollector = new Mock<ICollector<CertificatePrintStatusUpdateErrorMessage>>();
 
             _sut = new Functions.Print.PrintStatusUpdateFunction(_mockCommand.Object);
         }
@@ -26,10 +29,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
         [Test]
         public async Task ThenItShouldExecuteCommand()
         {
-            var message = "{}";
+            var message = new CertificatePrintStatusUpdateMessage();
 
             // Act - TimerSchedule is not used so null allowed
-            await _sut.Run(message, _mockLogger.Object);
+            await _sut.Run(message, _mockCollector.Object, _mockLogger.Object);
 
             // Assert
             _mockCommand.Verify(p => p.Execute(message), Times.Once());

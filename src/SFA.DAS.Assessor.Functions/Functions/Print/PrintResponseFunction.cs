@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Print
@@ -18,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
 
         [FunctionName("CertificatePrintResponse")]
         public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:PrintResponseOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer,
-            [Queue(QueueNames.CertificatePrintStatusUpdate)] ICollector<string> storageQueue,
+            [Queue(QueueNames.CertificatePrintStatusUpdate)] ICollector<CertificatePrintStatusUpdateMessage> storageQueue,
             ILogger log)
         {
             try

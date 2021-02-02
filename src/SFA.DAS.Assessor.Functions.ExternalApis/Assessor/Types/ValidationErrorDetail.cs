@@ -42,6 +42,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types
         [EnumMember(Value = "AlreadyExists")]
         AlreadyExists,
         [EnumMember(Value = "NotFound")]
-        NotFound
+        NotFound,
+        [EnumMember(Value = "Warning")]
+        Warning
     }
 }

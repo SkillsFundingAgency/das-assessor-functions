@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Interfaces
 {
-    public interface IQueueCommand
+    public interface IQueueCommand<TOutput>
     {
-        Task<List<string>> Execute();
+        Task<List<TOutput>> Execute();
     }
 }

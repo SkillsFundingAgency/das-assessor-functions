@@ -46,10 +46,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             _options = options?.Value;
         }
 
-        public async Task<List<string>> Execute()
+        public async Task<List<CertificatePrintStatusUpdateMessage>> Execute()
         {
             Schedule schedule = null;
-            List<string> printStatusUpdateMessages = null;
+            List<CertificatePrintStatusUpdateMessage> printStatusUpdateMessages = null;
 
             try
             {

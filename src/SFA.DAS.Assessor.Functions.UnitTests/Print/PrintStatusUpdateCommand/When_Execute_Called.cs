@@ -36,6 +36,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
                 StatusAt = DateTime.UtcNow
             };
 
+            _mockCertificateService
+                .Setup(m => m.ProcessCertificatesPrintStatusUpdate(
+                    It.Is<CertificatePrintStatusUpdateMessage>(
+                        p => CertificatePrintStatusUpdateMessageEquals(p, _certificatePrintStatusUpdateMessage))))
+                .ReturnsAsync(new ValidationResponse(new ValidationErrorDetail()));
+
             _sut = new Domain.Print.PrintStatusUpdateCommand(
                 _mockLogger.Object,
                 _mockCertificateService.Object);
@@ -45,7 +51,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
         public async Task ThenItShouldLogTheStartOfTheProcess()
         {
             // Arrange
-            var message = JsonConvert.SerializeObject(_certificatePrintStatusUpdateMessage);
+            var message = _certificatePrintStatusUpdateMessage;
             var logMessage = $"PrintStatusUpdateCommand - Started for message";
             
             // Act
@@ -59,16 +65,21 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
         public async Task ThenItShouldCallCertificateServiceToProcessUpdates()
         {
             // Arrange
-            var message = JsonConvert.SerializeObject(_certificatePrintStatusUpdateMessage);
+            var message = _certificatePrintStatusUpdateMessage;
 
             // Act
             await _sut.Execute(message);
 
             // Assert
             _mockCertificateService.Verify(m => m.ProcessCertificatesPrintStatusUpdate(
-                It.Is<CertificatePrintStatusUpdate>(c => JsonConvert.SerializeObject(c).Equals(
-                    JsonConvert.SerializeObject(_certificatePrintStatusUpdateMessage)))),
+                It.Is<CertificatePrintStatusUpdateMessage>(
+                        p => CertificatePrintStatusUpdateMessageEquals(p, _certificatePrintStatusUpdateMessage))),
                 Times.Once);
+        }
+
+        private bool CertificatePrintStatusUpdateMessageEquals(CertificatePrintStatusUpdateMessage first, CertificatePrintStatusUpdateMessage second)
+        {
+            return JsonConvert.SerializeObject(first).Equals(JsonConvert.SerializeObject(second));
         }
     }
 }
