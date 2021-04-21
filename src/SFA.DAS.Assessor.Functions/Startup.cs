@@ -62,16 +62,21 @@ namespace SFA.DAS.Assessor.Functions
                 nLogConfiguration.ConfigureNLog();
             });
 
-            var config = new ConfigurationBuilder()
-                .AddConfiguration(builder.GetCurrentConfiguration())
-                .AddAzureTableStorageConfiguration(
-                    Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
-                    "SFA.DAS.AssessorFunctions",
-                    Environment.GetEnvironmentVariable("EnvironmentName"),
-                    "1.0")
-                .Build();
+            builder.AddConfiguration((configBuilder) =>
+            {
+                var configuration = configBuilder
+                    .AddConfiguration(builder.GetCurrentConfiguration())
+                    .AddAzureTableStorageConfiguration(
+                        Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
+                        "SFA.DAS.AssessorFunctions",
+                        Environment.GetEnvironmentVariable("EnvironmentName"),
+                        "1.0")
+                    .Build();
 
-            builder.Services.Replace(new ServiceDescriptor(typeof(IConfiguration), config));
+                return configuration;
+            });
+
+            var config = builder.GetCurrentConfiguration();
 
             builder.Services.AddOptions();
 
