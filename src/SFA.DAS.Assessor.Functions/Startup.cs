@@ -62,11 +62,8 @@ namespace SFA.DAS.Assessor.Functions
                 nLogConfiguration.ConfigureNLog();
             });
 
-            var serviceProvider = builder.Services.BuildServiceProvider();
-            var existingConfig = serviceProvider.GetService<IConfiguration>();
-
             var config = new ConfigurationBuilder()
-                .AddConfiguration(existingConfig)
+                .AddConfiguration(builder.GetCurrentConfiguration())
                 .AddAzureTableStorageConfiguration(
                     Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
                     "SFA.DAS.AssessorFunctions",
