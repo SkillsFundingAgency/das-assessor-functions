@@ -1,6 +1,7 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Data;
@@ -61,20 +62,19 @@ namespace SFA.DAS.Assessor.Functions
                 nLogConfiguration.ConfigureNLog();
             });
 
-            builder.AddConfiguration((configBuilder) =>
-            {
-                var configuration = configBuilder
-                    .AddAzureTableStorageConfiguration(
-                        Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
-                        "SFA.DAS.AssessorFunctions",
-                        Environment.GetEnvironmentVariable("EnvironmentName"),
-                        "1.0")
-                    .Build();
+            var serviceProvider = builder.Services.BuildServiceProvider();
+            var existingConfig = serviceProvider.GetService<IConfiguration>();
 
-                return configuration;
-            });
+            var config = new ConfigurationBuilder()
+                .AddConfiguration(existingConfig)
+                .AddAzureTableStorageConfiguration(
+                    Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
+                    "SFA.DAS.AssessorFunctions",
+                    Environment.GetEnvironmentVariable("EnvironmentName"),
+                    "1.0")
+                .Build();
 
-            var config = builder.GetCurrentConfiguration();
+            builder.Services.Replace(new ServiceDescriptor(typeof(IConfiguration), config));
 
             builder.Services.AddOptions();
 
