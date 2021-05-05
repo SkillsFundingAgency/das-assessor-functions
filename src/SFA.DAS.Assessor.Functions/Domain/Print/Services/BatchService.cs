@@ -84,7 +84,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             if(nextBatchNumberReadyToPrint.HasValue)
             {
                 var batch = await Get(nextBatchNumberReadyToPrint.Value);
-                batch.Certificates = (await GetCertificatesForBatchNumber(nextBatchNumberReadyToPrint.Value)).Sanitise(_logger);
+                batch.Certificates = await GetCertificatesForBatchNumber(nextBatchNumberReadyToPrint.Value);
                 return batch;
             }
 
