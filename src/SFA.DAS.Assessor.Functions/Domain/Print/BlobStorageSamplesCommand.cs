@@ -48,13 +48,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private async Task UploadSamplePrintResponseFile()
         {
-            var samplePrintResponse = new BatchData()
+            var samplePrintResponse = new SampleBatchData()
             {
                 BatchNumber = 1,
-                BatchDate = DateTime.Parse("2020-01-31T13:30:00.0000000Z"),
+                BatchDate = "2020-01-31T13:30:00.0000000Z",
                 PostalContactCount = 22,
                 TotalCertificateCount = 48,
-                ProcessedDate = DateTime.Parse("2020-02-03T15:30:00.0000000Z")
+                ProcessedDate = "2020-02-03T15:30:00.0000000Z"
             };
 
             var filename = "PrintBatchResponse-001-3101201330.json";
