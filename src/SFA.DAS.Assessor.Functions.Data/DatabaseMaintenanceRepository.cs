@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.Data
         public async Task<List<string>> DatabaseMaintenance()
         {
             var results = await _connection.QueryAsync<string>("DatabaseMaintenance",
-                commandTimeout: 7200,
+                commandTimeout: 28800,
                 commandType: CommandType.StoredProcedure);
 
             return results
