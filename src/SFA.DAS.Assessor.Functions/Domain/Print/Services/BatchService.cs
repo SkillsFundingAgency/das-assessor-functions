@@ -94,7 +94,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         public async Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber)
         {
             var response = await _assessorServiceApiClient.GetCertificatesForBatchNumber(batchNumber);
-            return response.Certificates.Select(Map).ToList();
+            if(response == null)
+            {
+                throw new Exception($"Unable to get the certificates for batch number {batchNumber}");
+            }
+
+            return response.Certificates?.Select(Map).ToList();
         }
 
         public async Task<List<CertificatePrintStatusUpdateMessage>> Update(Batch batch)
