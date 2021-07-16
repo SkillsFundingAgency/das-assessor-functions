@@ -69,7 +69,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 {
                     if((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)
                     {
-                        _logger.LogInformation("There are certificates ready to print at this time");
+                        _logger.LogInformation($"There are no certificates in batch number {nextBatchReadyToPrint} ready to print at this time");
                     }
                     else
                     {
