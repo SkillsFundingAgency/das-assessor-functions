@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.ApiClient.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -182,6 +178,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/externalapidatasync/rebuild-sandbox"))
             {
                 await PostPutRequest(request);
+            }
+        }
+
+        public async Task ImportLearners()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/approvals/update-approvals"))
+            {
+                await PostPutRequest<object>(request, null);
             }
         }
     }

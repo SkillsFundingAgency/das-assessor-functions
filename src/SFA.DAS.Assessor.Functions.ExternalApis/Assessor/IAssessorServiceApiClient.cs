@@ -1,7 +1,5 @@
-﻿using SFA.DAS.Assessor.Functions.ApiClient.Types;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
+﻿using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
@@ -33,5 +31,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task<ImportLearnerDetailResponse> ImportLearnerDetails(ImportLearnerDetailRequest request);
         Task UpdateLastRunStatus(UpdateLastRunStatusRequest updateScheduleRunStatusRequest);
         Task RebuildExternalApiSandbox();
+        Task ImportLearners();
     }
 }
