@@ -11,6 +11,8 @@ using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Services;
+using SFA.DAS.Assessor.Functions.Domain.Learners;
+using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
@@ -29,6 +31,7 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Configuration;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.ExternalApiDataSync;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.Learners;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
@@ -97,6 +100,9 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<PrintResponseOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintResponseOptions)}"));
             builder.Services.Configure<DeliveryNotificationOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(DeliveryNotificationOptions)}"));
             builder.Services.Configure<BlobSasTokenGeneratorOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(BlobSasTokenGeneratorOptions)}"));
+
+            var importLearnerOptions = $"{functionsOptions}:{nameof(ImportLearnersOptions)}";
+            builder.Services.Configure<ImportLearnersOptions>(config.GetSection(importLearnerOptions));
 
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
@@ -183,6 +189,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IRefreshIlrsEnqueueProvidersCommand, RefreshIlrsEnqueueProvidersCommand>();
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
+            builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
         }
     }
 }
