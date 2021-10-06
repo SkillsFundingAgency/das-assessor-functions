@@ -227,6 +227,10 @@
                                 {
                                     "name": "FUNCTIONS_WORKER_RUNTIME",
                                     "value": "dotnet"
+                                },
+                                {
+                                    "name": "WEBSITE_RUN_FROM_PACKAGE",
+                                    "value": "1"
                                 }
                             ]
                         }
@@ -261,6 +265,9 @@
                     },
                     "storageKind": {
                         "value": "StorageV2"
+                    },
+                    "allowSharedKeyAccess": {
+                        "value": true
                     }
                 }
             }
