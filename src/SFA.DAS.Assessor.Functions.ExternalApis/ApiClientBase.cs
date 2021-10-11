@@ -218,6 +218,29 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
                 throw new HttpRequestException();
             }
         }
+        protected async Task PostPutRequestWithoutRetry(HttpRequestMessage requestMessage)
+        {
+            if (requestMessage.Method != HttpMethod.Post && requestMessage.Method != HttpMethod.Put)
+            {
+                throw new ArgumentOutOfRangeException(nameof(requestMessage), $"Request must be either {nameof(HttpMethod.Post)} or {nameof(HttpMethod.Put)}");
+            }
+
+            HttpResponseMessage response = null;
+
+            if (requestMessage.Method == HttpMethod.Post)
+            {
+                response = await _httpClient.PostAsync(requestMessage.RequestUri, null);
+            }
+            else if (requestMessage.Method == HttpMethod.Put)
+            {
+                response = await _httpClient.PutAsync(requestMessage.RequestUri, null);
+            }
+
+            if (response?.StatusCode == HttpStatusCode.InternalServerError)
+            {
+                throw new HttpRequestException();
+            }
+        }
 
         protected async Task Delete(HttpRequestMessage requestMessage)
         {
