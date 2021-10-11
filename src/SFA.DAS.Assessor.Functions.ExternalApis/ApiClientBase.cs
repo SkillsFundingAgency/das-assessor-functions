@@ -230,7 +230,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             // Set timeout for this request to be longer as the import 
             // can take a while if it's a complete refresh
             // No retry as this can't run more than once a day.
-            _httpClient.Timeout = TimeSpan.FromMinutes(90);
+            _httpClient.Timeout = TimeSpan.FromHours(2);
             var response = await _httpClient.PostAsync(requestMessage.RequestUri, null);
 
 
