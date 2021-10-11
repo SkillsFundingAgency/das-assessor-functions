@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -27,18 +28,18 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
         protected ApiClientBase(HttpClient httpClient, Uri baseAddress, ILogger<ApiClientBase> logger)
         {
-            if(string.IsNullOrEmpty(baseAddress.AbsolutePath))
+            if (string.IsNullOrEmpty(baseAddress.AbsolutePath))
             {
                 throw new Exception("Must specify base address");
             }
-            
+
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _httpClient.BaseAddress = baseAddress;
-            
+
             _logger = logger;
-            
+
             _retryPolicy = HttpPolicyExtensions.HandleTransientHttpError().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
@@ -74,7 +75,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
         protected async Task<T> GetAsync<T>(HttpRequestMessage requestMessage, string message = null)
         {
             var response = await GetAsync(requestMessage, message);
-            
+
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -209,7 +210,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
                 {
                     return await _httpClient.PutAsync(requestMessage.RequestUri, null);
                 }
-                
+
                 return null;
             });
 
@@ -218,23 +219,20 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
                 throw new HttpRequestException();
             }
         }
-        protected async Task PostPutRequestWithoutRetry(HttpRequestMessage requestMessage)
+
+        protected async Task PostRequestWithoutRetryAndLongerTimeout(HttpRequestMessage requestMessage)
         {
-            if (requestMessage.Method != HttpMethod.Post && requestMessage.Method != HttpMethod.Put)
+            if (requestMessage.Method != HttpMethod.Post)
             {
-                throw new ArgumentOutOfRangeException(nameof(requestMessage), $"Request must be either {nameof(HttpMethod.Post)} or {nameof(HttpMethod.Put)}");
+                throw new ArgumentOutOfRangeException(nameof(requestMessage), $"Request must be {nameof(HttpMethod.Post)}");
             }
 
-            HttpResponseMessage response = null;
+            // Set timeout for this request to be longer as the import 
+            // can take a while if it's a complete refresh
+            // No retry as this can't run more than once a day.
+            _httpClient.Timeout = TimeSpan.FromMinutes(90);
+            var response = await _httpClient.PostAsync(requestMessage.RequestUri, null);
 
-            if (requestMessage.Method == HttpMethod.Post)
-            {
-                response = await _httpClient.PostAsync(requestMessage.RequestUri, null);
-            }
-            else if (requestMessage.Method == HttpMethod.Put)
-            {
-                response = await _httpClient.PutAsync(requestMessage.RequestUri, null);
-            }
 
             if (response?.StatusCode == HttpStatusCode.InternalServerError)
             {
@@ -248,14 +246,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             {
                 throw new ArgumentOutOfRangeException(nameof(requestMessage), $"Request must be {nameof(HttpMethod.Delete)}");
             }
-            
+
             var response = await _retryPolicy.ExecuteAsync(async () =>
             {
                 if (requestMessage.Method == HttpMethod.Delete)
                 {
                     return await _httpClient.DeleteAsync(requestMessage.RequestUri);
                 }
-                
+
                 return null;
             });
 
