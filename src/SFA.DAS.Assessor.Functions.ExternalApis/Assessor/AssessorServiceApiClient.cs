@@ -185,7 +185,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/approvals/update-approvals"))
             {
-                await PostPutRequest(request);
+                await PostRequestWithoutRetryAndLongerTimeout(request);
             }
         }
     }
