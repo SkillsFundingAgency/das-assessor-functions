@@ -191,7 +191,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task RefreshProviders()
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/providers/update-providers"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/providers/refresh-providers"))
             {
                 await PostPutRequest(request);
             }
