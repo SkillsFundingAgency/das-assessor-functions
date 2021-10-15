@@ -187,7 +187,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IRebuildExternalApiSandboxCommand, RebuildExternalApiSandboxCommand>();
             builder.Services.AddTransient<IRefreshIlrsDequeueProvidersCommand, RefreshIlrsDequeueProvidersCommand>();
             builder.Services.AddTransient<IRefreshIlrsEnqueueProvidersCommand, RefreshIlrsEnqueueProvidersCommand>();
-            builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
+            builder.Services.AddTransient<IStandardImportCommand, StandardImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
             builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
         }

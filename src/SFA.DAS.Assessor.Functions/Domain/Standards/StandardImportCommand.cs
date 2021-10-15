@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Standards
 {
-    public class StandardCollationImportCommand : IStandardCollationImportCommand
+    public class StandardImportCommand : IStandardImportCommand
     {
-        private readonly ILogger<StandardCollationImportCommand> _logger;
+        private readonly ILogger<StandardImportCommand> _logger;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
         
-        public StandardCollationImportCommand(ILogger<StandardCollationImportCommand> logger,
+        public StandardImportCommand(ILogger<StandardImportCommand> logger,
             IAssessorServiceApiClient assessorServiceApi)
         {
             _logger = logger;
@@ -19,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Standards
 
         public async Task Execute()
         {
-            _logger.LogInformation("Requesting import for standard collation data");
+            _logger.LogInformation("Requesting import for standard data");
             await _assessorServiceApi.UpdateStandards();
         }
     }

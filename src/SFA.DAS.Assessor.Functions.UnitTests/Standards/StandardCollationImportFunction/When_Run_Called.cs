@@ -5,21 +5,21 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardCollationImportFlow
+namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardImportFlow
 {
     public class When_Run_Called
     {
-        private Functions.Standards.StandardCollationImportFunction _sut;
+        private Functions.Standards.StandardImportFunction _sut;
         private Mock<ILogger> _logger;
-        private Mock<IStandardCollationImportCommand> _command;
+        private Mock<IStandardImportCommand> _command;
 
         [SetUp]
         public void Arrange()
         {
             _logger = new Mock<ILogger>();
-            _command = new Mock<IStandardCollationImportCommand>();
+            _command = new Mock<IStandardImportCommand>();
 
-            _sut = new Functions.Standards.StandardCollationImportFunction(_command.Object);
+            _sut = new Functions.Standards.StandardImportFunction(_command.Object);
         }
 
         [Test]
