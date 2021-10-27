@@ -141,7 +141,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
         {
             source = source.ToLower();
 
-            source = Regex.Replace(source, @"(?:(M|m)(c)|(\b))([a-z])", delegate (Match m) {
+            source = Regex.Replace(source, @"(?:(^M|^m)(c)|(\b))([a-z])", delegate (Match m) {
                 return String.Concat(m.Groups[1].Value.ToUpper(), m.Groups[2].Value, m.Groups[3].Value, m.Groups[4].Value.ToUpper());
             });
         }
