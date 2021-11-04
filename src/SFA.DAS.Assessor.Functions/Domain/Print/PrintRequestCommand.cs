@@ -79,13 +79,20 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                         var printOutput = _printCreator.Create(nextBatchReadyToPrint.BatchNumber, nextBatchReadyToPrint.Certificates);
 
-                        foreach (var pd in printOutput.PrintData)
+                        if ((printOutput?.PrintData?.Count ?? 0) > 0)
                         {
-                            foreach (var cert in pd.Certificates)
+                            foreach (var pd in printOutput.PrintData)
                             {
-                                _logger.LogInformation(cert.ApprenticeName + " - " + cert.CertificateNumber);
+                                if ((pd?.Certificates?.Count ?? 0) > 0)
+                                {
+                                    foreach (var cert in pd.Certificates)
+                                    {
+                                        _logger.LogInformation(cert?.ApprenticeName + " - " + cert?.CertificateNumber);
+                                    }
+                                }
                             }
                         }
+
                         var fileContents = JsonConvert.SerializeObject(printOutput);
 
                         nextBatchReadyToPrint.NumberOfCertificates = printOutput.Batch.TotalCertificateCount;
