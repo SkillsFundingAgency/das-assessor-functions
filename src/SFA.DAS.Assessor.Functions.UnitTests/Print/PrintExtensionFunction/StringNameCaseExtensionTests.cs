@@ -11,6 +11,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintExtensionFunction
         [TestCase("hemchandra", "Hemchandra")]
         [TestCase("szymczyk", "Szymczyk")]
         [TestCase("Maciejewska", "Maciejewska")]
+        [TestCase("MACHACEk", "Machacek")]
         public void ThenNameShouldBeCapitalized(string name, string expectedAfterCapitalization)
         {
             var nameAfterCapitalization = name.ProperCase();
