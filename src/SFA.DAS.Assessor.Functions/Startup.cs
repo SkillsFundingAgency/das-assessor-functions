@@ -16,6 +16,7 @@ using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
+using SFA.DAS.Assessor.Functions.Domain.Providers.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.Extensions;
@@ -33,6 +34,7 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.ExternalApiDataSync;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.Learners;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.Providers;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using System;
@@ -103,6 +105,9 @@ namespace SFA.DAS.Assessor.Functions
 
             var importLearnerOptions = $"{functionsOptions}:{nameof(ImportLearnersOptions)}";
             builder.Services.Configure<ImportLearnersOptions>(config.GetSection(importLearnerOptions));
+
+            var refreshProvidersOptions = $"{functionsOptions}:{nameof(RefreshProvidersOptions)}";
+            builder.Services.Configure<RefreshProvidersOptions>(config.GetSection(refreshProvidersOptions));
 
             builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
@@ -190,6 +195,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IStandardCollationImportCommand, StandardCollationImportCommand>();
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
             builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
+            builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
         }
     }
 }

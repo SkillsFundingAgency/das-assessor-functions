@@ -32,5 +32,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task UpdateLastRunStatus(UpdateLastRunStatusRequest updateScheduleRunStatusRequest);
         Task RebuildExternalApiSandbox();
         Task ImportLearners();
+        Task RefreshProviders();
     }
 }
