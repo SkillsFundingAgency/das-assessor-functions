@@ -78,8 +78,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         nextBatchReadyToPrint.CertificatesFileName = GetCertificatesFileName(nextBatchReadyToPrint.BatchNumber, nextBatchReadyToPrint.BatchCreated);
 
                         var printOutput = _printCreator.Create(nextBatchReadyToPrint.BatchNumber, nextBatchReadyToPrint.Certificates);
-                        var fileContents = JsonConvert.SerializeObject(printOutput);
 
+                        var fileContents = JsonConvert.SerializeObject(printOutput);
                         nextBatchReadyToPrint.NumberOfCertificates = printOutput.Batch.TotalCertificateCount;
                         nextBatchReadyToPrint.NumberOfCoverLetters = printOutput.Batch.PostalContactCount;
 

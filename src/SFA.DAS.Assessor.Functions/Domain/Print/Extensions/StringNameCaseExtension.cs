@@ -48,6 +48,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
             MacMcFamilyNameExceptions.Add(@"\bMacKey", "Mackey");
             MacMcFamilyNameExceptions.Add(@"\bMacKley", "Mackley");
             MacMcFamilyNameExceptions.Add(@"\bMacHon", "Machon");
+            MacMcFamilyNameExceptions.Add(@"\bMacIejewska", "Maciejewska");
+            MacMcFamilyNameExceptions.Add(@"\bMacHacek", "Machacek");
 
             NonEnglishFamilyNameReplacements.Add(@"\bAl(?=\s+\w)", "al");               // al Arabic or forename Al.
             NonEnglishFamilyNameReplacements.Add(@"\b(Bin|Binti|Binte)\b", "bin");      // bin, binti, binte Arabic
@@ -141,7 +143,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
         {
             source = source.ToLower();
 
-            source = Regex.Replace(source, @"(?:(M|m)(c)|(\b))([a-z])", delegate (Match m) {
+            source = Regex.Replace(source, @"(?:(^M|^m)(c)|(\b))([a-z])", delegate (Match m) {
                 return String.Concat(m.Groups[1].Value.ToUpper(), m.Groups[2].Value, m.Groups[3].Value, m.Groups[4].Value.ToUpper());
             });
         }
