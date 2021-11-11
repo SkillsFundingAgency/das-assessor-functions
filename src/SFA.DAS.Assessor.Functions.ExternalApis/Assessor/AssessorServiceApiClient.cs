@@ -30,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
             {
-                await PostPutRequest(request, new { });
+                await PostRequestWithoutRetryAndLongerTimeout(request);
             }
         }
 
