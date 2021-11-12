@@ -4,20 +4,20 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardCollationImportCommand
+namespace SFA.DAS.Assessor.Functions.UnitTests.Standards.StandardImportCommand
 {
     public class When_Execute_Called
     {
-        private Domain.Standards.StandardCollationImportCommand _sut;
+        private Domain.Standards.StandardImportCommand _sut;
         private Mock<IAssessorServiceApiClient> _assessorServiceApiClient;
 
         [SetUp]
         public void Arrange()
         {
-            var logger = new Mock<ILogger<Domain.Standards.StandardCollationImportCommand>>();
+            var logger = new Mock<ILogger<Domain.Standards.StandardImportCommand>>();
             _assessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
 
-            _sut = new Domain.Standards.StandardCollationImportCommand(logger.Object, _assessorServiceApiClient.Object);
+            _sut = new Domain.Standards.StandardImportCommand(logger.Object, _assessorServiceApiClient.Object);
         }
 
         [Test]
