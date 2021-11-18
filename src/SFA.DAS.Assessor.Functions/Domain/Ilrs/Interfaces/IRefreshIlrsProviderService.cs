@@ -7,8 +7,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces
 {
     public interface IRefreshIlrsProviderService
     {
-        Task<List<RefreshIlrsProviderMessage>> ProcessProviders();
-        Task<DateTime> GetLastRunDateTime();
-        Task SetLastRunDateTime(DateTime nextRunDateTime);
+        Task<List<RefreshIlrsProviderMessage>> ProcessProviders(DateTime lastRunDateTime, DateTime currentRunDateTime);
     }
 }

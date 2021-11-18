@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.Services.RefreshIlrsLearner
+namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
 {
     public class When_provider_is_dequeued_with_single_learner_and_no_standards : RefreshIlrsLearnerTestBase
     {

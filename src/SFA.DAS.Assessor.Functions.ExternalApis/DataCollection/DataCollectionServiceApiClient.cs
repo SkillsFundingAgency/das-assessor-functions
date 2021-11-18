@@ -31,16 +31,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
             {
                 var response = await GetAsync(request);
 
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    var sources = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<string>>(json, JsonSettings));
-                    
-                    sources.Sort();
-                    return sources;
-                }
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new Exception($"Unable to get academic year for {dateTimeUtc.ToShortDateString()}");
 
-                return default;
+                var json = await response.Content.ReadAsStringAsync();
+                var sources = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<string>>(json, JsonSettings));
+                sources.Sort();
+                
+                return sources;
             }
         }
 

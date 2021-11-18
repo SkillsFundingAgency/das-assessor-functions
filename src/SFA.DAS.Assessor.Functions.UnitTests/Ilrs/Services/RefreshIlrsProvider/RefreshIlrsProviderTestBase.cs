@@ -1,233 +1,136 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Services;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
+using SFA.DAS.Assessor.Functions.UnitTests.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.Services.RefreshIlrsProvider
+namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsProvider
 {
     public class RefreshIlrsProviderTestBase
     {
-        protected RefreshIlrsProviderService Sut;
-
-        protected Mock<IOptions<RefreshIlrsOptions>> Options;
-        protected Mock<IDataCollectionServiceApiClient> DataCollectionServiceApiClient;
-        protected Mock<IAssessorServiceApiClient> AssessorServiceApiClient;
-        protected Mock<IDateTimeHelper> DateTimeHelper;
-        protected Mock<ILogger<RefreshIlrsProviderService>> Logger;
-
-        protected string RefreshIlrsLastRunDate = null;
-
-        protected static DateTime Period4Date1920 = new DateTime(2019, 11, 1);
-        protected static DateTime Period5Date1920 = new DateTime(2019, 12, 1);
-        protected static DateTime Period6Date1920 = new DateTime(2020, 1, 1);
-        protected static DateTime Period13Date1920Period1Date2021 = new DateTime(2020, 8, 1);
-        protected static DateTime Period14Date1920Period2Date2021 = new DateTime(2020, 9, 1);
-
-        protected static DateTime Period4Date2021 = new DateTime(2020, 11, 1);
-        protected static DateTime Period5Date2021 = new DateTime(2020, 12, 1);
-        protected static DateTime Period6Date2021 = new DateTime(2021, 1, 1);
-        protected static DateTime Period13Date2021Period1Date2022 = new DateTime(2021, 8, 1);
-        protected static DateTime Period14Date2021Period2Date2022 = new DateTime(2021, 9, 1);
-
-        protected Dictionary<DateTime, List<string>> AcademicYears = new Dictionary<DateTime, List<string>>
+        protected class TestFixture
         {
-            {
-              Period4Date1920, new List<string> { "1920" }
-            },
-            {
-              Period5Date1920, new List<string> { "1920" }
-            },
-            {
-              Period6Date1920, new List<string> { "1920" }
-            },
-            {
-              Period13Date1920Period1Date2021, new List<string> { "1920", "2021" }
-            },
-            {
-              Period14Date1920Period2Date2021, new List<string> { "1920", "2021" }
-            },
-            {
-              Period4Date2021, new List<string> { "2021" }
-            },
-            {
-              Period5Date2021, new List<string> { "2021" }
-            },
-            {
-              Period6Date2021, new List<string> { "2021" }
-            },
-            {
-              Period13Date2021Period1Date2022, new List<string> { "2021", "2022" }
-            },
-            {
-              Period14Date2021Period2Date2022, new List<string> { "2021", "2022" }
-            },
-        };
+            protected RefreshIlrsProviderService Sut;
 
-        protected Dictionary<(DateTime, int), DataCollectionProvidersPage> Providers1920 = new Dictionary<(DateTime, int), DataCollectionProvidersPage>
-        {
+            public Mock<IOptions<RefreshIlrsOptions>> Options;
+            public Mock<IDataCollectionServiceApiClient> DataCollectionServiceApiClient;
+            public Mock<IRefreshIlrsAcademicYearService> MockRefreshIlrsAcademicYearsService;
+            public Mock<ILogger<RefreshIlrsProviderService>> Logger;
+
+            protected Dictionary<string, Dictionary<(DateTime, int), DataCollectionProvidersPage>> Providers =
+                new Dictionary<string, Dictionary<(DateTime, int), DataCollectionProvidersPage>>();
+
+            protected Dictionary<DateTime, List<string>> AcademicYears =
+                new Dictionary<DateTime, List<string>>();
+
+            public TestFixture WithProviders(string source, DateTime changedAt, List<int> providers, int pageSize)
             {
-                (DateTime.MaxValue, 1 ), new DataCollectionProvidersPage()
-            },
-            {
-                ( Period4Date1920, 1 ), new DataCollectionProvidersPage
+                var sourceDictionary = Providers.ContainsKey(source)
+                    ? Providers[source]
+                    : new Dictionary<(DateTime, int), DataCollectionProvidersPage>();
+
+                var providerPages = providers.ChunkBy(pageSize);
+
+                var dataCollectionProviderPages = providerPages.Select((p, i) => new DataCollectionProvidersPage
                 {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 3, TotalPages = 1 },
-                    Providers = new List<int> { 111111, 222222, 333333 }
-                }
-            },
-            {
-                ( Period4Date1920, 2 ), new DataCollectionProvidersPage
+                    Providers = p,
+                    PagingInfo = new DataCollectionPagingInfo
+                    {
+                        PageNumber = i + 1,
+                        PageSize = pageSize,
+                        TotalPages = providerPages.Count,
+                        TotalItems = providers.Count
+                    }
+                }).ToList().Append(new DataCollectionProvidersPage
                 {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 3, TotalItems = 3, TotalPages = 1 },
-                    Providers = new List<int> {  }
-                }
-            },
-            {
-                ( Period6Date1920, 1 ), new DataCollectionProvidersPage
+                    PagingInfo = new DataCollectionPagingInfo
+                    {
+                        PageNumber = providerPages.Count + 1,
+                        PageSize = pageSize,
+                        TotalPages = providerPages.Count,
+                        TotalItems = providers.Count
+                    }
+                });
+
+                foreach (var dataCollectionProviderPage in dataCollectionProviderPages.Select((value, index) => (value, index)))
                 {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 6, TotalPages = 1 },
-                    Providers = new List<int> { 111111, 222222, 333333 }
+                    sourceDictionary.Add((changedAt, dataCollectionProviderPage.index + 1), dataCollectionProviderPage.value);
                 }
-            },
-            {
-                ( Period6Date1920, 2 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 3, TotalItems = 6 , TotalPages = 2 },
-                    Providers = new List<int> { 444444, 555555, 666666 }
-                }
-            },
-            {
-                ( Period6Date1920, 3 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 3, PageSize = 3, TotalItems = 6, TotalPages = 2 },
-                    Providers = new List<int> {  }
-                }
-            },
-            {
-                ( Period13Date1920Period1Date2021, 1 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 3, TotalPages = 1 },
-                    Providers = new List<int> { 444444, 555555, 666666 }
-                }
-            },
-            {
-                ( Period13Date1920Period1Date2021, 2 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 3, TotalItems = 3, TotalPages = 1 },
-                    Providers = new List<int> {  }
-                }
-            },
-            {
-                ( Period14Date1920Period2Date2021, 1 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 5, TotalPages = 2 },
-                    Providers = new List<int> { 777777, 888888, 999999 }
-                }
-            },
-            {
-                ( Period14Date1920Period2Date2021, 2 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 3, TotalItems = 5, TotalPages = 2 },
-                    Providers = new List<int> { 1111111, 1222222 }
-                }
-            },
-            {
-                ( Period14Date1920Period2Date2021, 3 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 3, PageSize = 3, TotalItems = 5, TotalPages = 2 },
-                    Providers = new List<int> {  }
-                }
+
+                if (!Providers.ContainsKey(source))
+                    Providers[source] = sourceDictionary;
+
+                return this;
             }
-        };
 
-        protected Dictionary<(DateTime, int), DataCollectionProvidersPage> Providers2021 = new Dictionary<(DateTime, int), DataCollectionProvidersPage>
-        {
+            public TestFixture WithAcademicYear((DateTime date, List<string> academicYears) mapping)
             {
-                (DateTime.MaxValue, 1), new DataCollectionProvidersPage()
-            },
-            {
-                (Period13Date1920Period1Date2021, 1), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 3, TotalPages = 1 },
-                    Providers = new List<int> { 444444, 555555, 777777 }
-                }
-            },
-            {
-                (Period13Date1920Period1Date2021, 2), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 3, TotalItems = 3, TotalPages = 1 },
-                    Providers = new List<int> {  }
-                }
-            },
-            {
-                ( Period14Date1920Period2Date2021, 1 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 5, TotalPages = 2 },
-                    Providers = new List<int> { 777777, 1333333, 1444444 }
-                }
-            },
-            {
-                ( Period14Date1920Period2Date2021, 2 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 2, PageSize = 3, TotalItems = 5, TotalPages = 2 },
-                    Providers = new List<int> { 1555555, 1666666 }
-                }
-            },
-            {
-                ( Period14Date1920Period2Date2021, 3 ), new DataCollectionProvidersPage
-                {
-                    PagingInfo = new DataCollectionPagingInfo {PageNumber = 3, PageSize = 3, TotalItems = 5, TotalPages = 2 },
-                    Providers = new List<int> {  }
-                }
+                AcademicYears
+                    .Add(mapping.date, mapping.academicYears);
+
+                return this;
             }
-        };
 
-        protected void BaseArrange(string lastRunDateTime)
-        {
-            Options = new Mock<IOptions<RefreshIlrsOptions>>();
-            Options.Setup(p => p.Value).Returns(new RefreshIlrsOptions
+            public TestFixture Setup()
             {
-                ProviderPageSize = 1,
-                ProviderInitialRunDate = new DateTime(2019, 10, 10),
-                LearnerPageSize = 1,
-                LearnerFundModels = "10, 20, 30"
-            });
+                Options = new Mock<IOptions<RefreshIlrsOptions>>();
+                Options.Setup(p => p.Value).Returns(new RefreshIlrsOptions
+                {
+                    ProviderPageSize = 1,
+                    ProviderInitialRunDate = new DateTime(2019, 10, 10),
+                    LearnerPageSize = 1,
+                    LearnerFundModels = "10, 20, 30"
+                });
 
-            DataCollectionServiceApiClient = new Mock<IDataCollectionServiceApiClient>();
-            DataCollectionServiceApiClient.Setup(v => v.GetAcademicYears(It.Is<DateTime>(p => AcademicYears.ContainsKey(p)))).ReturnsAsync((DateTime period) => AcademicYears[period]);
-            DataCollectionServiceApiClient.Setup(v => v.GetProviders("1920", It.Is<DateTime>(p => Providers1920.ContainsKey(new Tuple<DateTime, int>(p, 1).ToValueTuple())), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers1920[(period, pageNumber.Value)]);
-            DataCollectionServiceApiClient.Setup(v => v.GetProviders("2021", It.Is<DateTime>(p => Providers2021.ContainsKey(new Tuple<DateTime, int>(p, 1).ToValueTuple())), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers2021[(period, pageNumber.Value)]);
+                DataCollectionServiceApiClient = new Mock<IDataCollectionServiceApiClient>();
+                DataCollectionServiceApiClient
+                    .Setup(v => v.GetProviders(It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()))
+                    .ReturnsAsync((string source, DateTime period, int? pageSize, int? pageNumber) => Providers[source][(period, pageNumber.Value)]);
 
-            AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
-            ArrangeRefreshIlrsLastRunDate(lastRunDateTime);
+                MockRefreshIlrsAcademicYearsService = new Mock<IRefreshIlrsAcademicYearService>();
 
-            // not checking for extended windowing since the last run time, so assume the
-            // current time is the same as the last run time
-            DateTimeHelper = new Mock<IDateTimeHelper>();
-            DateTimeHelper.Setup(p => p.DateTimeNow).Returns(DateTime.Parse(lastRunDateTime));
-            
-            Logger = new Mock<ILogger<RefreshIlrsProviderService>>();
+                MockRefreshIlrsAcademicYearsService.Setup(v => v.ValidateAllAcademicYears(It.Is<DateTime>(p => AcademicYears.ContainsKey(p)), It.Is<DateTime>(p => AcademicYears.ContainsKey(p))))
+                    .ReturnsAsync((DateTime lastRunDateTime, DateTime currentRunDateTime) => AcademicYears[lastRunDateTime].Concat(AcademicYears[currentRunDateTime]).Distinct().ToList());
+                
+                MockRefreshIlrsAcademicYearsService.Setup(v => v.ValidateAllAcademicYears(It.Is<DateTime>(p => AcademicYears.ContainsKey(p)), It.Is<DateTime>(p => !AcademicYears.ContainsKey(p))))
+                    .ReturnsAsync((DateTime lastRunDateTime, DateTime currentRunDateTime) => AcademicYears[lastRunDateTime]);
+                
+                MockRefreshIlrsAcademicYearsService.Setup(v => v.ValidateAllAcademicYears(It.Is<DateTime>(p => !AcademicYears.ContainsKey(p)), It.Is<DateTime>(p => AcademicYears.ContainsKey(p))))
+                    .ReturnsAsync((DateTime lastRunDateTime, DateTime currentRunDateTime) => AcademicYears[currentRunDateTime]);
 
-            Sut = new RefreshIlrsProviderService(
-                Options.Object, 
-                DataCollectionServiceApiClient.Object, 
-                AssessorServiceApiClient.Object, 
-                DateTimeHelper.Object,
-                Logger.Object);
-        }
+                MockRefreshIlrsAcademicYearsService.Setup(v => v.ValidateAllAcademicYears(It.Is<DateTime>(p => !AcademicYears.ContainsKey(p)), It.Is<DateTime>(p => !AcademicYears.ContainsKey(p))))
+                    .ThrowsAsync(new Exception());
 
-        protected void ArrangeRefreshIlrsLastRunDate(string lastRunDateTime)
-        {
-            if (AssessorServiceApiClient != null)
+                Logger = new Mock<ILogger<RefreshIlrsProviderService>>();
+
+                Sut = new RefreshIlrsProviderService(
+                    Options.Object,
+                    DataCollectionServiceApiClient.Object,
+                    MockRefreshIlrsAcademicYearsService.Object,
+                    Logger.Object);
+
+                return this;
+            }
+
+            public async Task<List<RefreshIlrsProviderMessage>> ProcessProviders(DateTime lastRunDateTime, DateTime currentRunDateTime)
             {
-                AssessorServiceApiClient.Setup(p => p.GetAssessorSetting("RefreshIlrsLastRunDate")).ReturnsAsync(lastRunDateTime);
+                return await Sut.ProcessProviders(lastRunDateTime, currentRunDateTime);
+            }
+
+            public void VerifyLogError(string message)
+            {
+                Logger.Verify(m => m.Log(LogLevel.Error, 0, 
+                    It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(message)), It.IsAny<Exception>(), 
+                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
             }
         }
     }
