@@ -1,10 +1,12 @@
 ﻿using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,12 +14,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
 {
     public class When_command_executed
     {
-        Mock<IRefreshIlrsProviderService> _refreshIlrsProviderService = new Mock<IRefreshIlrsProviderService>();
-        Mock<ICollector<string>> _storageQueue = new Mock<ICollector<string>>();
-        Mock<IDateTimeHelper> _dateTimeHelper = new Mock<IDateTimeHelper>();
-        
-        Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand _sut;
-
         RefreshIlrsProviderMessage provider1 = new RefreshIlrsProviderMessage
         {
             Ukprn = 111111,
@@ -38,63 +34,176 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
             Source = "2021",
             LearnerPageNumber = 1
         };
-
-        [SetUp]
-        public void Arrange()
-        {
-            // Arrange
-            _sut = new Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand(
-                    _refreshIlrsProviderService.Object, _dateTimeHelper.Object)
-            {
-                StorageQueue = _storageQueue.Object
-            };
-        }
         
         [Test]
         public async Task Then_process_provider_is_called()
         {
             // Arrange
-            Arrange();
+            var lastRunDateTime = new DateTime(2021, 5, 1);
+            var dateTimeNow = new DateTime(2021, 6, 1);
 
-            _refreshIlrsProviderService.Setup(p => p.ProcessProviders()).ReturnsAsync(
-                new List<RefreshIlrsProviderMessage>());
-
-            // Act
-            await _sut.Execute();
-
-            // Assert            
-            _refreshIlrsProviderService.Verify(p => p.ProcessProviders(), Times.Once());
-        }
-
-        [Test]
-        public async Task Then_storage_queue_received_provider()
-        {
-            // Arrange
-            Arrange();
-
-            _refreshIlrsProviderService.Setup(p => p.ProcessProviders()).ReturnsAsync(
-                new List<RefreshIlrsProviderMessage>
+            var testFixture = new TestFixture()
+                .WithProviders(new List<RefreshIlrsProviderMessage>
                 {
                     provider1,
                     provider2,
                     provider3
-                });
+                })
+                .WithLastRunDate(lastRunDateTime)
+                .WithDateTimeNow(dateTimeNow)
+                .Setup();
 
             // Act
-            await _sut.Execute();
+            await testFixture.Execute();
 
             // Assert
-            _storageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(provider1)))));
-            _storageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(provider2)))));
-            _storageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(provider3)))));
+            testFixture.VerifyProcessProviderCalled();
         }
 
-        private bool MessageEquals(string first, string second)
+        [Test]
+        public async Task Then_no_providers_queued_does_not_update_last_run_date()
         {
-            var firstMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(first);
-            var secondMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(second);
+            var lastRunDateTime = new DateTime(2021, 5, 1);
+            var dateTimeNow = new DateTime(2021, 6, 1);
 
-            return firstMessage.Equals(secondMessage);
+            var testFixture = new TestFixture()
+                .WithProviders(new List<RefreshIlrsProviderMessage>())
+                .WithLastRunDate(lastRunDateTime)
+                .WithDateTimeNow(dateTimeNow)
+                .Setup();
+
+            // Act
+            await testFixture.Execute();
+
+            // Assert
+            testFixture.VerifySetLastRunDateTimeCalled(dateTimeNow, Times.Never);
+        }
+
+        [Test]
+        public async Task Then_providers_queued_storage_queue_received_provider()
+        {
+            // Arrange
+            var lastRunDateTime = new DateTime(2021, 5, 1);
+            var dateTimeNow = new DateTime(2021, 6, 1);
+
+            var testFixture = new TestFixture()
+                .WithProviders(new List<RefreshIlrsProviderMessage>
+                {
+                    provider1,
+                    provider2,
+                    provider3
+                })
+                .WithLastRunDate(lastRunDateTime)
+                .WithDateTimeNow(dateTimeNow)
+                .Setup();
+
+            // Act
+            await testFixture.Execute();
+
+            // Assert
+            testFixture.VerifyProviderAddedToStorageQueue(provider1);
+            testFixture.VerifyProviderAddedToStorageQueue(provider2);
+            testFixture.VerifyProviderAddedToStorageQueue(provider3);
+        }
+
+        [Test]
+        public async Task Then_providers_queued_does_update_last_run_date_to_current_datetime()
+        {
+            var lastRunDateTime = new DateTime(2021, 5, 1);
+            var dateTimeNow = new DateTime(2021, 6, 1);
+
+            var testFixture = new TestFixture()
+                .WithProviders(new List<RefreshIlrsProviderMessage>
+                {
+                    provider1,
+                    provider2,
+                    provider3
+                })
+                .WithLastRunDate(lastRunDateTime)
+                .WithDateTimeNow(dateTimeNow)
+                .Setup();
+            
+            // Act
+            await testFixture.Execute();
+
+            // Assert
+            testFixture.VerifySetLastRunDateTimeCalled(dateTimeNow, Times.Once);
+        }
+
+
+        private class TestFixture
+        {
+            public Mock<IRefreshIlrsAccessorSettingService> RefreshIlrsAccessorSettingService = new Mock<IRefreshIlrsAccessorSettingService>();
+            public Mock<IRefreshIlrsProviderService> RefreshIlrsProviderService = new Mock<IRefreshIlrsProviderService>();
+            public Mock<ICollector<string>> StorageQueue = new Mock<ICollector<string>>();
+            public Mock<IDateTimeHelper> DateTimeHelper = new Mock<IDateTimeHelper>();
+            public Mock<ILogger<Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand>> Logger = new Mock<ILogger<Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand>>();
+
+            public Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand Sut;
+
+            public TestFixture Setup()
+            {
+                Sut = new Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand(
+                    RefreshIlrsAccessorSettingService.Object, RefreshIlrsProviderService.Object, 
+                    DateTimeHelper.Object, Logger.Object)
+                {
+                    StorageQueue = StorageQueue.Object
+                };
+
+                return this;
+            }
+
+            public async Task Execute()
+            {
+                await Sut.Execute();
+            }
+
+            public TestFixture WithProviders(List<RefreshIlrsProviderMessage> providers)
+            {
+                RefreshIlrsProviderService.Setup(p => p.ProcessProviders(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                    .ReturnsAsync(providers);
+
+                return this;
+            }
+
+            public TestFixture WithLastRunDate(DateTime lastRunDateTime)
+            {
+                RefreshIlrsAccessorSettingService.Setup(p => p.GetLastRunDateTime())
+                    .ReturnsAsync(lastRunDateTime);
+
+                return this;
+            }
+
+            public TestFixture WithDateTimeNow(DateTime dateTimeNow)
+            { 
+                DateTimeHelper.Setup(p => p.DateTimeNow)
+                    .Returns(dateTimeNow);
+
+                return this;
+            }
+
+            public void VerifySetLastRunDateTimeCalled(DateTime dateTime, Func<Times> times)
+            {
+                RefreshIlrsAccessorSettingService.Verify(p => p.SetLastRunDateTime(dateTime), times);
+            }
+
+            public void VerifyProviderAddedToStorageQueue(RefreshIlrsProviderMessage provider)
+            {
+                StorageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(provider)))));
+            }
+
+            public void VerifyProcessProviderCalled()
+            {
+                RefreshIlrsProviderService.Verify(p => p.ProcessProviders(It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once());
+            }
+
+            private bool MessageEquals(string first, string second)
+            {
+                var firstMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(first);
+                var secondMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(second);
+
+                return firstMessage.Equals(secondMessage);
+            }
         }
     }
 }
