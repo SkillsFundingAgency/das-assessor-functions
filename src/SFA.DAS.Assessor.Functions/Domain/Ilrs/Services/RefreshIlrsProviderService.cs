@@ -17,142 +17,65 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
     {
         private readonly RefreshIlrsOptions _refreshIlrsOptions;
         private readonly IDataCollectionServiceApiClient _dataCollectionServiceApiClient;
-        private readonly IAssessorServiceApiClient _assessorApiClient;
-        private readonly IDateTimeHelper _dateTimeHelper;
-        
+        private readonly IRefreshIlrsAcademicYearService _refreshIlrsAcademicYearService;
         private readonly ILogger<RefreshIlrsProviderService> _logger;
 
-        private const string RefreshIlrsLastRunDate = "RefreshIlrsLastRunDate";
-
         public RefreshIlrsProviderService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
-            IAssessorServiceApiClient assessorServiceApiClient, IDateTimeHelper dateTimeHelper, ILogger<RefreshIlrsProviderService> logger)
+            IRefreshIlrsAcademicYearService refreshIlrsAcademicYearService, ILogger<RefreshIlrsProviderService> logger)
         {
             _refreshIlrsOptions = options?.Value;
             _dataCollectionServiceApiClient = dataCollectionServiceApiClient;
-            _assessorApiClient = assessorServiceApiClient;
-            _dateTimeHelper = dateTimeHelper;
+            _refreshIlrsAcademicYearService = refreshIlrsAcademicYearService;
             _logger = logger;
         }
 
-        public async Task<List<RefreshIlrsProviderMessage>> ProcessProviders()
-        {           
-            var lastRunDateTime = await GetLastRunDateTime();
-            var currentDateTime = _dateTimeHelper.DateTimeNow;
-
+        public async Task<List<RefreshIlrsProviderMessage>> ProcessProviders(DateTime lastRunDateTime, DateTime currentRunDateTime)
+        {
             // the sources that are valid either at the last run time or the current time are combined
             // and validated; if they are ALL valid then the providers which have changed since the last
             // run time will be queued for processing learner details
-            var validSources = await ValidateAllAcademicYears(lastRunDateTime, currentDateTime);
-            if (!validSources.Any())
+            try
             {
-                _logger.LogError($"Refresh Ilrs enqueue providers failed, invalid source or none between {lastRunDateTime} to {currentDateTime}");
-            }
-            else
-            {
-                var providerMessagesToQueue = new List<RefreshIlrsProviderMessage>();
-                foreach (var source in validSources)
+                var validSources = await _refreshIlrsAcademicYearService.ValidateAllAcademicYears(lastRunDateTime, currentRunDateTime);
+                if (!validSources.Any())
                 {
-                    try
-                    {
-                        providerMessagesToQueue.AddRange(await QueueProviders(source, lastRunDateTime));
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Refresh Ilrs enqueue providers failed for academic year {source}");
-
-                        // if any source encouters an unexpected failure - the queue process will be aborted 
-                        // and will repeat for ALL sources the next time it is scheduled, duplication by repeating 
-                        // a successfully queued source is preferred to missing any updates.
-                        throw;
-                    }
+                    throw new Exception($"Invalid source or none between {lastRunDateTime} and {currentRunDateTime}");
                 }
-                
-                return providerMessagesToQueue;
+                else
+                {
+                    var providerMessagesToQueue = new List<RefreshIlrsProviderMessage>();
+                    foreach (var source in validSources)
+                    {
+                        try
+                        {
+                            providerMessagesToQueue.AddRange(await QueueProviders(source, lastRunDateTime));
+                        }
+                        catch (Exception ex)
+                        {
+                            // if any source encouters an unexpected failure - the queue process will be aborted 
+                            // and will repeat for ALL sources the next time it is scheduled, duplication by repeating 
+                            // a successfully queued source is preferred to missing any updates.
+                            throw new Exception($"Unable to queue providers for academic year {source}", ex);
+                        }
+                    }
+
+                    return providerMessagesToQueue;
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to process providers between {lastRunDateTime} and {currentRunDateTime}");
             }
 
             return null;
         }
 
-        public async Task<DateTime> GetLastRunDateTime()
-        {
-            try
-            {
-                var lastRunDateTimeSetting = await _assessorApiClient.GetAssessorSetting(RefreshIlrsLastRunDate);
-                if (lastRunDateTimeSetting != null)
-                {
-                    if (DateTime.TryParse(lastRunDateTimeSetting, out DateTime lastRunDateTime))
-                        return lastRunDateTime;
-                }
-            }
-            catch
-            {
-                _logger.LogInformation($"There is no {RefreshIlrsLastRunDate}, using default last run date {_refreshIlrsOptions.ProviderInitialRunDate}");
-            }
-
-            return _refreshIlrsOptions.ProviderInitialRunDate;
-        }
-
-        public async Task SetLastRunDateTime(DateTime nextRunDateTime)
-        {
-            await _assessorApiClient.SetAssessorSetting(RefreshIlrsLastRunDate, nextRunDateTime.ToString("o"));
-        }
-
-        private async Task<List<string>> ValidateAllAcademicYears(DateTime lastRunDateTime, DateTime currentRunDateTime)
-        {
-            IEnumerable<string> sources;
-            if (string.IsNullOrEmpty(_refreshIlrsOptions.AcademicYearsOverride))
-            {
-                var sourcesLast = await _dataCollectionServiceApiClient.GetAcademicYears(lastRunDateTime);
-                var sourceCurrent = await _dataCollectionServiceApiClient.GetAcademicYears(currentRunDateTime);
-
-                sources = sourcesLast
-                    .Union(sourceCurrent)
-                    .Distinct();
-            }
-            else
-            {
-                sources = ConfigurationHelper.ConvertCsvValueToList<string>(_refreshIlrsOptions.AcademicYearsOverride);
-            }
-
-            var sourceValidations = sources.Select(source => ValidateAcademicYear(source));
-            bool[] results = await Task.WhenAll(sourceValidations);
-            if(results.All(item => item))
-            {
-                return sources.ToList();
-            }
-
-            return new List<string>();
-        }
-
-        private async Task<bool> ValidateAcademicYear(string source)
-        {
-            try
-            {
-                // check whether there is a valid source endpoint in the data collection API
-                var providersPage = await _dataCollectionServiceApiClient.GetProviders(source, DateTime.MaxValue, 1, 1);
-                if (providersPage.Providers.Count > 0 || providersPage.PagingInfo.TotalItems > 0)
-                {
-                    // no content should exists for any providers in the future 
-                    throw new Exception($"Refresh Ilrs enqueue providers academic year {source} contains future records");
-                }
-                
-                return true;
-            }
-            catch(Exception ex)
-            {
-                // any unexpected failure (e.g. 404 not found) indicates that the source endpoint cannot be reached in the data collection API
-                _logger.LogError(ex, $"Refresh Ilrs enqueue providers invalid academic year {source}");
-            }
-
-            return false;
-        }
-
-        private async Task<List<RefreshIlrsProviderMessage>> QueueProviders(string source, DateTime lastRunDateTime)
+        private async Task<List<RefreshIlrsProviderMessage>> QueueProviders(string source, DateTime startDateTime)
         {
             var providerMessagesToQueue = new List<RefreshIlrsProviderMessage>();
             var pageSize = _refreshIlrsOptions.ProviderPageSize;
 
-            var providersPage = await _dataCollectionServiceApiClient.GetProviders(source, lastRunDateTime, pageSize, pageNumber: 1);
+            var providersPage = await _dataCollectionServiceApiClient.GetProviders(source, startDateTime, pageSize, pageNumber: 1);
             if (providersPage != null && providersPage.PagingInfo.TotalItems > 0)
             {
                 do
@@ -172,7 +95,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
                     // each subsequent page will be retrieved; any data which has changed during paging which would be contained 
                     // on a previously retrieved page will be proceseed on a subsequent run; any data which has changed during paging
                     // which would be contained on a subsequent page will be duplicated on a subsequent run;
-                    providersPage = await _dataCollectionServiceApiClient.GetProviders(source, lastRunDateTime, pageSize, providersPage.PagingInfo.PageNumber + 1);
+                    providersPage = await _dataCollectionServiceApiClient.GetProviders(source, startDateTime, pageSize, providersPage.PagingInfo.PageNumber + 1);
                 }
                 while (providersPage != null && providersPage.PagingInfo.PageNumber <= providersPage.PagingInfo.TotalPages);
             }

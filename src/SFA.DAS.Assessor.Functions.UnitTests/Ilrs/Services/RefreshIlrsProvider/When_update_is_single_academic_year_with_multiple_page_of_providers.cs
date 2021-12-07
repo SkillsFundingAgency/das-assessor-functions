@@ -2,64 +2,74 @@
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.Services.RefreshIlrsProvider
+namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsProvider
 {
     public class When_update_is_single_academic_year_with_multiple_page_of_providers : RefreshIlrsProviderTestBase
     {
-        [SetUp]
+        private TestFixture _testFixture;
+
         public void Arrange()
         {
-            BaseArrange(Period6Date1920.ToString("o"));
+            _testFixture = new TestFixture()
+                .WithProviders("1920", BaseDate.AddDays(-7), new List<int> { 111111, 222222 }, 3)
+                .WithProviders("1920", BaseDate, new List<int> { 333333, 444444, 555555, 666666, 777777 }, 3)
+                .WithProviders("1920", BaseDate.AddDays(7), new List<int> { 888888, 999999 }, 3)
+                .WithAcademicYear((BaseDate.AddDays(-7), new List<string> { "1920" }))
+                .WithAcademicYear((BaseDate, new List<string> { "1920" }))
+                .WithAcademicYear((BaseDate.AddDays(7), new List<string> { "1920" }))
+                .Setup();
         }
 
-        [Test]
-        public async Task Then_the_last_run_date_is_obtained()
+        [TestCaseSource(nameof(QueueProviderCases))]
+        public async Task Then_sources_of_academic_year_are_retrieved(DateTime runDate, int ukprn, string source)
         {
+            Arrange();
+
             // Act
-            await Sut.ProcessProviders();
+            var providerMessages = await _testFixture.ProcessProviders(runDate, runDate.AddDays(7));
 
             // Assert
-            AssessorServiceApiClient.Verify(v => v.GetAssessorSetting("RefreshIlrsLastRunDate"), Times.Once);
+            _testFixture.MockRefreshIlrsAcademicYearsService.Verify(v => v.ValidateAllAcademicYears(runDate, runDate.AddDays(7)), Times.Once);
         }
 
-
-        [Test]
-        public async Task Then_sources_of_academic_year_are_retrieved()
+        [TestCaseSource(nameof(QueueProviderCases))]
+        public async Task Then_each_updated_provider_is_queued(DateTime runDate, int ukprn, string source)
         {
+            Arrange();
+
             // Act
-            await Sut.ProcessProviders();
-
-            // Assert
-            DataCollectionServiceApiClient.Verify(v => v.GetAcademicYears(Period6Date1920), Times.Exactly(2));
-        }
-
-
-        [TestCase("1920")]
-        public async Task Then_each_academic_year_is_validated(string source)
-        {
-            // Act
-            await Sut.ProcessProviders();
-
-            // Assert
-            DataCollectionServiceApiClient.Verify(v => v.GetProviders(source, DateTime.MaxValue, 1, 1), Times.Once);
-        }
-
-
-        [TestCase(111111, "1920")]
-        [TestCase(222222, "1920")]
-        [TestCase(333333, "1920")]
-        [TestCase(444444, "1920")]
-        [TestCase(555555, "1920")]
-        [TestCase(666666, "1920")]
-        public async Task Then_each_updated_provider_is_queued(int ukprn, string source)
-        {
-            // Act
-            var providerMessages = await Sut.ProcessProviders();
+            var providerMessages = await _testFixture.ProcessProviders(runDate, runDate.AddDays(7));
 
             // Assert
             providerMessages.Should().ContainSingle(p => p.Ukprn == ukprn && p.Source == source);
         }
+
+        [Test]
+        public async Task Then_when_exception_is_thrown_log_error_is_written()
+        {
+            Arrange();
+
+            // Act
+            var providerMessages = await _testFixture.ProcessProviders(BaseDate.AddDays(15), BaseDate.AddDays(22));
+
+            // Assert
+            providerMessages.Should().BeNull();
+            _testFixture.VerifyLogError($"Unable to process providers between {BaseDate.AddDays(15)} and {BaseDate.AddDays(22)}");
+
+        }
+
+        private static DateTime BaseDate = new DateTime(2020, 2, 8);
+
+        private static object[] QueueProviderCases =
+        {
+            new object[] { BaseDate, 333333, "1920" },
+            new object[] { BaseDate, 444444, "1920" },
+            new object[] { BaseDate, 555555, "1920" },
+            new object[] { BaseDate, 666666, "1920" },
+            new object[] { BaseDate, 777777, "1920" }
+        };
     }
 }

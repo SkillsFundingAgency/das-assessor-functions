@@ -11,7 +11,7 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using System;
 using System.Collections.Generic;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.RefreshIlrs.Services.RefreshIlrsLearner
+namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
 {
     public class RefreshIlrsLearnerTestBase
     {

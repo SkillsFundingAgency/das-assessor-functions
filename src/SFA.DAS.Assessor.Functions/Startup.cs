@@ -155,6 +155,8 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddScoped<IDateTimeHelper, DateTimeHelper>();
 
+            builder.Services.AddScoped<IRefreshIlrsAccessorSettingService, RefreshIlrsAccessorSettingService>();
+            builder.Services.AddScoped<IRefreshIlrsAcademicYearService, RefreshIlrsAcademicYearService>();
             builder.Services.AddScoped<IRefreshIlrsProviderService, RefreshIlrsProviderService>();
             builder.Services.AddScoped<IRefreshIlrsLearnerService, RefreshIlrsLearnerService>();
 
