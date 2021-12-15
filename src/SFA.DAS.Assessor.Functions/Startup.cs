@@ -41,6 +41,8 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Net.Http;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -88,7 +90,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection(nameof(DataCollectionApiAuthentication)));
             builder.Services.Configure<SecureMessageApiAuthentication>(config.GetSection(nameof(SecureMessageApiAuthentication)));
             builder.Services.Configure<DataCollectionMock>(config.GetSection(nameof(DataCollectionMock)));
-
+            
             var functionsOptions = nameof(FunctionsOptions);
             builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
             builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
@@ -198,6 +200,11 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
             builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
+
+            builder.Services.Configure<OuterApiConfiguration>(config.GetSection(nameof(OuterApiConfiguration)));
+            builder.Services.AddTransient<IAssessorServiceRepository, AssessorServiceRepository>();
+            builder.Services.AddTransient<IOuterApiClient, OuterApiClient>().AddHttpClient();
+            builder.Services.AddTransient<IEnqueueLearnerInfoCommand, EnqueueLearnerInfoCommand>();
         }
     }
 }
