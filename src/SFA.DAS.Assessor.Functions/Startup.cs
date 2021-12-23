@@ -41,7 +41,6 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Net.Http;
-using SFA.DAS.Assessor.Functions.Domain.Learners.Services;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 
@@ -203,10 +202,10 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
 
             builder.Services.Configure<OuterApiConfiguration>(config.GetSection(nameof(OuterApiConfiguration)));
-            builder.Services.AddTransient<ILearnersInfoService, LearnersInfoService>();
             builder.Services.AddTransient<IAssessorServiceRepository, AssessorServiceRepository>();
             builder.Services.AddTransient<IOuterApiClient, OuterApiClient>().AddHttpClient();
             builder.Services.AddTransient<IEnqueueLearnerInfoCommand, EnqueueLearnerInfoCommand>();
+            builder.Services.AddTransient<IDequeueLearnerInfoCommand, DequeueLearnerInfoCommand>();
         }
     }
 }

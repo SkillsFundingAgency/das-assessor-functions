@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 
@@ -15,33 +16,24 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
     {
         public ICollector<string> StorageQueue { get; set; }
 
-        private readonly ILearnersInfoService _learnersInfoService;
+        private readonly IAssessorServiceRepository _assessorServiceRepository;
         private readonly ILogger<DequeueLearnerInfoCommand> _logger;
 
-        public DequeueLearnerInfoCommand(ILearnersInfoService learnersInfoService, ILogger<DequeueLearnerInfoCommand> logger)
+        public DequeueLearnerInfoCommand(ILogger<DequeueLearnerInfoCommand> logger, IAssessorServiceRepository assessorServiceRepository)
         {
             _logger = logger;
-            _learnersInfoService = learnersInfoService;
+            _assessorServiceRepository = assessorServiceRepository;
         }
 
         public async Task Execute(string message)
         {
             _logger.LogInformation("DequeueLearnerInfoCommand started");
 
-            var learners = JsonConvert.DeserializeObject<List<UpdateLearnersInfoMessage>>(message);
+            var learner= JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(message);
 
-            _logger.LogInformation($"Started processing {learners.Count} learner employer information ");
+            _logger.LogInformation($"Started processing learner uln {learner.Uln} employer information ");
 
-            var nextLearnerToProcess = await _learnersInfoService.ProcessLearners(learners);
-
-            if (!nextLearnerToProcess.Any())
-            {
-                _logger.LogInformation("DequeueLearnerInfoCommand Completed no learner to queue");
-                return;
-            }
-
-            var queueMessage = JsonConvert.SerializeObject(nextLearnerToProcess);
-            StorageQueue.Add(queueMessage);
+            await _assessorServiceRepository.UpdateLeanerInfo((learner.Uln, learner.StdCode, learner.EmployerAccountId, learner.EmployerName));
 
             _logger.LogInformation("DequeueLearnerInfoCommand Completed");
         }

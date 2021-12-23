@@ -38,4 +38,7 @@
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.Infrastructure\SFA.DAS.Assessor.Functions.Infrastructure.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.MockApis\SFA.DAS.Assessor.Functions.MockApis.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Domain\Learners\Services\" />
+  </ItemGroup>
 </Project>

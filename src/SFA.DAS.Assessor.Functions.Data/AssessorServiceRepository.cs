@@ -14,8 +14,7 @@ namespace SFA.DAS.Assessor.Functions.Data
     public interface IAssessorServiceRepository
     {
         Task<List<long>> GetLearnersWithoutEmployerInfo();
-
-        Task UpdateLeanerInfo(List<(long uln, int standardCode, long employerAccountId, string employerName)> learnersInfos);
+        Task UpdateLeanerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
     }
 
     public class AssessorServiceRepository : IAssessorServiceRepository
@@ -40,50 +39,23 @@ namespace SFA.DAS.Assessor.Functions.Data
             return results.ToList();
         }
 
-        public async Task UpdateLeanerInfo(List<(long uln, int standardCode, long employerAccountId, string employerName)> learnersInfos)
+        public async Task UpdateLeanerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo)
         {
             var query = new StringBuilder();
             var sqlParameters = new DynamicParameters();
 
-            int i = 1;
-            int parameterCount = 0;
-            foreach (var learnerInfo in learnersInfos)
-            {
+            var unlParameterName = "@uln";
+            var employerAccountIdParameterName = "@employerAccountId";
+            var employerNameParameterName = "@employerName";
+            var stdCodeParameterName = "@stdCode";
 
-                var unlParameterName = "@uln" + i;
-                var employerAccountIdParameterName = "@employerAccountId" + i;
-                var employerNameParameterName = "@employerName" + i;
-                var stdCodeParameterName = "@stdCode" + i;
+            sqlParameters.Add(unlParameterName, learnerInfo.uln, DbType.Int64);
+            sqlParameters.Add(employerAccountIdParameterName, learnerInfo.employerAccountId, DbType.Int64);
+            sqlParameters.Add(employerNameParameterName, learnerInfo.employerName, DbType.String);
+            sqlParameters.Add(stdCodeParameterName, learnerInfo.standardCode, DbType.Int32);
 
-                AddSqlParameters(unlParameterName, learnerInfo.uln, DbType.Int64, ref parameterCount, ref sqlParameters);
-                AddSqlParameters(employerAccountIdParameterName, learnerInfo.employerAccountId, DbType.Int64, ref parameterCount, ref sqlParameters);
-                AddSqlParameters(employerNameParameterName, learnerInfo.employerName, DbType.String, ref parameterCount, ref sqlParameters);
-                AddSqlParameters(stdCodeParameterName, learnerInfo.standardCode, DbType.Int32, ref parameterCount, ref sqlParameters);
-
-                query.AppendLine($"UPDATE [Learner] SET [EmployerAccountId] = {employerAccountIdParameterName}, [EmployerName] = {employerNameParameterName} WHERE Uln = {unlParameterName} AND StdCode = {stdCodeParameterName}");
-
-                if (parameterCount == 2000) // max allowed sql parameters
-                {
-                    await _connection.ExecuteAsync(query.ToString(), sqlParameters);
-
-                    sqlParameters = new DynamicParameters();
-                    query.Length = 0;
-                }
-
-                i++;
-            }
-
-            if (query.Length > 0)
-            {
-                await _connection.ExecuteAsync(query.ToString(), sqlParameters);
-            }
-
-        }
-
-        private void AddSqlParameters( string name, object value , DbType dbType, ref int count, ref DynamicParameters sqlParameters)
-        {
-            sqlParameters.Add(name, value, dbType);
-            count++;
+            query.AppendLine($"UPDATE [Learner] SET [EmployerAccountId] = {employerAccountIdParameterName}, [EmployerName] = {employerNameParameterName} WHERE Uln = {unlParameterName} AND StdCode = {stdCodeParameterName}");
+            await _connection.ExecuteAsync(query.ToString(), sqlParameters);
         }
 
     }
