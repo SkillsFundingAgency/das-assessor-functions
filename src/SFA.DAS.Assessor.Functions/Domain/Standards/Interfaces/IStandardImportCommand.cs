@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces
 {
-    public interface IStandardCollationImportCommand : ICommand
+    public interface IStandardImportCommand : ICommand
     {     
     }
 }
