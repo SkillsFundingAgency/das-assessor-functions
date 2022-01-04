@@ -37,11 +37,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.DequeueLearnerInfoComman
 
             _mockAssessorServiceRepository = new Mock<IAssessorServiceRepository>();
             _mockAssessorServiceRepository
-                .Setup(x => x.UpdateLeanerInfo(It.IsAny<(long uln, int standardCode, long employerAccountId, string employerName)>()));
+                .Setup(x => x.UpdateLearnerInfo(It.IsAny<(long uln, int standardCode, long employerAccountId, string employerName)>()));
 
             _sut = new Domain.Learners.DequeueLearnerInfoCommand(_logger, _mockAssessorServiceRepository.Object);
-            _sut.StorageQueue = StorageQueue.Object;
-
             return this;
         }
 
@@ -53,7 +51,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.DequeueLearnerInfoComman
         public void VerifyProcessLearnerMessage()
         {
             _mockAssessorServiceRepository
-                .Verify(x => x.UpdateLeanerInfo(It.IsAny<(long uln, int standardCode, long employerAccountId, string employerName)>()),
+                .Verify(x => x.UpdateLearnerInfo(It.IsAny<(long uln, int standardCode, long employerAccountId, string employerName)>()),
                     Times.Once);
         }
 

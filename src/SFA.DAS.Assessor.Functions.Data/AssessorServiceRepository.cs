@@ -13,8 +13,8 @@ namespace SFA.DAS.Assessor.Functions.Data
 {
     public interface IAssessorServiceRepository
     {
-        Task<List<long>> GetLearnersWithoutEmployerInfo();
-        Task UpdateLeanerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
+        Task<Dictionary<string, long>> GetLearnersWithoutEmployerInfo();
+        Task UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
     }
 
     public class AssessorServiceRepository : IAssessorServiceRepository
@@ -33,13 +33,13 @@ namespace SFA.DAS.Assessor.Functions.Data
             }
         }
 
-        public async Task<List<long>> GetLearnersWithoutEmployerInfo()
+        public async Task<Dictionary<string, long>> GetLearnersWithoutEmployerInfo()
         {
             var results = await _connection.QueryAsync<long>("SELECT DISTINCT [Uln] FROM  [dbo].[Learner] WHERE [EmployerAccountId] IS NULL");
-            return results.ToList();
+            return results.ToDictionary(x => x.ToString(), y => y);
         }
 
-        public async Task UpdateLeanerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo)
+        public async Task UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo)
         {
             var query = new StringBuilder();
             var sqlParameters = new DynamicParameters();

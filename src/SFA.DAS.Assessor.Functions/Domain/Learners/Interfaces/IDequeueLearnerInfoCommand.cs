@@ -5,7 +5,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces
 {
     public interface IDequeueLearnerInfoCommand
     {
-        ICollector<string> StorageQueue { get; set; }
         Task Execute(string message);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
@@ -16,19 +17,28 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
     {
 
         [Test]
-        public async Task ThenStopProcessingWhenNoLearnersWithoutEmployerInfoIsFound()
+        public void ThenStopProcessingWhenNoLearnersWithoutEmployerInfoIsFound()
         {
             var testFixture = new TestFixture();
             testFixture.Setup();
+            testFixture.VerifyNoCallToApprovalApi();
+        }
 
+        [Test]
+        public async Task ThenStopProcessingWhenNoLearnersWithoutEmployerInfoIsNull()
+        {
+            var testFixture = new TestFixture();
+            await testFixture.Setup()
+                .WithLearnersWithOutEmployerInfoUln(null)
+                .WithApprovalLearners(null)
+                .Execute();
             testFixture.VerifyNoCallToApprovalApi();
         }
 
         [Test]
         public async Task ThenEnqueueLearnersWithoutEmployerInfo()
         {
-
-            var ulns = new List<long> {100, 200, 300};
+            var ulns = new Dictionary<string, long> {{"100", 100}, {"200", 200}, {"300", 300}};
             var approvalResponse = new GetAllLearnersResponse
             {
                 BatchNumber = 1,
@@ -37,14 +47,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
                 {
                     new Learner
                     {
-                        ULN = ulns[0].ToString(),
+                        ULN = ulns.ElementAt(0).Key,
                         TrainingCode = "10",
                         EmployerAccountId = 1,
                         EmployerName = "TEST1"
                     },
                     new Learner
                     {
-                        ULN =  ulns[1].ToString(),
+                        ULN =  ulns.ElementAt(1).Key,
                         TrainingCode = "20",
                         EmployerAccountId = 2,
                         EmployerName = "TEST2"
@@ -61,14 +71,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
                 .WithLearnersWithOutEmployerInfoUln(ulns)
                 .WithApprovalLearners(approvalResponse)
                 .Execute();
-            
+
             testFixture.VerifyMessageAddedToStorageQueue(message1);
             testFixture.VerifyMessageAddedToStorageQueue(message2);
         }
     }
 
 
-     class TestFixture
+    class TestFixture
     {
         private Domain.Learners.EnqueueLearnerInfoCommand _sut;
         private Mock<IOuterApiClient> _mockOuterApiClient;
@@ -88,7 +98,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
             _mockAssessorServiceRepository = new Mock<IAssessorServiceRepository>();
             _mockAssessorServiceRepository
                 .Setup(x => x.GetLearnersWithoutEmployerInfo())
-                .ReturnsAsync(new List<long>());
+                .ReturnsAsync(new Dictionary<string, long>());
 
             _sut = new Domain.Learners.EnqueueLearnerInfoCommand(
                 _mockOuterApiClient.Object,
@@ -99,7 +109,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
             return this;
         }
-
         public async Task Execute()
         {
             await _sut.Execute();
@@ -114,7 +123,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
             return this;
         }
 
-        public TestFixture WithLearnersWithOutEmployerInfoUln(List<long> ulns)
+        public TestFixture WithLearnersWithOutEmployerInfoUln(Dictionary<string, long> ulns)
         {
             _mockAssessorServiceRepository
                 .Setup(x => x.GetLearnersWithoutEmployerInfo())

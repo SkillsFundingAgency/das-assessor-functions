@@ -61,6 +61,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                         if (learnersBatch?.Learners == null)
                         {
                             _logger.LogWarning($"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
+                            continue;
                         }
 
                         _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");
@@ -69,31 +70,28 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                         foreach (var learner in learnersBatch.Learners)
                         {
                             long uln = 0;
-                            if (!long.TryParse(learner.ULN, out uln))
-                                continue;
-
                             int trainingCode = 0;
+
                             int.TryParse(learner.TrainingCode, out trainingCode);
 
-                            if (learnersToProcessUln.Contains(uln))
+                            if (string.IsNullOrWhiteSpace(learner.ULN) || !learnersToProcessUln.TryGetValue(learner.ULN?.Trim(), out uln))
                             {
-                                var message = new UpdateLearnersInfoMessage(learner.EmployerAccountId, learner.EmployerName, uln, trainingCode);
-                                StorageQueue.Add(JsonConvert.SerializeObject(message));
+                                _logger.LogWarning($"Invalid ULN {learner.ULN}");
+                                continue;
                             }
+                            
+                            var message = new UpdateLearnersInfoMessage(learner.EmployerAccountId, learner.EmployerName, uln, trainingCode);
+                            StorageQueue.Add(JsonConvert.SerializeObject(message));
                         }
-
                         count += learnersBatch.Learners.Count;
                         _logger.LogInformation($"Approvals batch import loop. Batch Completed {batchNumber} of {learnersBatch.TotalNumberOfBatches}. Total Inserted: {count}");
-
                     }
                     catch (Exception e)
                     {
                         _logger.LogError(e, $"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
-
                     }
 
                 } while (batchNumber < learnersBatch.TotalNumberOfBatches);
-
             }
             catch (Exception ex)
             {
@@ -101,7 +99,5 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                 throw;
             }
         }
-
-
     }
 }

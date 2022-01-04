@@ -14,8 +14,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 {
     public class DequeueLearnerInfoCommand : IDequeueLearnerInfoCommand
     {
-        public ICollector<string> StorageQueue { get; set; }
-
         private readonly IAssessorServiceRepository _assessorServiceRepository;
         private readonly ILogger<DequeueLearnerInfoCommand> _logger;
 
@@ -33,10 +31,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
             _logger.LogInformation($"Started processing learner uln {learner.Uln} employer information ");
 
-            await _assessorServiceRepository.UpdateLeanerInfo((learner.Uln, learner.StdCode, learner.EmployerAccountId, learner.EmployerName));
+            await _assessorServiceRepository.UpdateLearnerInfo((learner.Uln, learner.StdCode, learner.EmployerAccountId, learner.EmployerName));
 
             _logger.LogInformation("DequeueLearnerInfoCommand Completed");
         }
-
     }
 }
