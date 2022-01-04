@@ -42,7 +42,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                     _logger.LogInformation($"There is no learner to process EnqueueLearnerInfoCommand completed");
                     return;
                 }
-
                 _logger.LogInformation($"Learners to process {learnersToProcessUln.Count}");
 
                 //1. Get all Learners From Approvals in batches
@@ -51,7 +50,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                 int batchNumber = 0;
                 int count = 0;
                 GetAllLearnersResponse learnersBatch = null;
-
                 do
                 {
                     batchNumber++;
@@ -63,7 +61,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                             _logger.LogWarning($"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
                             continue;
                         }
-
                         _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");
 
                         // 2. Check if the learner needs to be processed if yes enqueue
@@ -74,14 +71,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
                             int.TryParse(learner.TrainingCode, out trainingCode);
 
-                            if (string.IsNullOrWhiteSpace(learner.ULN) || !learnersToProcessUln.TryGetValue(learner.ULN?.Trim(), out uln))
+                            if (string.IsNullOrWhiteSpace(learner.ULN))
                             {
                                 _logger.LogWarning($"Invalid ULN {learner.ULN}");
                                 continue;
                             }
-                            
-                            var message = new UpdateLearnersInfoMessage(learner.EmployerAccountId, learner.EmployerName, uln, trainingCode);
-                            StorageQueue.Add(JsonConvert.SerializeObject(message));
+
+                            if (learnersToProcessUln.TryGetValue(learner.ULN, out uln))
+                            {
+                                var message = new UpdateLearnersInfoMessage(learner.EmployerAccountId, learner.EmployerName, uln, trainingCode);
+                                StorageQueue.Add(JsonConvert.SerializeObject(message));
+                            }
                         }
                         count += learnersBatch.Learners.Count;
                         _logger.LogInformation($"Approvals batch import loop. Batch Completed {batchNumber} of {learnersBatch.TotalNumberOfBatches}. Total Inserted: {count}");

@@ -22,7 +22,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         }
 
         [FunctionName("EnqueueExternalApiLearnersEmployerInfoFunction")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        public async Task Run(
+            [QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message,
             [Queue(QueueNames.UpdateLearnersInfo)] ICollector<string> updateLearnersQueue,
             ILogger log)
         {
@@ -40,8 +41,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
                 log.LogError(ex, $"EnqueueExternalApiLearnersEmployerInfo has failed.");
                 throw;
             }
-
-            return new OkObjectResult("Enqueue External Api Learners Employer Info finished");
         }
     }
 }
