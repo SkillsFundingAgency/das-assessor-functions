@@ -16,11 +16,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
     public class OuterApiClient : IOuterApiClient
     {
         private readonly HttpClient _httpClient;
-        private readonly IOptions<OuterApiConfiguration> _config;
+        private readonly IOptions<Config.OuterApi> _config;
         const string SubscriptionKeyRequestHeaderKey = "Ocp-Apim-Subscription-Key";
         const string VersionRequestHeaderKey = "X-Version";
 
-        public OuterApiClient (HttpClient httpClient, IOptions<OuterApiConfiguration>  config)
+        public OuterApiClient (HttpClient httpClient, IOptions<Config.OuterApi>  config)
         {
             _httpClient = httpClient;
             _config = config;
