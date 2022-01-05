@@ -90,6 +90,13 @@
             "metadata": {
                 "description": "A list of management policy rules"
             }
+        },
+        "utcNow": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "Used to datestamp resource names to ensure that a unique record is added to deployment history"
+            }
         }
     },
     "variables": {
@@ -102,7 +109,7 @@
     "resources": [
         {
             "apiVersion": "2021-04-01",
-            "name": "apim-assessors-product-function-app-subscription",
+            "name": "[concat(variables('functionAppName'), '-apim-subscription-key-', parameters('utcNow'))]",
             "resourceGroup": "[parameters('sharedApimResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -126,7 +133,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "function-app-subnet",
+            "name": "[concat(parameters('subnetObject').name, '-', parameters('utcNow'))]",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -156,7 +163,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "worker-app-service-plan",
+            "name": "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -179,7 +186,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "function-app-insights",
+            "name": "[concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -199,7 +206,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "function-app",
+            "name": "[concat(variables('functionAppName'), '-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -275,7 +282,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "storage-account",
+            "name": "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -304,7 +311,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "storage-management-policy",
+            "name": "[concat(variables('storageAccountName'), '-policies-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
