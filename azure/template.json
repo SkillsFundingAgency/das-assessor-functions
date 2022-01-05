@@ -296,7 +296,7 @@
                         "value": "[parameters('storageAccountAllowedIPs')]"
                     },
                     "subnetResourceIdList": {
-                        "value": "[createArray(reference('function-app-subnet').outputs.SubnetResourceId.value)]"
+                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value)]"
                     },
                     "storageKind": {
                         "value": "StorageV2"
