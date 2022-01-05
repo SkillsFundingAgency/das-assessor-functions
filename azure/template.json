@@ -225,7 +225,7 @@
                         "value": "[resourceGroup().name]"
                     },
                     "subnetResourceId": {
-                        "value": "[reference('function-app-subnet').outputs.SubnetResourceId.value]"
+                        "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value]"
                     },
                     "ipSecurityRestrictions": {
                         "value": "[parameters('ipSecurityRestrictions')]"
@@ -235,11 +235,11 @@
                             "array": [
                                 {
                                     "name": "AzureWebJobsStorage",
-                                    "value": "[reference('storage-account').outputs.storageConnectionString.value]"
+                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
                                 },
                                 {
                                     "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference('function-app-insights').outputs.InstrumentationKey.value]"
+                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))).outputs.InstrumentationKey.value]"
                                 },
                                 {
                                     "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -275,9 +275,7 @@
                 }
             },
             "dependsOn": [
-                "function-app-insights",
-                "worker-app-service-plan",
-                "storage-account"
+                "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]"
             ]
         },
         {
@@ -329,7 +327,7 @@
                 }
             },
             "dependsOn": [
-                "storage-account"
+                "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]"
             ]
         }
     ],
@@ -340,7 +338,7 @@
         },
         "StorageAccountConnectionString": {
             "type": "string",
-            "value": "[reference('storage-account').outputs.storageConnectionString.value]"
+            "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
         }
     }
 }
