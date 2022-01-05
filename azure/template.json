@@ -327,7 +327,7 @@
                 }
             },
             "dependsOn": [
-                "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]"
+                "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]"
             ]
         }
     ],
