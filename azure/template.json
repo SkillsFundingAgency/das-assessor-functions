@@ -38,7 +38,7 @@
             "type": "securestring"
         },
         "configurationStorageConnectionString": {
-          "type": "securestring"
+            "type": "securestring"
         },
         "appServicePlanSize": {
             "type": "string",
@@ -62,6 +62,12 @@
         "functionsExtensionVersion": {
             "type": "string",
             "defaultValue": "~3"
+        },
+        "sharedApimResourceGroup": {
+            "type": "string"
+        },
+        "sharedApimName": {
+            "type": "string"
         },
         "sharedEnvResourceGroup": {
             "type": "string"
@@ -95,7 +101,31 @@
     },
     "resources": [
         {
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
+            "name": "apim-product-subscription",
+            "resourceGroup": "[parameters('sharedApimResourceGroup')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'apim/apim-subscription.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "apimName": {
+                        "value": "[parameters('sharedApimName')]"
+                    },
+                    "subscriptionName": {
+                        "value": "[variables('functionAppName')]"
+                    },
+                    "subscriptionScope": {
+                        "value": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('sharedApimResourceGroup'), '/providers/Microsoft.ApiManagement/service/', parameters('sharedApimName'), '/products/AssessorsOuterApi')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2021-04-01",
             "name": "function-app-subnet",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
@@ -125,7 +155,7 @@
             }
         },
         {
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
             "name": "worker-app-service-plan",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -148,7 +178,7 @@
             }
         },
         {
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
             "name": "function-app-insights",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -168,7 +198,7 @@
             }
         },
         {
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
             "name": "function-app",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -244,7 +274,7 @@
             ]
         },
         {
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
             "name": "storage-account",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -273,7 +303,7 @@
             }
         },
         {
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2021-04-01",
             "name": "storage-management-policy",
             "type": "Microsoft.Resources/deployments",
             "properties": {
