@@ -29,10 +29,23 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
         {
             var testFixture = new TestFixture();
             await testFixture.Setup()
-                .WithLearnersWithOutEmployerInfoUln(null)
+                .WithLearnersEmployerInfoUln(null)
                 .WithApprovalLearners(null)
                 .Execute();
             testFixture.VerifyNoCallToApprovalApi();
+        }
+
+        [Test]
+        public async Task ThenStopProcessingWhenApprovalLearnersIsNull()
+        {
+            var testFixture = new TestFixture();
+            var ulns = new Dictionary<string, long> { { "100", 100 }, { "200", 200 }, { "300", 300 } };
+            
+            await testFixture.Setup()
+                .WithLearnersEmployerInfoUln(ulns)
+                .WithApprovalLearners(null)
+                .Execute();
+            testFixture.VerifyNoMessageAddedToStorageQueue();
         }
 
         [Test]
@@ -68,7 +81,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
             var testFixture = new TestFixture();
             await testFixture.Setup()
-                .WithLearnersWithOutEmployerInfoUln(ulns)
+                .WithLearnersEmployerInfoUln(ulns)
                 .WithApprovalLearners(approvalResponse)
                 .Execute();
 
@@ -113,7 +126,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
         {
             await _sut.Execute();
         }
-
         public TestFixture WithApprovalLearners(GetAllLearnersResponse approvalLearnersResponse)
         {
             _mockOuterApiClient
@@ -122,8 +134,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
             return this;
         }
-
-        public TestFixture WithLearnersWithOutEmployerInfoUln(Dictionary<string, long> ulns)
+        public TestFixture WithLearnersEmployerInfoUln(Dictionary<string, long> ulns)
         {
             _mockAssessorServiceRepository
                 .Setup(x => x.GetLearnersWithoutEmployerInfo())
@@ -135,12 +146,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
         {
             StorageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(message)))));
         }
-
         public void VerifyNoCallToApprovalApi()
         {
             _mockOuterApiClient.Verify(x => x.Get<GetAllLearnersResponse>(It.IsAny<GetAllLearnersRequest>()), Times.Never);
         }
-
+        public void VerifyNoMessageAddedToStorageQueue()
+        {
+            StorageQueue.Verify(p => p.Add(It.IsAny<string>()), Times.Never);
+        }
         private bool MessageEquals(string first, string second)
         {
             var firstMessage = JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(first);

@@ -58,6 +58,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                         learnersBatch = await _outerApiClient.Get<GetAllLearnersResponse>(new GetAllLearnersRequest(extractStartTime, batchNumber, batchSize));
                         if (learnersBatch?.Learners == null)
                         {
+                            learnersBatch = new GetAllLearnersResponse();
                             _logger.LogWarning($"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
                             continue;
                         }
