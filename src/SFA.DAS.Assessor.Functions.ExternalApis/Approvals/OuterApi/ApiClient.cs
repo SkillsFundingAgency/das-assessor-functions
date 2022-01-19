@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 
@@ -19,19 +20,21 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
         private readonly IOptions<Config.OuterApi> _config;
         const string SubscriptionKeyRequestHeaderKey = "Ocp-Apim-Subscription-Key";
         const string VersionRequestHeaderKey = "X-Version";
-
-        public OuterApiClient (HttpClient httpClient, IOptions<Config.OuterApi>  config)
+        public OuterApiClient(IOptions<Config.OuterApi> config, HttpClient httpClient)
         {
-            _httpClient = httpClient;
             _config = config;
-            _httpClient.BaseAddress = new Uri(_config.Value.BaseUrl);
+            _httpClient = httpClient;
         }
-        
-        public async Task<TResponse> Get<TResponse>(IGetApiRequest request) 
-        {
-            AddHeaders();
 
-            var response = await _httpClient.GetAsync(request.GetUrl).ConfigureAwait(false);
+        public async Task<TResponse> Get<TResponse>(IGetApiRequest request)
+        {
+            var requestUrl = new Uri(new Uri(_config.Value.BaseUrl), request.GetUrl);
+
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+            httpRequest.Headers.Add(SubscriptionKeyRequestHeaderKey, _config.Value.Key);
+            httpRequest.Headers.Add(VersionRequestHeaderKey, "1");
+
+            var response = await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
 
             if (response.StatusCode.Equals(HttpStatusCode.NotFound))
             {
@@ -47,17 +50,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
             response.EnsureSuccessStatusCode();
             return default;
         }
-
-        private void AddHeaders()
-        {
-            //The http handler life time is set to 5 minutes
-            //hence once the headers are added they don't need added again
-            if (_httpClient.DefaultRequestHeaders.Contains(SubscriptionKeyRequestHeaderKey)) return;
-
-            _httpClient.DefaultRequestHeaders.Add(SubscriptionKeyRequestHeaderKey, _config.Value.Key);
-            _httpClient.DefaultRequestHeaders.Add(VersionRequestHeaderKey, "1");
-        }
     }
 
-   
+
 }

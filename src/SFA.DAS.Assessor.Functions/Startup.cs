@@ -90,11 +90,11 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection(nameof(DataCollectionApiAuthentication)));
             builder.Services.Configure<SecureMessageApiAuthentication>(config.GetSection(nameof(SecureMessageApiAuthentication)));
             builder.Services.Configure<DataCollectionMock>(config.GetSection(nameof(DataCollectionMock)));
-            
+
             var functionsOptions = nameof(FunctionsOptions);
             builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
             builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
-            
+
             var databaseMaintenanceOptions = $"{functionsOptions}:{nameof(DatabaseMaintenanceOptions)}";
             builder.Services.Configure<DatabaseMaintenanceOptions>(config.GetSection(databaseMaintenanceOptions));
 
@@ -181,7 +181,7 @@ namespace SFA.DAS.Assessor.Functions
                 optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
-            
+
             var optionsDatabaseMigration = config.GetSection(functionsOptions).GetSection(nameof(databaseMaintenanceOptions)).Get<DatabaseMaintenanceOptions>();
             builder.Services.AddTransient(s => new SqlConnection(optionsDatabaseMigration.SqlConnectionString) as IDbConnection);
             builder.Services.AddTransient<IDatabaseMaintenanceRepository, DatabaseMaintenanceRepository>();
@@ -202,8 +202,9 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
 
             builder.Services.Configure<OuterApi>(config.GetSection(nameof(OuterApi)));
+            
             builder.Services.AddTransient<IAssessorServiceRepository, AssessorServiceRepository>();
-            builder.Services.AddTransient<IOuterApiClient, OuterApiClient>().AddHttpClient();
+            builder.Services.AddHttpClient<IOuterApiClient, OuterApiClient>();
             builder.Services.AddTransient<IEnqueueLearnerInfoCommand, EnqueueLearnerInfoCommand>();
             builder.Services.AddTransient<IDequeueLearnerInfoCommand, DequeueLearnerInfoCommand>();
         }
