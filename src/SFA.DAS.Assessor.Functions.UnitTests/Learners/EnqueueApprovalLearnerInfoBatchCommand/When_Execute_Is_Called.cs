@@ -11,53 +11,26 @@ using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoCommand
+namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerInfoBatchCommand
 {
     public class When_Execute_Is_Called
     {
         [Test]
-        public void ThenStopProcessingWhenNoLearnersWithoutEmployerInfoIsFound()
+        public async Task ThenStopProcessingWhenNoLearnersWithoutEmployerInfoIsFoundAsync()
         {
+            var ulns = new Dictionary<string, long>();
+
             var testFixture = new TestFixture();
-            testFixture.Setup();
+
+            await testFixture
+                .Setup().WithLearnersEmployerInfoUln(ulns).Execute();
+
             testFixture.VerifyNoCallToApprovalApi();
         }
 
         [Test]
-        public async Task ThenStopProcessingWhenNoLearnersWithoutEmployerInfoIsNull()
+        public async Task ThenEnqueueLearnersBatches()
         {
-            var batchLearnersCommand = new ProcessApprovalBatchLearnersCommand(1);
-            string message = JsonConvert.SerializeObject(batchLearnersCommand);
-
-            var testFixture = new TestFixture();
-            await testFixture.Setup()
-                .WithLearnersEmployerInfoUln(null)
-                .WithApprovalLearners(null)
-                .Execute(message);
-            testFixture.VerifyNoCallToApprovalApi();
-        }
-
-        [Test]
-        public async Task ThenStopProcessingWhenApprovalLearnersIsNull()
-        {
-            var batchLearnersCommand = new ProcessApprovalBatchLearnersCommand(1);
-            string message = JsonConvert.SerializeObject(batchLearnersCommand);
-
-            var testFixture = new TestFixture();
-            var ulns = new Dictionary<string, long> { { "100", 100 }, { "200", 200 }, { "300", 300 } };
-
-            await testFixture.Setup()
-                .WithLearnersEmployerInfoUln(ulns)
-                .WithApprovalLearners(null)
-                .Execute(message);
-            testFixture.VerifyNoMessageAddedToStorageQueue();
-        }
-
-        [Test]
-        public async Task ThenEnqueueLearnersWithoutEmployerInfo()
-        {
-            var batchLearnersCommand = new ProcessApprovalBatchLearnersCommand(1);
-            string message = JsonConvert.SerializeObject(batchLearnersCommand);
             var ulns = new Dictionary<string, long> { { "100", 100 }, { "200", 200 }, { "300", 300 } };
             var approvalResponse = new GetAllLearnersResponse
             {
@@ -80,17 +53,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
                         EmployerName = "TEST2"
                     },
                 },
-                TotalNumberOfBatches = 1
+                TotalNumberOfBatches = 2
             };
 
-            var message1 = new UpdateLearnersInfoMessage(1, "TEST1", 100, 10);
-            var message2 = new UpdateLearnersInfoMessage(2, "TEST2", 200, 20);
+            var message1 = new ProcessApprovalBatchLearnersCommand(1);
+            var message2 = new ProcessApprovalBatchLearnersCommand(2);
 
             var testFixture = new TestFixture();
             await testFixture.Setup()
                 .WithLearnersEmployerInfoUln(ulns)
                 .WithApprovalLearners(approvalResponse)
-                .Execute(message);
+                .Execute();
 
             testFixture.VerifyMessageAddedToStorageQueue(message1);
             testFixture.VerifyMessageAddedToStorageQueue(message2);
@@ -99,9 +72,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
     internal class TestFixture
     {
-        private Domain.Learners.EnqueueLearnerInfoCommand _sut;
+        private Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand _sut;
         private Mock<IOuterApiClient> _mockOuterApiClient;
-        private ILogger<Domain.Learners.EnqueueLearnerInfoCommand> _logger;
+        private ILogger<Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand> _logger;
         private Mock<IAssessorServiceRepository> _mockAssessorServiceRepository;
         public Mock<ICollector<string>> StorageQueue = new Mock<ICollector<string>>();
 
@@ -112,26 +85,23 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
                 .Setup(x => x.Get<GetAllLearnersResponse>(It.IsAny<GetAllLearnersRequest>()))
                 .ReturnsAsync(new GetAllLearnersResponse());
 
-            _logger = Mock.Of<ILogger<Domain.Learners.EnqueueLearnerInfoCommand>>();
+            _logger = Mock.Of<ILogger<Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand>>();
 
             _mockAssessorServiceRepository = new Mock<IAssessorServiceRepository>();
             _mockAssessorServiceRepository
                 .Setup(x => x.GetLearnersWithoutEmployerInfo())
                 .ReturnsAsync(new Dictionary<string, long>());
 
-            _sut = new Domain.Learners.EnqueueLearnerInfoCommand(
-                _mockOuterApiClient.Object,
-                _logger,
-                _mockAssessorServiceRepository.Object);
+            _sut = new Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand(_mockOuterApiClient.Object, _logger, _mockAssessorServiceRepository.Object);
 
             _sut.StorageQueue = StorageQueue.Object;
 
             return this;
         }
 
-        public async Task Execute(string message)
+        public async Task Execute()
         {
-            await _sut.Execute(message);
+            await _sut.Execute();
         }
 
         public TestFixture WithApprovalLearners(GetAllLearnersResponse approvalLearnersResponse)
@@ -152,7 +122,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
             return this;
         }
 
-        public void VerifyMessageAddedToStorageQueue(UpdateLearnersInfoMessage message)
+        public void VerifyMessageAddedToStorageQueue(ProcessApprovalBatchLearnersCommand message)
         {
             StorageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(message)))));
         }

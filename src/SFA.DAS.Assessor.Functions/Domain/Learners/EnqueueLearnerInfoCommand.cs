@@ -29,11 +29,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
             _assessorServiceRepository = assessorServiceRepository;
         }
 
-        public async Task Execute()
+        public async Task Execute(string batchMessage)
         {
             try
             {
                 _logger.LogInformation("EnqueueLearnerInfoCommand started");
+
+                var approvalBatchLearnersCommand = JsonConvert.DeserializeObject<ProcessApprovalBatchLearnersCommand>(batchMessage);
+
+                _logger.LogInformation($"Started processing approval batch  {approvalBatchLearnersCommand}");
 
                 var learnersToProcessUln = await _assessorServiceRepository.GetLearnersWithoutEmployerInfo();
 
@@ -47,52 +51,48 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                 //1. Get all Learners From Approvals in batches
                 DateTime? extractStartTime = new DateTime(2000, 1, 1);
                 const int batchSize = 1000;
-                int batchNumber = 0;
-                int count = 0;
+                int batchNumber = approvalBatchLearnersCommand.BatchNumber;
                 GetAllLearnersResponse learnersBatch = null;
-                do
+
+                try
                 {
-                    batchNumber++;
-                    try
+                    learnersBatch = await _outerApiClient.Get<GetAllLearnersResponse>(new GetAllLearnersRequest(extractStartTime, approvalBatchLearnersCommand.BatchNumber, batchSize));
+                    if (learnersBatch?.Learners == null)
                     {
-                        learnersBatch = await _outerApiClient.Get<GetAllLearnersResponse>(new GetAllLearnersRequest(extractStartTime, batchNumber, batchSize));
-                        if (learnersBatch?.Learners == null)
+                        learnersBatch = new GetAllLearnersResponse();
+                        _logger.LogWarning($"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
+                        return;
+                    }
+
+                    _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");
+
+                    // 2. Check if the learner needs to be processed if yes enqueue
+                    foreach (var learner in learnersBatch.Learners)
+                    {
+                        long uln = 0;
+                        int trainingCode = 0;
+
+                        int.TryParse(learner.TrainingCode, out trainingCode);
+
+                        if (string.IsNullOrWhiteSpace(learner.ULN))
                         {
-                            learnersBatch = new GetAllLearnersResponse();
-                            _logger.LogWarning($"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
+                            _logger.LogWarning($"Invalid ULN {learner.ULN}");
                             continue;
                         }
-                        _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");
 
-                        // 2. Check if the learner needs to be processed if yes enqueue
-                        foreach (var learner in learnersBatch.Learners)
+                        if (learnersToProcessUln.TryGetValue(learner.ULN, out uln))
                         {
-                            long uln = 0;
-                            int trainingCode = 0;
-
-                            int.TryParse(learner.TrainingCode, out trainingCode);
-
-                            if (string.IsNullOrWhiteSpace(learner.ULN))
-                            {
-                                _logger.LogWarning($"Invalid ULN {learner.ULN}");
-                                continue;
-                            }
-
-                            if (learnersToProcessUln.TryGetValue(learner.ULN, out uln))
-                            {
-                                var message = new UpdateLearnersInfoMessage(learner.EmployerAccountId, learner.EmployerName, uln, trainingCode);
-                                StorageQueue.Add(JsonConvert.SerializeObject(message));
-                            }
+                            var message = new UpdateLearnersInfoMessage(learner.EmployerAccountId, learner.EmployerName, uln, trainingCode);
+                            StorageQueue.Add(JsonConvert.SerializeObject(message));
                         }
-                        count += learnersBatch.Learners.Count;
-                        _logger.LogInformation($"Approvals batch import loop. Batch Completed {batchNumber} of {learnersBatch.TotalNumberOfBatches}. Total Inserted: {count}");
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, $"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
                     }
 
-                } while (batchNumber < learnersBatch.TotalNumberOfBatches);
+                    _logger.LogInformation($"Approvals batch import loop. Batch Completed {batchNumber} of {learnersBatch.TotalNumberOfBatches}.");
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, $"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
+                }
             }
             catch (Exception ex)
             {

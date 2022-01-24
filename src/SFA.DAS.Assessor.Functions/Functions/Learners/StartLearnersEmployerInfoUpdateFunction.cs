@@ -8,13 +8,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
-    public static class StartLearnersEmployerInfoUpdateFunction
+    public class StartLearnersEmployerInfoUpdateFunction
     {
+        private readonly IEnqueueApprovalLearnerInfoBatchCommand _command;
+
+        public StartLearnersEmployerInfoUpdateFunction(IEnqueueApprovalLearnerInfoBatchCommand command)
+        {
+            _command = command;
+        }
+
         [FunctionName("StartLearnersEmployerInfoUpdateFunction")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             [Queue(QueueNames.StartUpdateLearnersInfo)] ICollector<string> startUpdatingLearnersQueue,
             ILogger log)
         {
@@ -22,7 +30,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             {
                 log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has started.");
 
-                startUpdatingLearnersQueue.Add("start processing");
+                _command.StorageQueue = startUpdatingLearnersQueue;
+                await _command.Execute();
 
                 log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has finished.");
 

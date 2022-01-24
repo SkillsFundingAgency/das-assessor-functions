@@ -22,8 +22,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         }
 
         [FunctionName("EnqueueExternalApiLearnersEmployerInfoFunction")]
-        public async Task Run(
-            [QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message,
+        public async Task Run([QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message,
             [Queue(QueueNames.UpdateLearnersInfo)] ICollector<string> updateLearnersQueue,
             ILogger log)
         {
@@ -32,7 +31,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
                 log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has started.");
 
                 _command.StorageQueue = updateLearnersQueue;
-                await _command.Execute();
+                await _command.Execute(message);
 
                 log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has finished.");
             }

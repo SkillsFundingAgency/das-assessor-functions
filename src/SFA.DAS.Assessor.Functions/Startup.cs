@@ -202,11 +202,12 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
 
             builder.Services.Configure<OuterApi>(config.GetSection(nameof(OuterApi)));
-            
+
             builder.Services.AddTransient<IAssessorServiceRepository, AssessorServiceRepository>();
             builder.Services.AddHttpClient<IOuterApiClient, OuterApiClient>();
             builder.Services.AddTransient<IEnqueueLearnerInfoCommand, EnqueueLearnerInfoCommand>();
             builder.Services.AddTransient<IDequeueLearnerInfoCommand, DequeueLearnerInfoCommand>();
+            builder.Services.AddTransient<IEnqueueApprovalLearnerInfoBatchCommand, EnqueueApprovalLearnerInfoBatchCommand>();
         }
     }
 }

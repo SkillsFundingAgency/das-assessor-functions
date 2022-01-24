@@ -9,7 +9,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
     public class DequeueExternalApiLearnersEmployerInfoFunction
     {
-
         private readonly IDequeueLearnerInfoCommand _command;
 
         public DequeueExternalApiLearnersEmployerInfoFunction(IDequeueLearnerInfoCommand command)
@@ -18,10 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         }
 
         [FunctionName("DequeueExternalApiLearnersEmployerInfoFunction")]
-        public async Task Run(
-            [QueueTrigger(QueueNames.UpdateLearnersInfo)] string message,
-            [Queue(QueueNames.UpdateLearnersInfo)] ICollector<string> updateLearnersInfo,
-            ILogger log)
+        public async Task Run([QueueTrigger(QueueNames.UpdateLearnersInfo)] string message, ILogger log)
         {
             try
             {
