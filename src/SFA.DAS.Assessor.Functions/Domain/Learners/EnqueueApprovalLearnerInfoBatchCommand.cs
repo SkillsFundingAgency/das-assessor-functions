@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 {
     public class EnqueueApprovalLearnerInfoBatchCommand : IEnqueueApprovalLearnerInfoBatchCommand
     {
-        public ICollector<string> StorageQueue { get; set; }
+        public ICollector<ProcessApprovalBatchLearnersCommand> StorageQueue { get; set; }
 
         private readonly IOuterApiClient _outerApiClient;
         private readonly ILogger<EnqueueApprovalLearnerInfoBatchCommand> _logger;
@@ -50,14 +50,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                 GetAllLearnersResponse learnersBatch = await _outerApiClient.Get<GetAllLearnersResponse>(new GetAllLearnersRequest(extractStartTime, batchNumber, batchSize));
                 if (learnersBatch?.Learners == null)
                 {
-                    _logger.LogWarning($"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
-                    return;
+                    string message = $"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}";
+                    _logger.LogWarning(message);
+                    throw new NullReferenceException(message);
                 }
 
                 for (int learnerBatchNumber = 1; learnerBatchNumber <= learnersBatch.TotalNumberOfBatches; learnerBatchNumber++)
                 {
                     var message = new ProcessApprovalBatchLearnersCommand(learnerBatchNumber);
-                    StorageQueue.Add(JsonConvert.SerializeObject(message));
+                    StorageQueue.Add(message);
                 }
 
                 _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");

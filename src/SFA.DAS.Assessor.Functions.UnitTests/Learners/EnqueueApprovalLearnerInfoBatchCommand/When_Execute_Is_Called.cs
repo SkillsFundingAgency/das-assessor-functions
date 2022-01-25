@@ -76,11 +76,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
         private Mock<IOuterApiClient> _mockOuterApiClient;
         private ILogger<Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand> _logger;
         private Mock<IAssessorServiceRepository> _mockAssessorServiceRepository;
-        public Mock<ICollector<string>> StorageQueue = new Mock<ICollector<string>>();
+        public Mock<ICollector<ProcessApprovalBatchLearnersCommand>> StorageQueue;
 
         public TestFixture Setup()
         {
             _mockOuterApiClient = new Mock<IOuterApiClient>();
+
             _mockOuterApiClient
                 .Setup(x => x.Get<GetAllLearnersResponse>(It.IsAny<GetAllLearnersRequest>()))
                 .ReturnsAsync(new GetAllLearnersResponse());
@@ -91,6 +92,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
             _mockAssessorServiceRepository
                 .Setup(x => x.GetLearnersWithoutEmployerInfo())
                 .ReturnsAsync(new Dictionary<string, long>());
+
+            StorageQueue = new Mock<ICollector<ProcessApprovalBatchLearnersCommand>>();
 
             _sut = new Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand(_mockOuterApiClient.Object, _logger, _mockAssessorServiceRepository.Object);
 

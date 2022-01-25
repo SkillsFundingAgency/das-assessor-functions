@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
@@ -23,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
 
         [FunctionName("StartLearnersEmployerInfoUpdateFunction")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            [Queue(QueueNames.StartUpdateLearnersInfo)] ICollector<string> startUpdatingLearnersQueue,
+            [Queue(QueueNames.StartUpdateLearnersInfo)] ICollector<ProcessApprovalBatchLearnersCommand> startUpdatingLearnersQueue,
             ILogger log)
         {
             try
