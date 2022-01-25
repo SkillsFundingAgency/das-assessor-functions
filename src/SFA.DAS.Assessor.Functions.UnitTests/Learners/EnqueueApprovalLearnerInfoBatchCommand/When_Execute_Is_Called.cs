@@ -127,7 +127,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
 
         public void VerifyMessageAddedToStorageQueue(ProcessApprovalBatchLearnersCommand message)
         {
-            StorageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(message)))));
+            StorageQueue.Verify(p => p.Add(It.Is<ProcessApprovalBatchLearnersCommand>(m => m.BatchNumber == message.BatchNumber)));
         }
 
         public void VerifyNoCallToApprovalApi()
@@ -137,15 +137,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
 
         public void VerifyNoMessageAddedToStorageQueue()
         {
-            StorageQueue.Verify(p => p.Add(It.IsAny<string>()), Times.Never);
-        }
-
-        private bool MessageEquals(string first, string second)
-        {
-            var firstMessage = JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(first);
-            var secondMessage = JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(second);
-
-            return firstMessage.Equals(secondMessage);
+            StorageQueue.Verify(p => p.Add(It.IsAny<ProcessApprovalBatchLearnersCommand>()), Times.Never);
         }
     }
 }
