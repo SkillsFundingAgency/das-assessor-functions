@@ -48,11 +48,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                 int batchNumber = 0;
 
                 GetAllLearnersResponse learnersBatch = await _outerApiClient.Get<GetAllLearnersResponse>(new GetAllLearnersRequest(extractStartTime, batchNumber, batchSize));
-                if (learnersBatch?.Learners == null)
+                if (learnersBatch == null)
                 {
                     string message = $"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}";
                     _logger.LogWarning(message);
                     throw new NullReferenceException(message);
+                }
+
+                if (learnersBatch.Learners == null)
+                {
+                    _logger.LogInformation($"No Approvals Leaners to process for batch {batchNumber}");
+                    return;
                 }
 
                 for (int learnerBatchNumber = 1; learnerBatchNumber <= learnersBatch.TotalNumberOfBatches; learnerBatchNumber++)

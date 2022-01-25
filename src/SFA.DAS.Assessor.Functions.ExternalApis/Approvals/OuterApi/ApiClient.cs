@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
@@ -17,13 +18,16 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
     public class OuterApiClient : IOuterApiClient
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<OuterApiClient> _logger;
         private readonly IOptions<Config.OuterApi> _config;
-        const string SubscriptionKeyRequestHeaderKey = "Ocp-Apim-Subscription-Key";
-        const string VersionRequestHeaderKey = "X-Version";
-        public OuterApiClient(IOptions<Config.OuterApi> config, HttpClient httpClient)
+        private const string SubscriptionKeyRequestHeaderKey = "Ocp-Apim-Subscription-Key";
+        private const string VersionRequestHeaderKey = "X-Version";
+
+        public OuterApiClient(IOptions<Config.OuterApi> config, HttpClient httpClient, ILogger<OuterApiClient> logger)
         {
             _config = config;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task<TResponse> Get<TResponse>(IGetApiRequest request)
@@ -38,7 +42,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
 
             if (response.StatusCode.Equals(HttpStatusCode.NotFound))
             {
-                return default;
+                _logger.LogWarning($"Page {requestUrl} cannot be found");
+                return Activator.CreateInstance<TResponse>();
             }
 
             if (response.IsSuccessStatusCode)
@@ -51,6 +56,4 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
             return default;
         }
     }
-
-
 }
