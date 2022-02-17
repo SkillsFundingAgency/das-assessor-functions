@@ -41,6 +41,8 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Net.Http;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -92,7 +94,7 @@ namespace SFA.DAS.Assessor.Functions
             var functionsOptions = nameof(FunctionsOptions);
             builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
             builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
-            
+
             var databaseMaintenanceOptions = $"{functionsOptions}:{nameof(DatabaseMaintenanceOptions)}";
             builder.Services.Configure<DatabaseMaintenanceOptions>(config.GetSection(databaseMaintenanceOptions));
 
@@ -179,7 +181,7 @@ namespace SFA.DAS.Assessor.Functions
                 optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
-            
+
             var optionsDatabaseMigration = config.GetSection(functionsOptions).GetSection(nameof(databaseMaintenanceOptions)).Get<DatabaseMaintenanceOptions>();
             builder.Services.AddTransient(s => new SqlConnection(optionsDatabaseMigration.SqlConnectionString) as IDbConnection);
             builder.Services.AddTransient<IDatabaseMaintenanceRepository, DatabaseMaintenanceRepository>();
@@ -198,6 +200,14 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
             builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
+
+            builder.Services.Configure<OuterApi>(config.GetSection(nameof(OuterApi)));
+
+            builder.Services.AddTransient<IAssessorServiceRepository, AssessorServiceRepository>();
+            builder.Services.AddHttpClient<IOuterApiClient, OuterApiClient>();
+            builder.Services.AddTransient<IEnqueueLearnerInfoCommand, EnqueueLearnerInfoCommand>();
+            builder.Services.AddTransient<IDequeueLearnerInfoCommand, DequeueLearnerInfoCommand>();
+            builder.Services.AddTransient<IEnqueueApprovalLearnerInfoBatchCommand, EnqueueApprovalLearnerInfoBatchCommand>();
         }
     }
 }
