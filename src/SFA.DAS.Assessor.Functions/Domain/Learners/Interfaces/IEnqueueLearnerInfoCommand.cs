@@ -3,9 +3,10 @@ using Microsoft.Azure.WebJobs;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces
 {
-    public  interface IEnqueueLearnerInfoCommand
+    public interface IEnqueueLearnerInfoCommand
     {
         ICollector<string> StorageQueue { get; set; }
-        Task Execute();
+
+        Task Execute(string message);
     }
 }
