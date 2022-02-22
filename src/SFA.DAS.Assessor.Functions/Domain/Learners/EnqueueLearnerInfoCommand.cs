@@ -37,7 +37,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
                 var approvalBatchLearnersCommand = JsonConvert.DeserializeObject<ProcessApprovalBatchLearnersCommand>(batchMessage);
 
-                _logger.LogInformation($"Started processing approval batch  {approvalBatchLearnersCommand}");
+                _logger.LogInformation($"Started processing approval batch  {approvalBatchLearnersCommand.BatchNumber}");
 
                 var learnersToProcessUln = await _assessorServiceRepository.GetLearnersWithoutEmployerInfo();
 

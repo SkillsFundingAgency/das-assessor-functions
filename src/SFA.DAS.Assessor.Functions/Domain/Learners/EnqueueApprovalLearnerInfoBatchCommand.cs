@@ -57,9 +57,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
                 if (learnersBatch.Learners == null)
                 {
-                    _logger.LogInformation($"No Approvals Leaners to process for batch {batchNumber}");
+                    _logger.LogInformation($"No Approvals Leaners to process");
                     return;
                 }
+
+                _logger.LogInformation($"Queueing Approvals Api Learner Batch of {learnersBatch.TotalNumberOfBatches}");
 
                 for (int learnerBatchNumber = 1; learnerBatchNumber <= learnersBatch.TotalNumberOfBatches; learnerBatchNumber++)
                 {
@@ -67,7 +69,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                     StorageQueue.Add(message);
                 }
 
-                _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");
+                _logger.LogInformation($"Completed  Approvals Api Learners Batch {learnersBatch.TotalNumberOfBatches} Queue");
             }
             catch (Exception ex)
             {
