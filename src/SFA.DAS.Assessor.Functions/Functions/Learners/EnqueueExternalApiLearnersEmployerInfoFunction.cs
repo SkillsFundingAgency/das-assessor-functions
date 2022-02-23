@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
@@ -23,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
 
         [FunctionName("EnqueueExternalApiLearnersEmployerInfoFunction")]
         public async Task Run([QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message,
-            [Queue(QueueNames.UpdateLearnersInfo)] ICollector<string> updateLearnersQueue,
+            [Queue(QueueNames.UpdateLearnersInfo)] IAsyncCollector<UpdateLearnersInfoMessage> updateLearnersQueue,
             ILogger log)
         {
             try

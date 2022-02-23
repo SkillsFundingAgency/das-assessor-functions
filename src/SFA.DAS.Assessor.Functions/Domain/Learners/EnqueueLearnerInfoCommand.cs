@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 {
     public class EnqueueLearnerInfoCommand : IEnqueueLearnerInfoCommand
     {
-        public ICollector<string> StorageQueue { get; set; }
+        public IAsyncCollector<UpdateLearnersInfoMessage> StorageQueue { get; set; }
 
         private readonly IOuterApiClient _outerApiClient;
         private readonly ILogger<EnqueueLearnerInfoCommand> _logger;
@@ -73,6 +73,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                     _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");
 
                     // 2. Check if the learner needs to be processed if yes enqueue
+                    var learnersToProcessUlnMessages = new List<Task>();
                     foreach (var learner in learnersBatch.Learners)
                     {
                         long uln = 0;
@@ -89,9 +90,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                         if (learnersToProcessUln.TryGetValue(learner.ULN, out uln))
                         {
                             var message = new UpdateLearnersInfoMessage(learner.EmployerAccountId, learner.EmployerName, uln, trainingCode);
-                            StorageQueue.Add(JsonConvert.SerializeObject(message));
+                            learnersToProcessUlnMessages.Add(StorageQueue.AddAsync(message));
                         }
                     }
+
+                    await Task.WhenAll(learnersToProcessUlnMessages);
 
                     _logger.LogInformation($"Approvals batch import loop. Batch Completed {batchNumber} of {learnersBatch.TotalNumberOfBatches}.");
                 }
