@@ -58,7 +58,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 schedule = await _scheduleService.Get();
                 if (schedule == null)
                 {
-                    _logger.LogInformation("There is no print schedule which allows printing at this time");
+                    _logger.LogInformation("PrintRequestCommand - There is no print schedule which allows printing at this time");
                     return null;
                 }
 
@@ -69,7 +69,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 {
                     if((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)
                     {
-                        _logger.LogInformation($"There are no certificates in batch number {nextBatchReadyToPrint} ready to print at this time");
+                        _logger.LogInformation($"PrintRequestCommand - There are no certificates in batch number {nextBatchReadyToPrint} ready to print at this time");
                     }
                     else
                     {
@@ -109,7 +109,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             {
                 try
                 {
-                    _logger.LogError(ex, "PrintRequestCommand - Failed");
+                    _logger.LogError(ex, "PrintRequestCommand - Unable to send print request");
                 }
                 finally
                 {

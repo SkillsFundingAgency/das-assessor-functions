@@ -79,7 +79,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
         public async Task ThenItShouldLogTheStartOfTheProcess()
         {
             // Arrange
-            var logMessage = "PrintDeliveryNotificationCommand - Started";
+            var logMessage = "DeliveryNotificationCommand - Started";
 
             // Act
             await _sut.Execute();
@@ -92,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
         public async Task ThenItShouldLogIfThereAreNoDeliveryNotificationsToProcess()
         {
             // Arrange
-            var logMessage = "No certificate delivery notifications from the printer are available to process";
+            var logMessage = "DeliveryNotificationCommand - No certificate delivery notifications from the printer are available to process";
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string>());
@@ -109,8 +109,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var exceptionLogMessage = $"Could not process delivery notification file [{fileName}] due to invalid file format";
-            var logMessage = $"Could not process delivery notification file [{fileName}]";
+            var exceptionLogMessage = $"The delivery notification file [{fileName}] contained invalid entries, an error file has been created";
+            var logMessage = $"DeliveryNotificationCommand - Could not process delivery notification file [{fileName}]";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
@@ -125,11 +125,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
 
             // Assert
             _mockLogger.Verify(m => m.Log(
-                LogLevel.Error, 
-                0, 
+                LogLevel.Error,
+                0,
                 It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)),
                 It.Is<Exception>(p => p.Message.StartsWith(exceptionLogMessage)),
-                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), 
+                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
                 Times.Once);
         }
 

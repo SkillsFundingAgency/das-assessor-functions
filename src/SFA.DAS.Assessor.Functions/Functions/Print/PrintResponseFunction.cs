@@ -24,21 +24,16 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         {
             try
             {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation("CertificatePrintResponse has started later than scheduled");
-                }
-
-                log.LogInformation($"CertificatePrintResponse started");
+                log.LogInformation("CertificatePrintResponse has started" + (myTimer.IsPastDue ? " later than scheduled" : string.Empty));
 
                 var printStatusUpdateMessages = await _command.Execute();
                 printStatusUpdateMessages?.ForEach(p => storageQueue.Add(p));
 
-                log.LogInformation("CertificatePrintResponse finished");
+                log.LogInformation("CertificatePrintResponse has finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "CertificatePrintResponse failed");
+                log.LogError(ex, "CertificatePrintResponse has failed");
             }
         }
     }

@@ -169,7 +169,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
                 .Setup(m => m.Get())
                 .Returns(Task.FromResult<Schedule>(null));
 
-            var logMessage = "There is no print schedule which allows printing at this time";
+            var logMessage = "PrintRequestCommand - There is no print schedule which allows printing at this time";
 
             // Act
             await _sut.Execute();

@@ -43,13 +43,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         {
             var printStatusUpdateMessages = new List<CertificatePrintStatusUpdateMessage>();
 
-            _logger.Log(LogLevel.Information, "PrintDeliveryNotificationCommand - Started");
+            _logger.LogInformation("DeliveryNotificationCommand - Started");
 
             var fileNames = await _externalFileTransferClient.GetFileNames(_options.Directory, FilePatternRegEx, false);
 
             if (!fileNames.Any())
             {
-                _logger.LogInformation("No certificate delivery notifications from the printer are available to process");
+                _logger.LogInformation("DeliveryNotificationCommand - No certificate delivery notifications from the printer are available to process");
                 return null;
             }
 
@@ -64,26 +64,20 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     try
                     {
                         var messages = ProcessDeliveryNotifications(fileInfo);
-
-                        if (fileInfo.ValidationMessages.Count > 0)
-                        {
-                            _logger.LogError($"The delivery notification file [{fileInfo.FileName}] contained invalid entries, an error file has been created");
-                            await CreateErrorFile(fileInfo, _options.Directory, _options.ErrorDirectory);
-                        }
-
-                        await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
+                        
                         printStatusUpdateMessages.AddRange(messages);
+                        await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
                     }
                     catch(FileFormatValidationException ex)
                     {
                         fileInfo.ValidationMessages.Add(ex.Message);
-                        await CreateErrorFile(fileInfo, _options.Directory, _options.ErrorDirectory);
-                        throw;
+                        await CreateErrorFile(fileInfo, _options.ErrorDirectory);
+                        throw new Exception($"The delivery notification file [{fileInfo.FileName}] contained invalid entries, an error file has been created", ex);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Could not process delivery notification file [{fileName}]");
+                    _logger.LogError(ex, $"DeliveryNotificationCommand - Could not process delivery notification file [{fileName}]");
                 }
             }
             
@@ -92,22 +86,28 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private List<CertificatePrintStatusUpdateMessage> ProcessDeliveryNotifications(PrintFileInfo fileInfo)
         {
-            var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileInfo.FileContent);
+            try
+            {
+                var receipt = JsonConvert.DeserializeObject<DeliveryReceipt>(fileInfo.FileContent);
+                if (receipt?.DeliveryNotifications == null)
+                {
+                    throw new Exception($"Could not process delivery notification file [{fileInfo.FileName}] as it is empty");
+                }
 
-            if (receipt?.DeliveryNotifications == null)
+                return receipt.DeliveryNotifications.Select(n => new CertificatePrintStatusUpdateMessage
+                {
+                    CertificateReference = n.CertificateNumber,
+                    BatchNumber = n.BatchID,
+                    Status = n.Status,
+                    StatusAt = n.StatusChangeDate,
+                    ReasonForChange = n.Reason
+                }).ToList();
+            }
+            catch (Exception ex)
             {
                 fileInfo.InvalidFileContent = fileInfo.FileContent;
-                throw new FileFormatValidationException($"Could not process delivery notification file [{fileInfo.FileName}] due to invalid file format");
+                throw new FileFormatValidationException($"Could not process delivery notification file [{fileInfo.FileName}] due to invalid file format", ex);
             }
-
-            return receipt.DeliveryNotifications.Select(n => new CertificatePrintStatusUpdateMessage
-            {
-                CertificateReference = n.CertificateNumber,
-                BatchNumber = n.BatchID,
-                Status = n.Status,
-                StatusAt = n.StatusChangeDate,
-                ReasonForChange = n.Reason
-            }).ToList();
         }
     }
 }
