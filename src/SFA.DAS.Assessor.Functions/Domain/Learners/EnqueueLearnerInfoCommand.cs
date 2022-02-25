@@ -101,6 +101,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                 catch (Exception e)
                 {
                     _logger.LogError(e, $"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}");
+                    throw;
                 }
             }
             catch (Exception ex)
