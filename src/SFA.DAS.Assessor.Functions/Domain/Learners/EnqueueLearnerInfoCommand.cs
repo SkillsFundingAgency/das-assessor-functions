@@ -61,7 +61,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
                     {
                         string message = $"Failed to get learners batch: sinceTime={extractStartTime?.ToString("o", System.Globalization.CultureInfo.InvariantCulture)} batchNumber={batchNumber} batchSize={batchSize}";
                         _logger.LogWarning(message);
-                        throw new NullReferenceException(message);
+                        return;
                     }
 
                     if (learnersBatch.Learners == null)
