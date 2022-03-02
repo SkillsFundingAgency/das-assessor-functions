@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.Data
     public interface IAssessorServiceRepository
     {
         Task<Dictionary<string, long>> GetLearnersWithoutEmployerInfo();
-        Task UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
+        Task<int> UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
     }
 
     public class AssessorServiceRepository : IAssessorServiceRepository
@@ -39,7 +39,7 @@ namespace SFA.DAS.Assessor.Functions.Data
             return results.ToDictionary(x => x.ToString(), y => y);
         }
 
-        public async Task UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo)
+        public async Task<int> UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo)
         {
             var query = new StringBuilder();
             var sqlParameters = new DynamicParameters();
@@ -55,7 +55,9 @@ namespace SFA.DAS.Assessor.Functions.Data
             sqlParameters.Add(stdCodeParameterName, learnerInfo.standardCode, DbType.Int32);
 
             query.AppendLine($"UPDATE [Learner] SET [EmployerAccountId] = {employerAccountIdParameterName}, [EmployerName] = {employerNameParameterName} WHERE Uln = {unlParameterName} AND StdCode = {stdCodeParameterName}");
-            await _connection.ExecuteAsync(query.ToString(), sqlParameters);
+            var affectedRows = await _connection.ExecuteAsync(query.ToString(), sqlParameters);
+
+            return affectedRows;
         }
 
     }
