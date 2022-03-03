@@ -24,7 +24,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
 
         [FunctionName("StartLearnersEmployerInfoUpdateFunction")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            [Queue(QueueNames.StartUpdateLearnersInfo)] ICollector<ProcessApprovalBatchLearnersCommand> startUpdatingLearnersQueue,
+            [Queue(QueueNames.StartUpdateLearnersInfo)] IAsyncCollector<ProcessApprovalBatchLearnersCommand> startUpdatingLearnersQueue,
             ILogger log)
         {
             try

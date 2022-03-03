@@ -6,7 +6,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces
 {
     public interface IEnqueueApprovalLearnerInfoBatchCommand
     {
-        ICollector<ProcessApprovalBatchLearnersCommand> StorageQueue { get; set; }
+        IAsyncCollector<ProcessApprovalBatchLearnersCommand> StorageQueue { get; set; }
 
         Task Execute();
     }

@@ -76,7 +76,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
         private Mock<IOuterApiClient> _mockOuterApiClient;
         private ILogger<Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand> _logger;
         private Mock<IAssessorServiceRepository> _mockAssessorServiceRepository;
-        public Mock<ICollector<ProcessApprovalBatchLearnersCommand>> StorageQueue;
+        public Mock<IAsyncCollector<ProcessApprovalBatchLearnersCommand>> StorageQueue;
 
         public TestFixture Setup()
         {
@@ -93,7 +93,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
                 .Setup(x => x.GetLearnersWithoutEmployerInfo())
                 .ReturnsAsync(new Dictionary<string, long>());
 
-            StorageQueue = new Mock<ICollector<ProcessApprovalBatchLearnersCommand>>();
+            StorageQueue = new Mock<IAsyncCollector<ProcessApprovalBatchLearnersCommand>>();
 
             _sut = new Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand(_mockOuterApiClient.Object, _logger, _mockAssessorServiceRepository.Object);
 
@@ -127,7 +127,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
 
         public void VerifyMessageAddedToStorageQueue(ProcessApprovalBatchLearnersCommand message)
         {
-            StorageQueue.Verify(p => p.Add(It.Is<ProcessApprovalBatchLearnersCommand>(m => m.BatchNumber == message.BatchNumber)));
+            StorageQueue.Verify(p => p.AddAsync(It.Is<ProcessApprovalBatchLearnersCommand>(m => m.BatchNumber == message.BatchNumber), default));
         }
 
         public void VerifyNoCallToApprovalApi()
@@ -137,7 +137,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
 
         public void VerifyNoMessageAddedToStorageQueue()
         {
-            StorageQueue.Verify(p => p.Add(It.IsAny<ProcessApprovalBatchLearnersCommand>()), Times.Never);
+            StorageQueue.Verify(p => p.AddAsync(It.IsAny<ProcessApprovalBatchLearnersCommand>(), default), Times.Never);
         }
     }
 }
