@@ -29,9 +29,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
             var learner= JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(message);
 
-            _logger.LogInformation($"Started processing learner uln {learner.Uln} employer information ");
+            _logger.LogInformation($"Started processing learner uln {learner.Uln} StdCode {learner.StdCode} EmployerAccountId {learner.EmployerAccountId} EmployerName {learner.EmployerName} employer information");
 
-            await _assessorServiceRepository.UpdateLearnerInfo((learner.Uln, learner.StdCode, learner.EmployerAccountId, learner.EmployerName));
+            var affectedRows =  await _assessorServiceRepository.UpdateLearnerInfo((learner.Uln, learner.StdCode, learner.EmployerAccountId, learner.EmployerName));
+
+            _logger.LogInformation($"DequeueLearnerInfoCommand affected Rows Count {affectedRows}");
 
             _logger.LogInformation("DequeueLearnerInfoCommand Completed");
         }
