@@ -103,7 +103,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
         private Mock<IOuterApiClient> _mockOuterApiClient;
         private ILogger<Domain.Learners.EnqueueLearnerInfoCommand> _logger;
         private Mock<IAssessorServiceRepository> _mockAssessorServiceRepository;
-        public Mock<ICollector<string>> StorageQueue = new Mock<ICollector<string>>();
+        public Mock<IAsyncCollector<UpdateLearnersInfoMessage>> StorageQueue = new Mock<IAsyncCollector<UpdateLearnersInfoMessage>>();
 
         public TestFixture Setup()
         {
@@ -154,7 +154,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
         public void VerifyMessageAddedToStorageQueue(UpdateLearnersInfoMessage message)
         {
-            StorageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(message)))));
+            StorageQueue.Verify(p => p.AddAsync(It.Is<UpdateLearnersInfoMessage>(m => MessageEquals(m, message)), default));
         }
 
         public void VerifyNoCallToApprovalApi()
@@ -164,14 +164,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
         public void VerifyNoMessageAddedToStorageQueue()
         {
-            StorageQueue.Verify(p => p.Add(It.IsAny<string>()), Times.Never);
+            StorageQueue.Verify(p => p.AddAsync(It.IsAny<UpdateLearnersInfoMessage>(), default), Times.Never);
         }
 
-        private bool MessageEquals(string first, string second)
+        private bool MessageEquals(UpdateLearnersInfoMessage firstMessage, UpdateLearnersInfoMessage secondMessage)
         {
-            var firstMessage = JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(first);
-            var secondMessage = JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(second);
-
             return firstMessage.Equals(secondMessage);
         }
     }

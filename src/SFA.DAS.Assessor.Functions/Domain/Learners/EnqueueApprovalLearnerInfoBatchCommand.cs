@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 {
     public class EnqueueApprovalLearnerInfoBatchCommand : IEnqueueApprovalLearnerInfoBatchCommand
     {
-        public ICollector<ProcessApprovalBatchLearnersCommand> StorageQueue { get; set; }
+        public IAsyncCollector<ProcessApprovalBatchLearnersCommand> StorageQueue { get; set; }
 
         private readonly IOuterApiClient _outerApiClient;
         private readonly ILogger<EnqueueApprovalLearnerInfoBatchCommand> _logger;
@@ -57,17 +57,23 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
                 if (learnersBatch.Learners == null)
                 {
-                    _logger.LogInformation($"No Approvals Leaners to process for batch {batchNumber}");
+                    _logger.LogInformation($"No Approvals Leaners to process");
                     return;
                 }
+
+                _logger.LogInformation($"Queueing Approvals Api Learner Batch of {learnersBatch.TotalNumberOfBatches}");
+
+                var learnerBatchMessages = new List<Task>();
 
                 for (int learnerBatchNumber = 1; learnerBatchNumber <= learnersBatch.TotalNumberOfBatches; learnerBatchNumber++)
                 {
                     var message = new ProcessApprovalBatchLearnersCommand(learnerBatchNumber);
-                    StorageQueue.Add(message);
+                    learnerBatchMessages.Add(StorageQueue.AddAsync(message));
                 }
 
-                _logger.LogInformation($"Approvals batch import loop. Starting batch {batchNumber} of {learnersBatch.TotalNumberOfBatches}");
+                await Task.WhenAll(learnerBatchMessages);
+
+                _logger.LogInformation($"Completed  Approvals Api Learners Batch {learnersBatch.TotalNumberOfBatches} Queue");
             }
             catch (Exception ex)
             {
