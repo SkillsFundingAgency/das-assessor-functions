@@ -43,12 +43,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         {
             List<CertificatePrintStatusUpdateMessage> printStatusUpdateMessages = new List<CertificatePrintStatusUpdateMessage>();
 
-            _logger.Log(LogLevel.Information, "PrintResponseCommand - Started");
+            _logger.LogInformation("PrintResponseCommand - Started");
 
             var fileNames = await _externalFileTransferClient.GetFileNames(_options.Directory, FilePatternRegEx, false);
             if (!fileNames.Any())
             {
-                _logger.Log(LogLevel.Information, "There are no certificate print responses from the printer to process");
+                _logger.LogInformation("PrintResponseCommand - There are no certificate print responses from the printer to process");
                 return null;
             }
 
@@ -64,21 +64,20 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     {
                         var batch = await ProcessFile(fileInfo);
                         var messages = await _batchService.Update(batch);
-                        
-                        await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
-                        
+
                         printStatusUpdateMessages.AddRange(messages);
+                        await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
                     }
                     catch (FileFormatValidationException ex)
                     {
                         fileInfo.ValidationMessages.Add(ex.Message);
-                        await CreateErrorFile(fileInfo, _options.Directory, _options.ErrorDirectory);
-                        throw;
+                        await CreateErrorFile(fileInfo, _options.ErrorDirectory);
+                        throw new Exception($"The print response file [{fileInfo.FileName}] contained invalid entries, an error file has been created", ex);
                     }
                 }
                 catch(Exception ex)
                 {
-                    _logger.LogError(ex, $"Could not process print response file [{fileName}]");
+                    _logger.LogError(ex, $"PrintResponseCommand - Could not process print response file [{fileName}]");
                 }
             }
 

@@ -107,7 +107,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         public async Task ThenItShouldLogIfThereAreNoPrintNotificationsToProcess()
         {
             // Arrange
-            var logMessage = "There are no certificate print responses from the printer to process";
+            var logMessage = "PrintResponseCommand - There are no certificate print responses from the printer to process";
+            
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string>());
@@ -124,8 +125,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var exceptionLogMessage = $"Could not process print response file [{fileName}] due to invalid file format";
-            var logMessage = $"Could not process print response file [{fileName}]";
+            var innerExceptionMessage = $"Could not process print response file [{fileName}] due to invalid file format";
+            var exceptionMessage = $"The print response file [{fileName}] contained invalid entries, an error file has been created";
+            var logMessage = $"PrintResponseCommand - Could not process print response file [{fileName}]";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
@@ -143,7 +145,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
                 LogLevel.Error,
                 0,
                 It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)),
-                It.Is<Exception>(p => p.Message.StartsWith(exceptionLogMessage)),
+                It.Is<Exception>(p => p.Message.StartsWith(exceptionMessage) && p.InnerException.Message.StartsWith(innerExceptionMessage)),
                 (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
                 Times.Once);
         }
@@ -153,8 +155,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var exceptionLogMessage = $"Could not process print response file [{fileName}] due to non matching Batch Number [{_batchNumber}]";
-            var logMessage = $"Could not process print response file [{fileName}]";
+
+            var innerExceptionMessage = $"Could not process print response file [{fileName}] due to non matching Batch Number [{_batchNumber}]";
+            var exceptionMessage = $"The print response file [{fileName}] contained invalid entries, an error file has been created";
+            var logMessage = $"PrintResponseCommand - Could not process print response file [{fileName}]";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
@@ -186,7 +190,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
                 LogLevel.Error,
                 0,
                 It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)),
-                It.Is<Exception>(p => p.Message.StartsWith(exceptionLogMessage)),
+                It.Is<Exception>(p => p.Message.StartsWith(exceptionMessage) && p.InnerException.Message.StartsWith(innerExceptionMessage)),
                 (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
                 Times.Once);
         }

@@ -31,19 +31,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             await _externalFileTransferClient.DeleteFile($"{downloadDirectoryName}/{downloadFileName}");
         }
 
-        protected async Task CreateErrorFile(PrintFileInfo fileInfo, string downloadDirectoryName, string errorDirectoryName)
+        protected async Task CreateErrorFile(PrintFileInfo fileInfo, string errorDirectoryName)
         {
-            var errorFileName = fileInfo.FileName;
-
             var exists = await _internalFileTransferClient.FileExists($"{errorDirectoryName}/{fileInfo.FileName}");
-            if (exists.GetValueOrDefault(false))
+            if (!exists.GetValueOrDefault(false))
             {
-                errorFileName = errorFileName.Replace(".json", $"_{DateTime.UtcNow:ddMMyyHHmmss}.json");
+                var errorFileContents = JsonConvert.SerializeObject(fileInfo);
+                await _internalFileTransferClient.UploadFile(errorFileContents, $"{errorDirectoryName}/{fileInfo.FileName}");
             }
-
-            var errorFileContents = JsonConvert.SerializeObject(fileInfo);
-
-            await _internalFileTransferClient.UploadFile(errorFileContents, $"{errorDirectoryName}/{errorFileName}");
         }
     }
 }
