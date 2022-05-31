@@ -86,10 +86,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
                 return namePart;
 
             CleanseStringForSpecialCharacters(ref namePart);
-
             Capitalize(ref namePart);
-
-            UpdateRoman(ref namePart);
 
             if (familyNamePart)
             {
