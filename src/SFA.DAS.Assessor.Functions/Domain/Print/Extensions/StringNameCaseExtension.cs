@@ -10,7 +10,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
         private static readonly Dictionary<string, string> MacMcFamilyNameExceptions = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> NonEnglishFamilyNameReplacements = new Dictionary<string, string>();
         private static readonly string[] Conjunctions = new string[] { "Y", "E", "I" };
-        private static readonly string RomanRegex = @"\b((?:[Xx]{1,3}|[Xx][Ll]|[Ll][Xx]{0,3})?(?:[Ii]{1,3}|[Ii][VvXx]|[Vv][Ii]{0,3})?)\b";
         private static readonly Dictionary<char, char> AlternateCharacters = new Dictionary<char, char>() {
                 {'’', '\''},
                 {'‘','\'' },
