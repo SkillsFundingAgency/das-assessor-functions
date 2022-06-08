@@ -164,19 +164,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
         }
 
         /// <summary>
-        /// Fix roman numeral names.
-        /// </summary>
-        /// <param name="source"></param>
-        private static void UpdateRoman(ref string source)
-        {
-            var rgx = new Regex(RomanRegex);
-
-            source = Regex.Replace(source, RomanRegex, delegate (Match m) {
-                return m.Value.ToUpper();
-            });
-        }
-
-        /// <summary>
         /// Updates irish/scottish Mac & Mc.
         /// </summary>
         /// <param name="source"></param>
