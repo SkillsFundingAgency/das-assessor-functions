@@ -10,7 +10,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
         private static readonly Dictionary<string, string> MacMcFamilyNameExceptions = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> NonEnglishFamilyNameReplacements = new Dictionary<string, string>();
         private static readonly string[] Conjunctions = new string[] { "Y", "E", "I" };
-        private static readonly string RomanRegex = @"\b((?:[Xx]{1,3}|[Xx][Ll]|[Ll][Xx]{0,3})?(?:[Ii]{1,3}|[Ii][VvXx]|[Vv][Ii]{0,3})?)\b";
         private static readonly Dictionary<char, char> AlternateCharacters = new Dictionary<char, char>() {
                 {'’', '\''},
                 {'‘','\'' },
@@ -53,6 +52,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
             MacMcFamilyNameExceptions.Add(@"\bMacAlova", "Macalova");
             MacMcFamilyNameExceptions.Add(@"\bMacEy", "Macey");
             MacMcFamilyNameExceptions.Add(@"\bMacIag", "Maciag");
+            MacMcFamilyNameExceptions.Add(@"\bMacAnn", "Macann");
 
             NonEnglishFamilyNameReplacements.Add(@"\bAl(?=\s+\w)", "al");               // al Arabic or forename Al.
             NonEnglishFamilyNameReplacements.Add(@"\b(Bin|Binti|Binte)\b", "bin");      // bin, binti, binte Arabic
@@ -86,10 +86,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
                 return namePart;
 
             CleanseStringForSpecialCharacters(ref namePart);
-
             Capitalize(ref namePart);
-
-            UpdateRoman(ref namePart);
 
             if (familyNamePart)
             {
@@ -163,19 +160,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
 
                 source = Regex.Replace(source, pattern, conjunction.ToLower());
             }
-        }
-
-        /// <summary>
-        /// Fix roman numeral names.
-        /// </summary>
-        /// <param name="source"></param>
-        private static void UpdateRoman(ref string source)
-        {
-            var rgx = new Regex(RomanRegex);
-
-            source = Regex.Replace(source, RomanRegex, delegate (Match m) {
-                return m.Value.ToUpper();
-            });
         }
 
         /// <summary>
