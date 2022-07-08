@@ -20,13 +20,6 @@
                 "description": "Short name of the service. Used for the name of resources created"
             }
         },
-        "ipSecurityRestrictions": {
-            "type": "array",
-            "metadata": {
-                "description": "Allowed IP's"
-            },
-            "defaultValue": []
-        },
         "storageAccountAllowedIPs": {
             "type": "array",
             "metadata": {
@@ -82,6 +75,9 @@
             "type": "array"
         },
         "subnetDelegations": {
+            "type": "array"
+        },
+        "workerAccessRestrictions": {
             "type": "array"
         },
         "storagePolicyRules": {
@@ -252,7 +248,7 @@
                         "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value]"
                     },
                     "ipSecurityRestrictions": {
-                        "value": "[parameters('ipSecurityRestrictions')]"
+                        "value": "[parameters('workerAccessRestrictions')]"
                     },
                     "functionAppAppSettings": {
                         "value": {
