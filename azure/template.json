@@ -20,13 +20,6 @@
                 "description": "Short name of the service. Used for the name of resources created"
             }
         },
-        "ipSecurityRestrictions": {
-            "type": "array",
-            "metadata": {
-                "description": "Allowed IP's"
-            },
-            "defaultValue": []
-        },
         "storageAccountAllowedIPs": {
             "type": "array",
             "metadata": {
@@ -100,7 +93,10 @@
             "metadata": {
                 "description": "Used to datestamp resource names to ensure that a unique record is added to deployment history"
             }
-        }
+        },
+        "workerAccessRestrictions": {
+            "type": "array"
+        },
     },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
@@ -252,7 +248,7 @@
                         "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value]"
                     },
                     "ipSecurityRestrictions": {
-                        "value": "[parameters('ipSecurityRestrictions')]"
+                        "value": "[parameters('workerAccessRestrictions')]"
                     },
                     "functionAppAppSettings": {
                         "value": {
