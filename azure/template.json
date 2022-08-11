@@ -96,7 +96,7 @@
         },
         "workerAccessRestrictions": {
             "type": "array"
-        },
+        }
     },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
