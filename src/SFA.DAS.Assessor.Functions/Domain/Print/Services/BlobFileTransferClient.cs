@@ -60,7 +60,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                 _logger.LogDebug($"Uploading {path} to blob storage {_containerName}");
 
-                byte[] array = Encoding.ASCII.GetBytes(fileContents);
+                byte[] array = Encoding.UTF8.GetBytes(fileContents);
                 using (var stream = new MemoryStream(array))
                 {
                     await blob.UploadFromStreamAsync(stream);
