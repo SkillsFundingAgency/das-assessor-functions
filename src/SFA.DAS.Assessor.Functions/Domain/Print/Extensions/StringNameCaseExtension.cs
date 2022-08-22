@@ -54,6 +54,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
             MacMcFamilyNameExceptions.Add(@"\bMacIag", "Maciag");
             MacMcFamilyNameExceptions.Add(@"\bMacAnn", "Macann");
             MacMcFamilyNameExceptions.Add(@"\bMacHell", "Machell");
+            MacMcFamilyNameExceptions.Add(@"\bMacLaren", "Maclaren");
+            
 
             NonEnglishFamilyNameReplacements.Add(@"\bAl(?=\s+\w)", "al");               // al Arabic or forename Al.
             NonEnglishFamilyNameReplacements.Add(@"\b(Bin|Binti|Binte)\b", "bin");      // bin, binti, binte Arabic
