@@ -34,8 +34,14 @@ In order to run this solution locally you will need:
 }
 ```
 
-* **Azure Table Storage Explorer** - ...
+* **Azure Table Storage Explorer** - Add the following to your Azure Table Storage Explorer.
 
+    Row Key: SFA.DAS.AssessorFunctions_1.0
+
+    Partition Key: LOCAL
+
+    Data: [data](https://github.com/SkillsFundingAgency/das-employer-config/blob/master/das-assessor-functions/SFA.DAS.AssessorFunctions.json)
+    
 ### Running
 
 * Ensure that an instance of the `SFA.DAS.AssessorService.Application.Api` project is running in advance.
@@ -63,6 +69,7 @@ There are several unit test projects in the solution built using C#, .NET , Flue
 * `SFA.DAS.Assessor.Functions.UnitTests`
 
 #### Integration Tests
+
 There is one integration test project in the solution, `SFA.DAS.Assessor.Functions.ExternalApis.IntegrationTests`.
 
 
