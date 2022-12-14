@@ -1,17 +1,24 @@
-# ![crest](https://assets.publishing.service.gov.uk/government/assets/crests/org_crest_27px-916806dcf065e7273830577de490d5c7c42f36ddec83e907efe62086785f24fb.png) Digital Apprenticeships Service
+#  EPAO Onboarding and Certification - Assessor Functions
+<img src="https://avatars.githubusercontent.com/u/9841374?s=200&v=4" align="right" alt="UK Government logo">
 
-##  EPAO Onboarding and Certification - Assessor Functions
+[![Build Status](https://sfa-gov-uk.visualstudio.com/Digital%20Apprenticeship%20Service/_apis/build/status/das-assessor-functions?repoName=SkillsFundingAgency%2Fdas-assessor-functions&branchName=master)](https://sfa-gov-uk.visualstudio.com/Digital%20Apprenticeship%20Service/_build/latest?definitionId=2539&repoName=SkillsFundingAgency%2Fdas-assessor-functions&branchName=master)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SkillsFundingAgency_das-assessor-functions&metric=alert_status)](https://sonarcloud.io/project/overview?id=SkillsFundingAgency_das-assessor-functions)
+[![Jira Project](https://img.shields.io/badge/Jira-Project-blue)]()
+[![Confluence Project](https://img.shields.io/badge/Confluence-Project-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?longCache=true&style=flat-square)](https://en.wikipedia.org/wiki/MIT_License)
 
-### Developer Setup
+This repository represents the Assessor Functions code base. This is a service...
 
-#### Requirements
+# Developer Setup
+### Requirements
 
+In order to run this solution locally you will need:
 - Install [.NET Core 3.1](https://www.microsoft.com/net/download)
 - Install [Azure Functions SDK](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
 
-### Configuration
+### Environment Setup
 
-1) Create a local.settings.json file (Copy to Output Directory = Copy always) with the following contents:
+* **local.settings.json** - Create a `local.settings.json` file (Copy to Output Directory = Copy always) with the following data:
 
 ```json
 {
@@ -27,27 +34,43 @@
 }
 ```
 
-1) Ensure that an instance of the SFA.DAS.AssessorService.Application.Api project is running in advance.
-	- this may be either locally or remotely however this will expose a database connection
+* **Azure Table Storage Explorer** - Add the following to your Azure Table Storage Explorer.
 
-2) The BaseAddress in the configuration table of the local Azure Storage account must be set to the base address of the running 
-instance of SFA.DAS.AssessorService.Application.Api project to which the local system should connect.
+    Row Key: SFA.DAS.AssessorFunctions_1.0
 
-3) The DC API requires a ClientSecret which can be obtained for a specific test environment from the DC team. 
+    Partition Key: LOCAL
 
-### Refresh Ilrs
+    Data: [data](https://github.com/SkillsFundingAgency/das-employer-config/blob/master/das-assessor-functions/SFA.DAS.AssessorFunctions.json)
+    
+### Running
 
-1) When the RefreshIlrsEnqueueProviders function starts and there are any providers updated in the DC API since the RefreshIlrsLastRunDate
-in the assessor, a Azure Storage Queue will be created automatically; the name of the queue is defined in [QueueNames.cs](src\SFA.DAS.Assessor.Functions\Infrastructure\QueueNames.cs).
+* Ensure that an instance of the `SFA.DAS.AssessorService.Application.Api` project is running in advance.
+    * This may be either locally or remotely however this will expose a database connection.
+* The BaseAddress value in the configuration table of the local Azure Storage account must be set to the base address of the running instance of `SFA.DAS.AssessorService.Application.Api` project (to which the local system should connect).
+* The DC API requires a ClientSecret which can be obtained for a specific test environment from the DC team. 
 
-2) The RefreshIlrsEnqueueProviders and RefreshIlrsDequeueProviders functions connect to the DC API, optionally the Configuration can be updated to specify that a Mock should be used for the DC API. The current value of the RefreshIlrsLastRunDate in the Assessor Settings controls the amount of Mock data which is generated. 
+#### Refresh Ilrs
+
+* When the `RefreshIlrsEnqueueProviders` function starts and there are providers updated in the DC API since the `RefreshIlrsLastRunDate` function in the assessor, an Azure Storage Queue will be created automatically. The name of the queue is defined in [QueueNames.cs](src\SFA.DAS.Assessor.Functions\Infrastructure\QueueNames.cs).
+* The `RefreshIlrsEnqueueProviders` and `RefreshIlrsDequeueProviders` functions connect to the DC API, optionally the Configuration can be updated to specify that a Mock should be used for the DC API. The current value of the `RefreshIlrsLastRunDate` in the Assessor Settings controls the amount of Mock data which is generated. 
       
-
-### Opportunity Finder DataSync
+#### Opportunity Finder DataSync
 
 No specific configuration
 
-    
+### Testing
+
+This codebase includes unit tests and integration tests. These are all in seperate projects aptly named after the project that the tests cover.
+
+#### Unit Tests
+
+There are several unit test projects in the solution built using C#, .NET , FluentAssertions, Moq, NUnit, and AutoFixture.
+* `SFA.DAS.Assessor.Functions.ExternalApis.UnitTests`
+* `SFA.DAS.Assessor.Functions.UnitTests`
+
+#### Integration Tests
+
+There is one integration test project in the solution, `SFA.DAS.Assessor.Functions.ExternalApis.IntegrationTests`.
 
 
 
