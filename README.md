@@ -3,8 +3,6 @@
 
 [![Build Status](https://sfa-gov-uk.visualstudio.com/Digital%20Apprenticeship%20Service/_apis/build/status/das-assessor-functions?repoName=SkillsFundingAgency%2Fdas-assessor-functions&branchName=master)](https://sfa-gov-uk.visualstudio.com/Digital%20Apprenticeship%20Service/_build/latest?definitionId=2539&repoName=SkillsFundingAgency%2Fdas-assessor-functions&branchName=master)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SkillsFundingAgency_das-assessor-functions&metric=alert_status)](https://sonarcloud.io/project/overview?id=SkillsFundingAgency_das-assessor-functions)
-[![Jira Project](https://img.shields.io/badge/Jira-Project-blue)]()
-[![Confluence Project](https://img.shields.io/badge/Confluence-Project-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg?longCache=true&style=flat-square)](https://en.wikipedia.org/wiki/MIT_License)
 
 This repository represents the Assessor Functions code base. This is a service...
