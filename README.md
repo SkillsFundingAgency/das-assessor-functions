@@ -16,7 +16,9 @@ In order to run this solution locally you will need:
 
 ### Environment Setup
 
-* **local.settings.json** - Create a `local.settings.json` file (Copy to Output Directory = Copy always) with the following data:
+* In the **SFA.DAS.Assessor.Functions** project, create a **`local.settings.json`** file
+* Right-click the file, click Properties, and set its **Copy to Output Directory** property to **Copy Always**
+* Paste the following data into it:
 
 ```json
 {
