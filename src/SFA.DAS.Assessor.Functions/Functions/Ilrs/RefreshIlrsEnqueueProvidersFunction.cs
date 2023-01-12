@@ -1,11 +1,11 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
+using System;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Ilrs
 {
@@ -21,7 +21,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
         }
 
         [FunctionName("RefreshIlrsEnqueueProviders")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:RefreshIlrsOptions:EnqueueProvidersSchedule%", RunOnStartup = false)]TimerInfo myTimer,
+        public async Task Run([TimerTrigger("%FunctionsOptions:RefreshIlrsOptions:EnqueueProvidersSchedule%", RunOnStartup = false)] TimerInfo myTimer,
             [Queue(QueueNames.RefreshIlrs)] ICollector<string> refreshIlrsQueue,
             ILogger log)
         {
@@ -47,7 +47,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
                 log.LogInformation("RefreshIlrsEnqueueProviders has finished");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 log.LogError(ex, "RefreshIlrsEnqueueProviders has failed");
             }

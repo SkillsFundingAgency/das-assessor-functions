@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Learners
 {
@@ -27,11 +22,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
         {
             _logger.LogInformation("DequeueLearnerInfoCommand started");
 
-            var learner= JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(message);
+            var learner = JsonConvert.DeserializeObject<UpdateLearnersInfoMessage>(message);
 
             _logger.LogInformation($"Started processing learner uln {learner.Uln} StdCode {learner.StdCode} EmployerAccountId {learner.EmployerAccountId} EmployerName {learner.EmployerName} employer information");
 
-            var affectedRows =  await _assessorServiceRepository.UpdateLearnerInfo((learner.Uln, learner.StdCode, learner.EmployerAccountId, learner.EmployerName));
+            var affectedRows = await _assessorServiceRepository.UpdateLearnerInfo((learner.Uln, learner.StdCode, learner.EmployerAccountId, learner.EmployerName));
 
             _logger.LogInformation($"DequeueLearnerInfoCommand affected Rows Count {affectedRows}");
 

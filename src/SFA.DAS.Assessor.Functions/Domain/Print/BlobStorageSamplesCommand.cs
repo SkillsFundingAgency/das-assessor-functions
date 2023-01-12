@@ -3,8 +3,8 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
-using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,10 +18,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
         private readonly string _printResponseDirectory;
         private readonly string _deliveryNotificationDirectory;
-        
+
         public BlobStorageSamplesCommand(
             ILogger<BlobStorageSamplesCommand> logger,
-            
+
             IExternalBlobFileTransferClient blobFileTransferClient,
             IOptions<PrintResponseOptions> optionsPrintResponse,
             IOptions<DeliveryNotificationOptions> optionsDeliveryNotification)

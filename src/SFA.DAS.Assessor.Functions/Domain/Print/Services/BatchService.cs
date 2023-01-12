@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
@@ -50,11 +48,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public async Task<Batch> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded)
         {
-            if(maxCertificatesToBeAdded <= 0)
+            if (maxCertificatesToBeAdded <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxCertificatesToBeAdded), maxCertificatesToBeAdded, "The value must be greater than zero");
             }
-            
+
             var nextBatchNumberReadyToPrint = await GetExistingReadyToPrintBatchNumber();
             if (await ReadyToPrintCertificatesNotInBatch())
             {
@@ -81,7 +79,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 }
             }
 
-            if(nextBatchNumberReadyToPrint.HasValue)
+            if (nextBatchNumberReadyToPrint.HasValue)
             {
                 var batch = await Get(nextBatchNumberReadyToPrint.Value);
                 batch.Certificates = await GetCertificatesForBatchNumber(nextBatchNumberReadyToPrint.Value);
@@ -94,7 +92,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         public async Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber)
         {
             var response = await _assessorServiceApiClient.GetCertificatesForBatchNumber(batchNumber);
-            if(response == null)
+            if (response == null)
             {
                 throw new Exception($"Unable to get the certificates for batch number {batchNumber}");
             }
@@ -148,7 +146,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 }
             }
 
-            if(printStatusUpdateMessages.Count > 0)
+            if (printStatusUpdateMessages.Count > 0)
             {
                 _logger.LogInformation($"Batch log {batch.BatchNumber} contained {batch.Certificates.Count} certificates, for which {printStatusUpdateMessages.Count} messages will be queued");
             }

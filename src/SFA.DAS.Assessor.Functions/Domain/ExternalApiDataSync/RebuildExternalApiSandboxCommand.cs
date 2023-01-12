@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync
 {
-    public class RebuildExternalApiSandboxCommand: IRebuildExternalApiSandboxCommand
+    public class RebuildExternalApiSandboxCommand : IRebuildExternalApiSandboxCommand
     {
         private readonly IAssessorServiceApiClient _assessorServiceApi;
         private readonly ILogger<RebuildExternalApiSandboxCommand> _logger;
         private readonly RebuildExternalApiSandboxOptions _options;
 
-        public RebuildExternalApiSandboxCommand(IAssessorServiceApiClient assessorServiceApi, 
+        public RebuildExternalApiSandboxCommand(IAssessorServiceApiClient assessorServiceApi,
             ILogger<RebuildExternalApiSandboxCommand> logger, IOptions<RebuildExternalApiSandboxOptions> options)
         {
             _assessorServiceApi = assessorServiceApi;

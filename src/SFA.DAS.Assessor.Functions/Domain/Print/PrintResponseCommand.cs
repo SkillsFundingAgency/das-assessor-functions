@@ -75,7 +75,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         throw new Exception($"The print response file [{fileInfo.FileName}] contained invalid entries, an error file has been created", ex);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, $"PrintResponseCommand - Could not process print response file [{fileName}]");
                 }

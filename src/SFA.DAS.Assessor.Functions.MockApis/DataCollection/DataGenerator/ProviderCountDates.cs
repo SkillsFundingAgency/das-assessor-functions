@@ -13,7 +13,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
 
         public static void GetCounts(DateTime lastRunDate, out int providerCount, out int learnerCount, out int learningDeliveryCount)
         {
-            if(lastRunDate.Month == TenDate.Month && lastRunDate.Day == TenDate.Day)
+            if (lastRunDate.Month == TenDate.Month && lastRunDate.Day == TenDate.Day)
             {
                 providerCount = 10;
                 learnerCount = 4;

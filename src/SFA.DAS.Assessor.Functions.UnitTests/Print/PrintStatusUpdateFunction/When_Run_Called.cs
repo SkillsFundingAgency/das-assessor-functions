@@ -11,7 +11,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
     public class When_Run_Called
     {
         private Functions.Print.PrintStatusUpdateFunction _sut;
-        
+
         private Mock<ILogger> _mockLogger;
         private Mock<IPrintStatusUpdateCommand> _mockCommand;
         private Mock<ICollector<CertificatePrintStatusUpdateErrorMessage>> _mockCollector;

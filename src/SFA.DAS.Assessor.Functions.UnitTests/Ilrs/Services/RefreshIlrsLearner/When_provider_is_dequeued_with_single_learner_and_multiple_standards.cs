@@ -42,7 +42,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
                     It.Is<List<int>>(p => Enumerable.SequenceEqual(p, optionsLearnerFundModels)),
                     -1,
                     Options.Object.Value.LearnerPageSize,
-                    pageNumber), 
+                    pageNumber),
                 Times.Once);
         }
 

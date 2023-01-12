@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants
+﻿namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants
 {
     public class CertificateStatus
     {

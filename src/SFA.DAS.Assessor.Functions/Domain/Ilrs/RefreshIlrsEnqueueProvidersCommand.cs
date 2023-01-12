@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
 {
@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
 
         public RefreshIlrsEnqueueProvidersCommand(
             IRefreshIlrsAccessorSettingService refreshIlrsAccessorSettingService,
-            IRefreshIlrsProviderService refreshIlrsProviderService, 
+            IRefreshIlrsProviderService refreshIlrsProviderService,
             IDateTimeHelper dateTimeHelper,
             ILogger<RefreshIlrsEnqueueProvidersCommand> logger)
         {
@@ -30,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
         {
             var previousRunDateTime = await _refreshIlrsAccessorSettingService.GetLastRunDateTime();
             var nextRunDateTime = _dateTimeHelper.DateTimeNow;
-            
+
             var output = await _refreshIlrsProviderService.ProcessProviders(previousRunDateTime, nextRunDateTime);
             if (output != null && output.Count > 0)
             {

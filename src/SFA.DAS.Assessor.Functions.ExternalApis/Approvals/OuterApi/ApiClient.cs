@@ -1,12 +1,10 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
 {

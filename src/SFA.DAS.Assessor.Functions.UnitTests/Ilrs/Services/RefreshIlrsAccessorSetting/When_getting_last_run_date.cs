@@ -107,14 +107,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsAccessor
             {
                 AssessorServiceApiClient.Setup(p => p.GetAssessorSetting("RefreshIlrsLastRunDate"))
                     .ReturnsAsync(refreshIlrsLastRunDate?.ToString("o"));
-                
+
                 return this;
             }
 
             public TestFixture WithOptions(RefreshIlrsOptions options)
             {
                 Options.Setup(p => p.Value).Returns(options);
-                
+
                 return this;
             }
 

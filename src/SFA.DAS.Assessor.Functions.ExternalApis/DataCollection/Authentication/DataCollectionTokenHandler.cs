@@ -9,12 +9,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication
     public class DataCollectionTokenHandler : DelegatingHandler
     {
         private readonly IDataCollectionTokenService _tokenService;
-        
+
         public DataCollectionTokenHandler(IDataCollectionTokenService tokenService)
         {
             _tokenService = tokenService;
         }
-        
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)

@@ -1,10 +1,8 @@
-﻿using FizzWare.NBuilder;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using Moq.Protected;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -25,7 +23,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         {
             // Arrange
             var batchNumber = 111;
-            
+
             _mockHttpMessageHandler
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>

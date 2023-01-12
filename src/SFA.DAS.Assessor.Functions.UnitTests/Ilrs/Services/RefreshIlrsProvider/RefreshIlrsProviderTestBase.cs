@@ -100,10 +100,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsProvider
 
                 MockRefreshIlrsAcademicYearsService.Setup(v => v.ValidateAllAcademicYears(It.Is<DateTime>(p => AcademicYears.ContainsKey(p)), It.Is<DateTime>(p => AcademicYears.ContainsKey(p))))
                     .ReturnsAsync((DateTime lastRunDateTime, DateTime currentRunDateTime) => AcademicYears[lastRunDateTime].Concat(AcademicYears[currentRunDateTime]).Distinct().ToList());
-                
+
                 MockRefreshIlrsAcademicYearsService.Setup(v => v.ValidateAllAcademicYears(It.Is<DateTime>(p => AcademicYears.ContainsKey(p)), It.Is<DateTime>(p => !AcademicYears.ContainsKey(p))))
                     .ReturnsAsync((DateTime lastRunDateTime, DateTime currentRunDateTime) => AcademicYears[lastRunDateTime]);
-                
+
                 MockRefreshIlrsAcademicYearsService.Setup(v => v.ValidateAllAcademicYears(It.Is<DateTime>(p => !AcademicYears.ContainsKey(p)), It.Is<DateTime>(p => AcademicYears.ContainsKey(p))))
                     .ReturnsAsync((DateTime lastRunDateTime, DateTime currentRunDateTime) => AcademicYears[currentRunDateTime]);
 
@@ -128,8 +128,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsProvider
 
             public void VerifyLogError(string message)
             {
-                Logger.Verify(m => m.Log(LogLevel.Error, 0, 
-                    It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(message)), It.IsAny<Exception>(), 
+                Logger.Verify(m => m.Log(LogLevel.Error, 0,
+                    It.Is<It.IsAnyType>((object v, Type _) => v.ToString().Equals(message)), It.IsAny<Exception>(),
                     (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
             }
         }

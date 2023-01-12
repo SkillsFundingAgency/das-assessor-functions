@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Config;
+using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Types;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;

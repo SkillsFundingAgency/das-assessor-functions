@@ -1,14 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.CertificateService
 {
@@ -16,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.CertificateService
     {
         private Mock<IAssessorServiceApiClient> _mockAssessorServiceApiClient;
         protected Mock<ILogger<Domain.Print.Services.CertificateService>> _mockLogger;
-        
+
         [SetUp]
         public void Arrange()
         {
@@ -37,7 +35,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.CertificateService
                 Status = CertificateStatus.Delivered,
                 StatusAt = DateTime.UtcNow
             };
-            
+
             // Act
             await sut.ProcessCertificatesPrintStatusUpdate(certificatePrintStatusUpdate);
 

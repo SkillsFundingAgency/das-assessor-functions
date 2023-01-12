@@ -8,7 +8,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Types
         public int? BatchId { get; set; }
         public string Status { get; set; }
         public DateTime? StatusDate { get; set; }
-        public string  Reason { get; set; }
+        public string Reason { get; set; }
         public long Uln { get; set; }
         public int StandardCode { get; set; }
         public int ProviderUkPrn { get; set; }

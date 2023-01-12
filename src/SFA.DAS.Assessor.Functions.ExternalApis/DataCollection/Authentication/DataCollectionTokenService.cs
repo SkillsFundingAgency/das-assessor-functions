@@ -12,7 +12,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Authentication
 
         public DataCollectionTokenService(IOptions<DataCollectionApiAuthentication> dataCollectionApiAuthenticationOptions)
         {
-            _dataCollectionApiAuthenticationOptions = dataCollectionApiAuthenticationOptions?.Value;    
+            _dataCollectionApiAuthenticationOptions = dataCollectionApiAuthenticationOptions?.Value;
         }
 
         public async Task<string> GetToken()

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Print
 {
@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         }
 
         [FunctionName("CertificateDeliveryNotification")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:DeliveryNotificationOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer,
+        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:DeliveryNotificationOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer,
             [Queue(QueueNames.CertificatePrintStatusUpdate)] ICollector<CertificatePrintStatusUpdateMessage> storageQueue,
             ILogger log)
         {
@@ -28,7 +28,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
 
                 var printStatusUpdateMessages = await _command.Execute();
                 printStatusUpdateMessages?.ForEach(p => storageQueue.Add(p));
-                
+
                 log.LogInformation("CertificateDeliveryNotification has finished");
             }
             catch (Exception ex)

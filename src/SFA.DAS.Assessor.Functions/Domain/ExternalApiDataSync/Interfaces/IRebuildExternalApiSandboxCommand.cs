@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces
 {
-    public interface IRebuildExternalApiSandboxCommand: ICommand
+    public interface IRebuildExternalApiSandboxCommand : ICommand
     {
     }
 }

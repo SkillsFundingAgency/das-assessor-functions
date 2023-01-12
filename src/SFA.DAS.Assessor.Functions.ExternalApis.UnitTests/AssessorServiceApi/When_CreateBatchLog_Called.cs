@@ -26,7 +26,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         {
             // Arrange
             var utcDate = DateTime.UtcNow;
-            
+
             var batchResponse = Builder<BatchLogResponse>.CreateNew().Build();
             batchResponse.ScheduledDate = utcDate;
 

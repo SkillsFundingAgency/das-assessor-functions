@@ -71,7 +71,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-ready-to-print-add-certificates"))
             {
                 return await PostPutRequestWithResponse<UpdateBatchLogReadyToPrintAddCertificatesRequest, int>(
-                    request, 
+                    request,
                     new UpdateBatchLogReadyToPrintAddCertificatesRequest { MaxCertificatesToBeAdded = maxCertificatesToBeAdded });
             }
         }
@@ -131,7 +131,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 await PostPutRequest(request);
             }
         }
-        
+
         public async Task<ScheduleRun> GetSchedule(ScheduleType scheduleType)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/schedule/runnow?scheduleType={(int)scheduleType}"))

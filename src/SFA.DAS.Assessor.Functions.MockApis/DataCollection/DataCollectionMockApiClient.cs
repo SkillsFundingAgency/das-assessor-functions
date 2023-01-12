@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
 {
@@ -16,13 +16,13 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
     {
         private IOptions<DataCollectionMock> _optionsDataCollectionMock;
         private ILogger<DataCollectionMockApiClient> _logger;
-       
+
         private List<int> _providerMockData = new List<int>();
         private List<DataCollectionLearner> _learnerMockDataList = new List<DataCollectionLearner>();
         private Dictionary<int, List<DataCollectionLearner>> _learnerMockDataDictionary = new Dictionary<int, List<DataCollectionLearner>>();
 
         private DataCollectionMockDataGenerator _generator;
-        
+
         public DataCollectionMockApiClient(IOptions<DataCollectionMock> optionsDataCollectionMock,
             IOptions<RefreshIlrsOptions> optionsRefeshIlrs,
             ILogger<DataCollectionMockApiClient> logger)
@@ -35,8 +35,8 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
 
             var aimType = 1;
             var fundModels = optionsRefeshIlrs.Value.LearnerFundModels;
-            
-            _generator = new DataCollectionMockDataGenerator(aimType, 
+
+            _generator = new DataCollectionMockDataGenerator(aimType,
                 new List<string>(fundModels.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 .ConvertAll<int>(p => int.Parse(p.Trim())));
 
@@ -59,7 +59,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
             var learners = _learnerMockDataList;
 
             var leanersPage = learners
-                .Skip((pageSize ?? 10) * (pageNumber-1) ?? 1).Take(pageSize ?? 10);
+                .Skip((pageSize ?? 10) * (pageNumber - 1) ?? 1).Take(pageSize ?? 10);
 
             var page = new DataCollectionLearnersPage()
             {
@@ -72,7 +72,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection
                     TotalPages = Math.Max((learners.Count() / pageSize ?? 10), 1)
                 }
             };
-            
+
             return await Task.FromResult(page);
         }
 

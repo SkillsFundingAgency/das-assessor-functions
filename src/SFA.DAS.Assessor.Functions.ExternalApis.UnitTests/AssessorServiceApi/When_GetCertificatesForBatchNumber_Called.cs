@@ -5,7 +5,6 @@ using Moq.Protected;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
-using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -26,7 +25,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         {
             // Arrange
             var batchNumber = 333;
-            
+
             var response = Builder<CertificatesForBatchNumberResponse>.CreateNew().Build();
 
             _mockHttpMessageHandler

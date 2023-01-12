@@ -9,12 +9,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
     public class AssessorTokenHandler : DelegatingHandler
     {
         private readonly IAssessorServiceTokenService _tokenService;
-        
+
         public AssessorTokenHandler(IAssessorServiceTokenService tokenService)
         {
             _tokenService = tokenService;
         }
-        
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
