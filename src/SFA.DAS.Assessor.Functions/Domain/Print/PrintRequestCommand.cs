@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
@@ -9,7 +8,6 @@ using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
@@ -20,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         private readonly IPrintCreator _printCreator;
         private readonly IBatchService _batchService;
         private readonly IScheduleService _scheduleService;
-        
+
         private readonly INotificationService _notificationService;
         private readonly IExternalBlobFileTransferClient _externalFileTransferClient;
         private readonly IInternalBlobFileTransferClient _internalFileTransferClient;
@@ -67,7 +65,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 var nextBatchReadyToPrint = await _batchService.BuildPrintBatchReadyToPrint(schedule.RunTime, _options.AddReadyToPrintLimit);
                 if (nextBatchReadyToPrint != null)
                 {
-                    if((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)
+                    if ((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)
                     {
                         _logger.LogInformation($"PrintRequestCommand - There are no certificates in batch number {nextBatchReadyToPrint} ready to print at this time");
                     }
@@ -97,8 +95,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         printStatusUpdateMessages = await _batchService.Update(nextBatchReadyToPrint);
 
                         await _notificationService.SendPrintRequest(
-                            nextBatchReadyToPrint.BatchNumber, 
-                            nextBatchReadyToPrint.Certificates, 
+                            nextBatchReadyToPrint.BatchNumber,
+                            nextBatchReadyToPrint.Certificates,
                             nextBatchReadyToPrint.CertificatesFileName);
                     }
                 }
@@ -118,7 +116,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         await _scheduleService.Fail(schedule);
                     }
                 }
-                
+
                 throw;
             }
 

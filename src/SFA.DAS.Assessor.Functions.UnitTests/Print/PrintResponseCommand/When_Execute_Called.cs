@@ -41,7 +41,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
             _mockOptions = new Mock<IOptions<PrintResponseOptions>>();
             _mockMessageQueue = new Mock<ICollector<CertificatePrintStatusUpdateMessage>>();
 
-            _options = new PrintResponseOptions {
+            _options = new PrintResponseOptions
+            {
                 Directory = "MockPrintResponseDirectory",
                 ArchiveDirectory = "MockArchivePrintResponseDirectory"
             };
@@ -59,14 +60,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
 
                 _mockExternalFileTransferClient
                     .Setup(m => m.DownloadFile($"{_options.Directory}/{filename}"))
-                    .ReturnsAsync(JsonConvert.SerializeObject(new PrintReceipt { 
-                        Batch = new BatchData { 
+                    .ReturnsAsync(JsonConvert.SerializeObject(new PrintReceipt
+                    {
+                        Batch = new BatchData
+                        {
                             BatchNumber = _batchNumber,
                             BatchDate = DateTime.Now.AddDays(-1),
                             ProcessedDate = DateTime.Now,
                             PostalContactCount = 2,
                             TotalCertificateCount = 6
-                        }}));
+                        }
+                    }));
             };
 
             _mockExternalFileTransferClient
@@ -108,7 +112,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         {
             // Arrange
             var logMessage = "PrintResponseCommand - There are no certificate print responses from the printer to process";
-            
+
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
                 .ReturnsAsync(new List<string>());
@@ -204,7 +208,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
             // Assert
             _mockBatchService.Verify(m => m.Update(
                 It.Is<Batch>(b => b.BatchNumber == _batchNumber)), Times.Exactly(_downloadedFiles.Count));
-            
+
             foreach (var filename in _downloadedFiles)
             {
                 var downloadedFilename = $"{_options.Directory}/{filename}";

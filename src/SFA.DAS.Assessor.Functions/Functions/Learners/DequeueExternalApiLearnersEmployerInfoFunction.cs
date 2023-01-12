@@ -1,9 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {

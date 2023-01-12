@@ -7,7 +7,6 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
@@ -53,14 +52,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
             // Arrange
             var message = _certificatePrintStatusUpdateMessage;
             var logMessage = $"PrintStatusUpdateCommand - Started for message";
-            
+
             // Act
             await _sut.Execute(message);
 
             // Assert
             _mockLogger.Verify(m => m.Log(LogLevel.Debug, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
         }
-       
+
         [Test]
         public async Task ThenItShouldCallCertificateServiceToProcessUpdates()
         {

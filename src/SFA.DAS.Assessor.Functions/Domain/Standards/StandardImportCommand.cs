@@ -9,7 +9,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Standards
     {
         private readonly ILogger<StandardImportCommand> _logger;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
-        
+
         public StandardImportCommand(ILogger<StandardImportCommand> logger,
             IAssessorServiceApiClient assessorServiceApi)
         {

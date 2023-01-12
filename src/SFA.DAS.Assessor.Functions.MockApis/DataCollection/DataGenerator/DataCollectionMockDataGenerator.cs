@@ -20,7 +20,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
             _aimType = aimType;
             _fundModels = fundModels;
         }
-        
+
         public IEnumerable<DataCollectionLearner> GetLearners(int provider, int noOfLearners, int noOfLearningDeliveries)
         {
             var dataCollectionLearnerGenerator = new Faker<DataCollectionLearner>()
@@ -45,7 +45,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
         {
             List<int> aimTypelList = new List<int>() { 2, 3, 4 };
             List<int> fundingModelList = new List<int>() { 36, 81, 99 };
-            List<int?> stdCodelList = new List<int?>() { 5, 26, 59, 93};
+            List<int?> stdCodelList = new List<int?>() { 5, 26, 59, 93 };
             List<string> epaOrgIDlList = new List<string>() { "EPA0002", "EPA0006", "EPA0011", "EPA0016", "EPA0026", "EPA0045", "EPA0060", "EPA0077", "EPA0110" };
             List<int> outcomeList = new List<int>() { 1, 3, 8 };
             List<int?> compStatusList = new List<int?>() { 1, 2, 3, 6 };

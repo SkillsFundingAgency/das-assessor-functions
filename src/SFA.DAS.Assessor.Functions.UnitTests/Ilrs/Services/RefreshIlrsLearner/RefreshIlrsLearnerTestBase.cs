@@ -42,7 +42,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
                     PagingInfo = new DataCollectionPagingInfo {PageNumber = 1, PageSize = 3, TotalItems = 2, TotalPages = 1 },
                     Learners = new List<DataCollectionLearner>
                     {
-                        GenerateTestLearner(UkprnOneOne.Ukprn, UkprnOneOne.Uln, UkprnOneOne.StdCodes, UkprnOneOne.FundModels),                       
+                        GenerateTestLearner(UkprnOneOne.Ukprn, UkprnOneOne.Uln, UkprnOneOne.StdCodes, UkprnOneOne.FundModels),
                     }
                 }
             },
@@ -127,10 +127,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
                 FamilyName = "BLANK",
                 LearnRefNumber = "BLANK",
             };
-                
-            foreach(var stdCode in stdCodes)
+
+            foreach (var stdCode in stdCodes)
             {
-                foreach(var fundModel in fundModels)
+                foreach (var fundModel in fundModels)
                 {
                     learner.LearningDeliveries.Add(new DataCollectionLearningDelivery
                     {
@@ -171,8 +171,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
             });
 
             DataCollectionServiceApiClient = new Mock<IDataCollectionServiceApiClient>();
-            DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(l => Learners1920.ContainsKey(new Tuple<int, int>(l, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? progType,  int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
-           
+            DataCollectionServiceApiClient.Setup(p => p.GetLearners("1920", It.Is<int>(l => Learners1920.ContainsKey(new Tuple<int, int>(l, 1).ToValueTuple())), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<List<int>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((string source, int ukprn, int? aimType, int? standardCode, List<int> fundModels, int? progType, int? pageSize, int? pageNumber) => Learners1920[(ukprn, pageNumber.Value)]);
+
             AssessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
             Logger = new Mock<ILogger<RefreshIlrsLearnerService>>();
 
@@ -218,7 +218,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
                             l => l.Ukprn == learnerTestData.Ukprn &&
                             l.Uln == GenerateUln(learnerTestData.Ukprn, learnerTestData.Uln) &&
                             l.StdCode == importedLearner.Item1 &&
-                            l.FundingModel == importedLearner.Item2))), 
+                            l.FundingModel == importedLearner.Item2))),
                     Times.Once);
             }
 
@@ -230,7 +230,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsLearner
                             l => l.Ukprn == learnerTestData.Ukprn &&
                             l.Uln == GenerateUln(learnerTestData.Ukprn, learnerTestData.Uln) &&
                             l.StdCode == ignoredLearner.Item1 &&
-                            l.FundingModel == ignoredLearner.Item2))), 
+                            l.FundingModel == ignoredLearner.Item2))),
                     Times.Never);
             }
         }

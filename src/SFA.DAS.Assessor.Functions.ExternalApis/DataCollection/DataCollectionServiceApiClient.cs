@@ -15,7 +15,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
     public class DataCollectionServiceApiClient : ApiClientBase, IDataCollectionServiceApiClient
     {
         public string ApiVersion { get; }
-        
+
         public DataCollectionServiceApiClient(HttpClient httpClient, IDataCollectionTokenService tokenService, IOptions<DataCollectionApiAuthentication> options, ILogger<DataCollectionServiceApiClient> logger)
             : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
         {
@@ -37,7 +37,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                 var json = await response.Content.ReadAsStringAsync();
                 var sources = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<string>>(json, JsonSettings));
                 sources.Sort();
-                
+
                 return sources;
             }
         }
@@ -46,11 +46,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
         {
             var requestUri = $@"/api/v{ApiVersion}/ilr-data/providers/{source}?" +
                 $"startDateTime={WebUtility.UrlEncode(startDateTime.ToString("o"))}" +
-                (pageSize != null 
-                    ? $"&pageSize={pageSize}" 
+                (pageSize != null
+                    ? $"&pageSize={pageSize}"
                     : string.Empty) +
-                (pageNumber != null 
-                    ? $"&pageNumber={pageNumber}" 
+                (pageNumber != null
+                    ? $"&pageNumber={pageNumber}"
                     : string.Empty);
 
             using (var request = new HttpRequestMessage(HttpMethod.Get, requestUri))
@@ -61,7 +61,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                     var json = await response.Content.ReadAsStringAsync();
                     var providers = await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<int>>(json, JsonSettings));
                     var pagingInfo = response.Headers.GetValues("X-Pagination")?.FirstOrDefault();
-                    
+
                     if (providers.Count > 0 && !string.IsNullOrEmpty(pagingInfo))
                     {
                         return new DataCollectionProvidersPage
@@ -71,7 +71,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
                         };
                     }
                 }
-                else if(response?.StatusCode == HttpStatusCode.NoContent)
+                else if (response?.StatusCode == HttpStatusCode.NoContent)
                 {
                     return new DataCollectionProvidersPage();
                 }

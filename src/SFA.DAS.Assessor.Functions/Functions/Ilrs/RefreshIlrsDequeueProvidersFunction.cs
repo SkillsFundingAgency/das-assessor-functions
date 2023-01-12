@@ -1,9 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using System;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Ilrs
 {
@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
         [FunctionName("RefreshIlrsDequeueProviders")]
         public async Task Run(
-            [QueueTrigger(QueueNames.RefreshIlrs)]string message,
+            [QueueTrigger(QueueNames.RefreshIlrs)] string message,
             [Queue(QueueNames.RefreshIlrs)] ICollector<string> refreshIlrsQueue,
             ILogger log)
         {

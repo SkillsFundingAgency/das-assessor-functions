@@ -12,14 +12,14 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
     public class When_BuildPrintBatchReadyToPrint_Called : BatchServiceTestBase
     {
         DateTime _scheduledDateTime = DateTime.UtcNow;
-        
+
         private int _certificateReadyToPrintCount = 0;
         private int _certifictesAddedReadyToPrint = 0;
 
         public void Arrange(int certificateReadyToPrintCount)
         {
             base.Arrange();
-            
+
             Rearrange(certificateReadyToPrintCount);
 
             _mockAssessorServiceApiClient
@@ -41,7 +41,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
                     Certificates = certificates
                 });
         }
-        
+
         private void Rearrange(int certificateReadyToPrintCount)
         {
             _mockAssessorServiceApiClient
@@ -63,7 +63,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
                     _certificateReadyToPrintCount -= _certifictesAddedReadyToPrint;
                     Rearrange(certificateReadyToPrintCount); // Ensure arranged values are updated in mocks
                 })
-                .ReturnsAsync((int batchNumber, int maxCertificatesToBeAdded) => 
+                .ReturnsAsync((int batchNumber, int maxCertificatesToBeAdded) =>
                 {
                     return _certifictesAddedReadyToPrint;
                 });
@@ -77,7 +77,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
         [TestCase(10, 30)]
         [TestCase(0, 50)]
         public async Task Then_AssessorApiCalled_ToGetBatchNumberReadyToPrint(
-            int certificateReadyToPrintCount, 
+            int certificateReadyToPrintCount,
             int maxCertificatesToAdd)
         {
             // Arrange

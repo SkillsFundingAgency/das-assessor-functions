@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 
         private const string RefreshIlrsLastRunDate = "RefreshIlrsLastRunDate";
 
-        public RefreshIlrsAccessorSettingService(IOptions<RefreshIlrsOptions> options, IAssessorServiceApiClient assessorServiceApiClient, 
+        public RefreshIlrsAccessorSettingService(IOptions<RefreshIlrsOptions> options, IAssessorServiceApiClient assessorServiceApiClient,
             ILogger<RefreshIlrsAccessorSettingService> logger)
         {
             _refreshIlrsOptions = options?.Value;

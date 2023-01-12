@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
     public class NotificationService : INotificationService
-    {        
+    {
         private readonly ILogger<NotificationService> _logger;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
 
@@ -41,7 +41,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _logger.Log(LogLevel.Information, $"SendPrintRequest CertificatesFileName({certificatesFileName}),  CertificatesCount({certificates.Count()}) Email");
 
             var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
-            
+
             var personalisationTokens = CreatePrintRequestPersonalisationTokens(certificates, certificatesFileName);
 
             _logger.Log(LogLevel.Information, "NotificationService::SendPrintRequest Email");
@@ -66,7 +66,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             {
                 { "SecretUri", $"{secureMessageUri}" }
             };
-            
+
             return personalisation;
         }
 

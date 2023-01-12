@@ -157,7 +157,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             using (var memoryStream = new MemoryStream())
             {
                 await blob.DownloadToStreamAsync(memoryStream);
-                
+
                 memoryStream.Position = 0;
                 memoryStream.CopyTo(stream);
                 stream.Position = 0;
@@ -184,7 +184,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         private string GetBlobDirectoryName(string path)
         {
             var directoryName = Path.GetDirectoryName(path);
-            
+
             directoryName = !string.IsNullOrEmpty(directoryName)
                 ? directoryName.Replace('\\', '/').TrimStart('/')
                 : path;
@@ -244,11 +244,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 SharedAccessExpiryTime = expiryTime
             };
 
-            if(permissions.HasValue)
+            if (permissions.HasValue)
             {
                 policy.Permissions = permissions.Value;
             }
-            else if(string.IsNullOrEmpty(groupPolicyIdentifier))
+            else if (string.IsNullOrEmpty(groupPolicyIdentifier))
             {
                 throw new Exception("A Sas token cannot be generated when permissions are not specified unless a group policy is used");
             }

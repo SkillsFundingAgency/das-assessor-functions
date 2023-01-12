@@ -14,17 +14,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.DatabaseMaintenance
         private Domain.DatabaseMaintenance.DatabaseMaintenanceCommand _sut;
         private Mock<IDatabaseMaintenanceRepository> _mockDatabaseMaintenanceRepository;
         private Mock<IOptions<DatabaseMaintenanceOptions>> _mockOptions;
-        
+
         [SetUp]
         public void Arrange()
         {
             var logger = new Mock<ILogger<Domain.DatabaseMaintenance.DatabaseMaintenanceCommand>>();
-            
+
             _mockDatabaseMaintenanceRepository = new Mock<IDatabaseMaintenanceRepository>();
             _mockDatabaseMaintenanceRepository
                 .Setup(p => p.DatabaseMaintenance())
                 .ReturnsAsync(new List<string> { "result" });
-            
+
             _mockOptions = new Mock<IOptions<DatabaseMaintenanceOptions>>();
             _mockOptions
                 .Setup(p => p.Value)

@@ -47,7 +47,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsAcademic
                 .WithAcademicYear(Period13Date2021Period1Date2022, new List<string> { "2021", "2022" })
                 .WithAcademicYear(Period14Date2021Period2Date2022, new List<string> { "2021", "2022" })
                 .Setup();
-            
+
         }
 
         [TestCaseSource(nameof(ValidateAcademicYearCases))]
@@ -81,7 +81,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.Services.RefreshIlrsAcademic
         }
 
         static object[] ValidateAcademicYearCases =
-        {   
+        {
             new object[] { Period4Date1920, Period5Date1920 },
             new object[] { Period5Date1920, Period6Date1920 },
             new object[] { Period12Date1920, Period13Date1920Period1Date2021 },

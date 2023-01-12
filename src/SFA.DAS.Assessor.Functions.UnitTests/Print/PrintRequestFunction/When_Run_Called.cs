@@ -2,11 +2,9 @@
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,7 +13,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
     public class When_Run_Called
     {
         private Functions.Print.PrintRequestFunction _sut;
-        
+
         private Mock<ILogger> _mockLogger;
         private Mock<IPrintRequestCommand> _mockCommand;
         private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockCollector;
@@ -31,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
                     CreateListOfSize(certificatesReadyToPrint).Build()
                     as List<CertificatePrintStatusUpdateMessage>
                 : new List<CertificatePrintStatusUpdateMessage>();
-            
+
             _mockCommand
                 .Setup(m => m.Execute())
                 .ReturnsAsync(messages);
@@ -45,7 +43,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
         public async Task ThenItShouldExecuteCommand(int certificatesReadyToPrint)
         {
             Arrange(certificatesReadyToPrint);
-            
+
             // Act - TimerSchedule is not used so null allowed
             await _sut.Run(new TimerInfo(default, default, false), _mockCollector.Object, _mockLogger.Object);
 

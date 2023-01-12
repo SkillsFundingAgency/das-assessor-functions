@@ -11,7 +11,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseFunction
     public class When_Run_Called
     {
         private Functions.Print.PrintResponseFunction _sut;
-        
+
         private Mock<ILogger> _mockLogger;
         private Mock<IPrintResponseCommand> _mockCommand;
         private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockCollector;

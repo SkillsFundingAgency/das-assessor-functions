@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Config;
+using SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Types;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -22,7 +22,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"api/messages"))
             {
-                return await PostPutRequestWithResponse<CreateMessageRequest, CreateMessageResponse>(request, new CreateMessageRequest { Message = message, Ttl = ttl});
+                return await PostPutRequestWithResponse<CreateMessageRequest, CreateMessageResponse>(request, new CreateMessageRequest { Message = message, Ttl = ttl });
             }
         }
     }

@@ -40,11 +40,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersC
             };
 
             refreshIlrsLearnerService.Setup(p => p.ProcessLearners(It.IsAny<RefreshIlrsProviderMessage>()))
-                .ReturnsAsync((RefreshIlrsProviderMessage message) => new RefreshIlrsProviderMessage 
-                { 
-                    Source = message.Source, 
-                    Ukprn = message.Ukprn, 
-                    LearnerPageNumber = message.LearnerPageNumber + 1 
+                .ReturnsAsync((RefreshIlrsProviderMessage message) => new RefreshIlrsProviderMessage
+                {
+                    Source = message.Source,
+                    Ukprn = message.Ukprn,
+                    LearnerPageNumber = message.LearnerPageNumber + 1
                 });
 
             // Act

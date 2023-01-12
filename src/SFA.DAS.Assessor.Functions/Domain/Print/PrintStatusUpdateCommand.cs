@@ -13,7 +13,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     {
         private readonly ILogger<PrintStatusUpdateCommand> _logger;
         private readonly ICertificateService _certificateService;
-        
+
         public PrintStatusUpdateCommand(ILogger<PrintStatusUpdateCommand> logger, ICertificateService certificateService)
         {
             _logger = logger;
@@ -27,9 +27,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             try
             {
                 _logger.LogDebug($"PrintStatusUpdateCommand - Started for message {message.ToJson()}");
-                
+
                 var validationResponse = await _certificateService.ProcessCertificatesPrintStatusUpdate(message);
-                if(validationResponse.Errors.Any())
+                if (validationResponse.Errors.Any())
                 {
                     var errorMessages = validationResponse.Errors.
                         Where(p => p.ValidationStatusCode != ValidationStatusCode.Warning).
@@ -57,7 +57,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 }
                 else
                 {
-                    _logger.LogDebug ($"PrintStatusUpdateCommand - Completed for message {message.ToJson()}");
+                    _logger.LogDebug($"PrintStatusUpdateCommand - Completed for message {message.ToJson()}");
                 }
             }
             catch (Exception ex)

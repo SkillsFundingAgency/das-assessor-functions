@@ -34,7 +34,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
             Source = "2021",
             LearnerPageNumber = 1
         };
-        
+
         [Test]
         public async Task Then_process_provider_is_called()
         {
@@ -122,7 +122,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
                 .WithLastRunDate(lastRunDateTime)
                 .WithDateTimeNow(dateTimeNow)
                 .Setup();
-            
+
             // Act
             await testFixture.Execute();
 
@@ -144,7 +144,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
             public TestFixture Setup()
             {
                 Sut = new Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand(
-                    RefreshIlrsAccessorSettingService.Object, RefreshIlrsProviderService.Object, 
+                    RefreshIlrsAccessorSettingService.Object, RefreshIlrsProviderService.Object,
                     DateTimeHelper.Object, Logger.Object)
                 {
                     StorageQueue = StorageQueue.Object
@@ -175,7 +175,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
             }
 
             public TestFixture WithDateTimeNow(DateTime dateTimeNow)
-            { 
+            {
                 DateTimeHelper.Setup(p => p.DateTimeNow)
                     .Returns(dateTimeNow);
 

@@ -19,16 +19,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Extensions
 
                 return 0;
             });
-            
+
             return sortedItems;
         }
 
         private static bool ParseDateTime(string item, string dateTimePattern, string dateTimeFormat, out DateTime datetime)
         {
             return DateTime.TryParseExact(
-                Regex.Match(item, dateTimePattern)?.Groups[0].Value, new string[] { dateTimeFormat }, 
-                null, 
-                System.Globalization.DateTimeStyles.None, 
+                Regex.Match(item, dateTimePattern)?.Groups[0].Value, new string[] { dateTimeFormat },
+                null,
+                System.Globalization.DateTimeStyles.None,
                 out datetime);
         }
     }

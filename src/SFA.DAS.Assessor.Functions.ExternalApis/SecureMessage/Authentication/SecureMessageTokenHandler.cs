@@ -9,12 +9,12 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.SecureMessage.Authentication
     public class SecureMessageTokenHandler : DelegatingHandler
     {
         private readonly ISecureMessageTokenService _tokenService;
-        
+
         public SecureMessageTokenHandler(ISecureMessageTokenService tokenService)
         {
             _tokenService = tokenService;
         }
-        
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)

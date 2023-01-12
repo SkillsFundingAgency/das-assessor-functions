@@ -14,9 +14,9 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
         {
             _command = command;
         }
-        
+
         [FunctionName("RebuildExternalApiSandbox")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:RebuildExternalApiSandboxOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%FunctionsOptions:RebuildExternalApiSandboxOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
             try
             {
@@ -28,7 +28,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
                 log.LogInformation($"RebuildExternalApiSandbox has started");
 
                 await _command.Execute();
-                
+
                 log.LogInformation("RebuildExternalApiSandbox has finished");
             }
             catch (Exception ex)

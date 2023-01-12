@@ -34,7 +34,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
         {
             try
             {
-                if(!_options.Enabled)
+                if (!_options.Enabled)
                 {
                     _logger.LogInformation($"BlobSasTokenGeneratorCommand cannot be started, it is not enabled");
                     return;
@@ -42,16 +42,16 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
                 _logger.LogInformation($"BlobSasTokenGeneratorCommand started");
 
-                if(string.IsNullOrEmpty(_options.SasIPAddress))
+                if (string.IsNullOrEmpty(_options.SasIPAddress))
                 {
                     _logger.LogError("BlobSasTokenGeneratorCommand failed - the IP address restriction for a SAS token must be specified");
                     return;
                 }
 
                 var sasToken = _blobFileTransferClient.GetContainerSasUri(
-                    _options.SasGroupPolicyIdentifier, 
-                    DateTime.UtcNow, 
-                    DateTime.UtcNow.AddDays(_options.SasExpiryDays), 
+                    _options.SasGroupPolicyIdentifier,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow.AddDays(_options.SasExpiryDays),
                     _options.SasIPAddress);
 
                 _logger.LogInformation($"BlobSasTokenGeneratorCommand - generated '{_options.SasGroupPolicyIdentifier}' Sas token on '{_blobFileTransferClient.ContainerName}' restricted to '{_options.SasIPAddress}' for {_options.SasExpiryDays} days");

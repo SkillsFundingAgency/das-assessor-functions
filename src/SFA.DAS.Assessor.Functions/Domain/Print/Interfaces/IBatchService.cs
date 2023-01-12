@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+﻿using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

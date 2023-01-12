@@ -147,7 +147,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
             _mockOptions.Object
             );
         }
-        
+
         [Test]
         public async Task ThenItShouldLogTheStartOfTheProcess()
         {
@@ -228,12 +228,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         public async Task ThenItShouldCompleteScheduleIfThereAreNoCertificatesToProcess()
         {
             Arrange(false);
-            
+
             // Act
             await _sut.Execute();
 
             // Assert
-            _mockScheduleService.Verify(q => q.Save(It.Is<Schedule>(s => s.Id ==_scheduleId)), Times.Once());
+            _mockScheduleService.Verify(q => q.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once());
 
             _mockBatchService.Verify(m => m.Update(It.IsAny<Batch>()), Times.Never);
             _mockNotificationService.Verify(m => m.SendPrintRequest(It.IsAny<int>(), It.IsAny<List<Certificate>>(), It.IsAny<string>()), Times.Never);
@@ -265,7 +265,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
             // Assert
             _mockPrintCreator.Verify(m => m.Create(_batchNumberWithCertificates, _certificates), Times.Once);
             _mockNotificationService.Verify(m => m.SendPrintRequest(_batchNumberWithCertificates, _certificates, It.IsAny<string>()), Times.Once);
-            
+
             _mockBatchService.Verify(m => m.Update(It.Is<Batch>(b => b.BatchNumber.Equals(_batchNumberWithCertificates))), Times.Once);
             _mockScheduleService.Verify(m => m.Save(It.Is<Schedule>(s => s.Id == _scheduleId)), Times.Once);
         }
@@ -275,7 +275,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         {
             Arrange();
             var fileName = $"PrintBatch-{_batchNumberWithCertificates.ToString().PadLeft(3, '0')}-{DateTime.UtcNow.UtcToTimeZoneTime():ddMMyyHHmm}.json";
-            
+
             // Act
             await _sut.Execute();
 

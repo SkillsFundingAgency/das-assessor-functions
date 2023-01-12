@@ -6,7 +6,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
     {
         static Providers()
         {
-            for(int count = 0; count < 5000; count++)
+            for (int count = 0; count < 5000; count++)
             {
                 ProvidersList.Add(10000000 + (count * 500));
             }

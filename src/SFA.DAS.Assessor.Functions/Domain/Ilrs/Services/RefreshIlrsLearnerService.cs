@@ -21,7 +21,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
         private readonly IAssessorServiceApiClient _assessorServiceApiClient;
         private readonly ILogger<RefreshIlrsLearnerService> _logger;
 
-        public RefreshIlrsLearnerService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
+        public RefreshIlrsLearnerService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient,
             IAssessorServiceApiClient assessorServiceApiClient, ILogger<RefreshIlrsLearnerService> logger)
         {
             _refreshIlrsOptions = options?.Value;
@@ -46,7 +46,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
         private async Task<RefreshIlrsProviderMessage> ExportLearnerDetails(RefreshIlrsProviderMessage providerMessage)
         {
             RefreshIlrsProviderMessage nextPageProviderMessage = null;
-            
+
             var aimType = 1;
             var allStandards = -1;
             var fundModels = ConfigurationHelper.ConvertCsvValueToList<int>(_refreshIlrsOptions.LearnerFundModels);
@@ -88,7 +88,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
 
                     response?.LearnerDetailResults?.ForEach(ld =>
                     {
-                        if((ld.Errors?.Count ?? 0) > 0)
+                        if ((ld.Errors?.Count ?? 0) > 0)
                         {
                             _logger.LogDebug($"Request to import learner details (Uln:{ld.Uln},StdCode:{ld.StdCode}) failed due to '{ld.Outcome}' '{string.Join(", ", ld?.Errors)}'");
                         }

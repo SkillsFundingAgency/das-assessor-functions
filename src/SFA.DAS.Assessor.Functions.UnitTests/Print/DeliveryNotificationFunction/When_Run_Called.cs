@@ -11,7 +11,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationFunctio
     public class When_Run_Called
     {
         private Functions.Print.DeliveryNotificationFunction _sut;
-        
+
         private Mock<ILogger> _mockLogger;
         private Mock<IDeliveryNotificationCommand> _mockCommand;
         private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockCollector;

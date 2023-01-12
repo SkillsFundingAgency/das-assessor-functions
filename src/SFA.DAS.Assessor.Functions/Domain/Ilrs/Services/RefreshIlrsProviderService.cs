@@ -2,9 +2,7 @@
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using System;
 using System.Collections.Generic;
@@ -20,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
         private readonly IRefreshIlrsAcademicYearService _refreshIlrsAcademicYearService;
         private readonly ILogger<RefreshIlrsProviderService> _logger;
 
-        public RefreshIlrsProviderService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient, 
+        public RefreshIlrsProviderService(IOptions<RefreshIlrsOptions> options, IDataCollectionServiceApiClient dataCollectionServiceApiClient,
             IRefreshIlrsAcademicYearService refreshIlrsAcademicYearService, ILogger<RefreshIlrsProviderService> logger)
         {
             _refreshIlrsOptions = options?.Value;
@@ -62,7 +60,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
                     return providerMessagesToQueue;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Unable to process providers between {lastRunDateTime} and {currentRunDateTime}");
             }

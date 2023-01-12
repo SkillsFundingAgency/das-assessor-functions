@@ -1,17 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types.Notifications;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
-using System;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print
 {
@@ -64,11 +63,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     try
                     {
                         var messages = ProcessDeliveryNotifications(fileInfo);
-                        
+
                         printStatusUpdateMessages.AddRange(messages);
                         await ArchiveFile(fileContents, fileName, _options.Directory, _options.ArchiveDirectory);
                     }
-                    catch(FileFormatValidationException ex)
+                    catch (FileFormatValidationException ex)
                     {
                         fileInfo.ValidationMessages.Add(ex.Message);
                         await CreateErrorFile(fileInfo, _options.ErrorDirectory);
@@ -80,7 +79,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     _logger.LogError(ex, $"DeliveryNotificationCommand - Could not process delivery notification file [{fileName}]");
                 }
             }
-            
+
             return printStatusUpdateMessages;
         }
 
