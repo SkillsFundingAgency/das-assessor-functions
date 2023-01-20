@@ -5,18 +5,30 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintExtensionFunction
 {
     public class StringNameCaseExtensionTests
     {
-        [TestCase("mcgregor", "McGregor")]
-        [TestCase("mcLean", "McLean")]
+        [TestCase("McGregor", "McGregor")]
+        [TestCase("McLean", "McLean")]
         [TestCase("McDonald", "McDonald")]
-        [TestCase("hemchandra", "Hemchandra")]
-        [TestCase("szymczyk", "Szymczyk")]
+        [TestCase("HemChandra", "Hemchandra")]
+        [TestCase("Szymczyk", "Szymczyk")]
         [TestCase("MacIejewska", "Maciejewska")]
-        [TestCase("MACHACEk", "Machacek")]
-        public void ThenNameShouldBeCapitalized(string name, string expectedAfterCapitalization)
+        [TestCase("MacHacek", "Machacek")]
+        [TestCase("MacUgova", "Macugova")]
+        [TestCase("MacHajewski", "Machajewski")]
+        public void ThenFamilyNameShouldBeCapitalizedCorrectly(string familyName, string expectedToProperCase)
         {
-            var nameAfterCapitalization = name.ProperCase(true);
+            // Arrange
+            var upperCase = familyName.ToUpper();
+            var lowerCase = familyName.ToLower();
 
-            Assert.AreEqual(expectedAfterCapitalization, nameAfterCapitalization);
+            // Act
+            var upperCaseToProperCase = upperCase.ProperCase(true);
+            var lowerCaseToProperCase = lowerCase.ProperCase(true);
+            var familyNameToProperCase = familyName.ProperCase(true);
+
+            // Assert
+            Assert.AreEqual(expectedToProperCase, upperCaseToProperCase, "Failed to proper case an upper case family name");
+            Assert.AreEqual(expectedToProperCase, lowerCaseToProperCase, "Failed to proper case an lower case family name");
+            Assert.AreEqual(expectedToProperCase, familyNameToProperCase, "Failed to proper case a mixed case family name");
         }
     }
 }
