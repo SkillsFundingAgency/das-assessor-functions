@@ -26,9 +26,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintExtensionFunction
             var familyNameToProperCase = familyName.ProperCase(true);
 
             // Assert
-            Assert.AreEqual(expectedToProperCase, upperCaseToProperCase, "Failed to proper case an upper case family name");
-            Assert.AreEqual(expectedToProperCase, lowerCaseToProperCase, "Failed to proper case an lower case family name");
-            Assert.AreEqual(expectedToProperCase, familyNameToProperCase, "Failed to proper case a mixed case family name");
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(expectedToProperCase, upperCaseToProperCase, "Failed to proper case an upper case family name");
+                Assert.AreEqual(expectedToProperCase, lowerCaseToProperCase, "Failed to proper case an lower case family name");
+                Assert.AreEqual(expectedToProperCase, familyNameToProperCase, "Failed to proper case a mixed case family name");
+            });
         }
     }
 }
