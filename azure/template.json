@@ -54,7 +54,7 @@
         },
         "functionsExtensionVersion": {
             "type": "string",
-            "defaultValue": "~3"
+            "defaultValue": "~4"
         },
         "sharedApimResourceGroup": {
             "type": "string"
@@ -243,6 +243,9 @@
                     },
                     "appServicePlanResourceGroup": {
                         "value": "[resourceGroup().name]"
+                    },
+                    "netFrameworkVersion": {
+                        "value": "v6.0"
                     },
                     "subnetResourceId": {
                         "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value]"

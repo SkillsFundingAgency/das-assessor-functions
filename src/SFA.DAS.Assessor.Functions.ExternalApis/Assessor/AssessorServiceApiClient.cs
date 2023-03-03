@@ -193,7 +193,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/providers/refresh-providers"))
             {
-                await PostPutRequest(request);
+                await PostRequestWithoutRetryAndLongerTimeout(request);
             }
         }
     }
