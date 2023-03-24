@@ -15,8 +15,7 @@
 		"logLevel": {
 			"default": "Information",
 			"Host.Results": "Error",
-			"Function": "Trace",
-			"Host.Aggregator": "Trace"
+			"Azure.Core": "Error"
 		}
 	}
 }

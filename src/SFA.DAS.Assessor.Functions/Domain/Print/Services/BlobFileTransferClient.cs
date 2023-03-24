@@ -1,6 +1,6 @@
-﻿using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             try
             {
-                var blobs = await GetBlobsHierarchicalListingAsync(GetCloudBlobDirectory(directory), recursive);
+                var blobs = await GetBlobsHierarchicalListingAsync(await GetCloudBlobDirectory(directory), recursive);
                 fileNames.AddRange(blobs.ConvertAll<string>(p => GetBlobFileName(p.Name)));
             }
             catch (Exception ex)
@@ -55,7 +55,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             try
             {
-                var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
                 _logger.LogDebug($"Uploading {path} to blob storage {_containerName}");
@@ -81,7 +81,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             try
             {
-                var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
                 _logger.LogDebug($"Downloading {path} from blob storage {_containerName}");
@@ -110,7 +110,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         {
             try
             {
-                var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
                 _logger.LogDebug($"Deleting {path} from blob storage {_containerName}");
@@ -131,7 +131,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             bool? exists = null;
             try
             {
-                var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
                 _logger.LogDebug($"Checking for {path} exists in blob storage {_containerName}");
@@ -151,7 +151,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         private async Task Download(string path, MemoryStream stream)
         {
-            var directory = GetCloudBlobDirectory(GetBlobDirectoryName(path));
+            var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
             var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
             using (var memoryStream = new MemoryStream())
@@ -164,14 +164,14 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
         }
 
-        private CloudBlobDirectory GetCloudBlobDirectory(string path)
+        private async Task<CloudBlobDirectory> GetCloudBlobDirectory(string path)
         {
             var account = CloudStorageAccount.Parse(_connectionString);
             var client = account.CreateCloudBlobClient();
             var container = client.GetContainerReference(_containerName);
 
             var directory = container.GetDirectoryReference(GetBlobDirectoryName(path));
-            container.CreateIfNotExists();
+            await container.CreateIfNotExistsAsync();
 
             return directory;
         }
