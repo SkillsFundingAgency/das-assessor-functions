@@ -15,7 +15,8 @@
 		"logLevel": {
 			"default": "Information",
 			"Host.Results": "Error",
-			"Azure.Core": "Error"
+			"Azure.Core": "Error",
+			"Azure.Storage.Queues": "Error"
 		}
 	}
 }
