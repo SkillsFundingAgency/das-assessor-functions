@@ -14,9 +14,7 @@
 		"fileLoggingMode": "always",
 		"logLevel": {
 			"default": "Information",
-			"Host.Results": "Error",
-			"Azure.Core": "Error",
-			"Azure.Storage.Queues": "Error"
+			"Host.Results": "Error"
 		}
 	}
 }
