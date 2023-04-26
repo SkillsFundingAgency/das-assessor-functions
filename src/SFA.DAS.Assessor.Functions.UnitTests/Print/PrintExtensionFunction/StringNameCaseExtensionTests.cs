@@ -15,6 +15,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintExtensionFunction
         [TestCase("MacUgova", "Macugova")]
         [TestCase("MacHajewski", "Machajewski")]
         [TestCase("MacIazek", "Maciazek")]
+        [TestCase("MacHniak", "Machniak")]
         public void ThenFamilyNameShouldBeCapitalizedCorrectly(string familyName, string expectedToProperCase)
         {
             // Arrange
