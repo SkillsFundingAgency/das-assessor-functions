@@ -30,7 +30,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
             {
-                await PostRequestWithoutRetryAndLongerTimeout(request);
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
             }
         }
 
