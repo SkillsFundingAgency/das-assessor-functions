@@ -187,7 +187,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/approvals/update-approvals"))
             {
-                await PostRequestWithoutRetryAndLongerTimeout(request);
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
             }
         }
 
@@ -195,7 +197,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/providers/refresh-providers"))
             {
-                await PostRequestWithoutRetryAndLongerTimeout(request);
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
             }
         }
     }
