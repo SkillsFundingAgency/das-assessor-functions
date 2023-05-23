@@ -20,15 +20,22 @@ namespace SFA.DAS.Assessor.Functions.Functions.Providers
         {
             try
             {
-                log.LogDebug($"RefreshProviders has started.");
+                if (myTimer.IsPastDue)
+                {
+                    log.LogInformation($"RefreshProviders has started later than scheduled");
+                }
+                else
+                {
+                    log.LogInformation($"RefreshProviders has started");
+                }
 
                 await _command.Execute();
 
-                log.LogDebug($"RefreshProviders has finished.");
+                log.LogInformation($"RefreshProviders has finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, $"RefreshProviders has failed.");
+                log.LogError(ex, $"RefreshProviders has failed");
                 throw;
             }
         }

@@ -228,9 +228,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
             var response = await _httpClient.PostAsJsonAsync(requestMessage.RequestUri, new { });
 
-            if (response.StatusCode == HttpStatusCode.InternalServerError)
+            if (response.StatusCode != HttpStatusCode.Accepted)
             {
-                throw new HttpRequestException();
+                throw new HttpRequestException($"Unexpected response status code {response.StatusCode} received");
             }
         }
 

@@ -20,15 +20,22 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         {
             try
             {
-                log.LogDebug($"ImportLearners has started.");
+                if (myTimer.IsPastDue)
+                {
+                    log.LogInformation($"ImportLearners has started later than scheduled");
+                }
+                else
+                {
+                    log.LogInformation($"ImportLearners has started");
+                }
 
                 await _command.Execute();
 
-                log.LogDebug($"ImportLearners has finished.");
+                log.LogInformation($"ImportLearners has finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, $"ImportLearners has failed.");
+                log.LogError(ex, $"ImportLearners has failed");
                 throw;
             }
         }
