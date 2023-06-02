@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
-    public class ImportExternalApiLearnersFunction
+    public class ImportExternalApiLearnersFunction : TimerTriggerFunction
     {
         private readonly IImportLearnersCommand _command;
 
@@ -18,26 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         [FunctionName("ImportLearners")]
         public async Task Run([TimerTrigger("%FunctionsOptions:ImportLearnersOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation($"ImportLearners has started later than scheduled");
-                }
-                else
-                {
-                    log.LogInformation($"ImportLearners has started");
-                }
-
-                await _command.Execute();
-
-                log.LogInformation($"ImportLearners has finished");
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, $"ImportLearners has failed");
-                throw;
-            }
+            await base.Run("ImportLearners", _command, myTimer, log);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Providers
 {
-    public class RefreshProvidersFunction
+    public class RefreshProvidersFunction : TimerTriggerFunction
     {
         private readonly IRefreshProvidersCommand _command;
 
@@ -18,26 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Providers
         [FunctionName("RefreshProviders")]
         public async Task Run([TimerTrigger("%FunctionsOptions:RefreshProvidersOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation($"RefreshProviders has started later than scheduled");
-                }
-                else
-                {
-                    log.LogInformation($"RefreshProviders has started");
-                }
-
-                await _command.Execute();
-
-                log.LogInformation($"RefreshProviders has finished");
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, $"RefreshProviders has failed");
-                throw;
-            }
+            await base.Run("RefreshProviders", _command, myTimer, log);
         }
     }
 }

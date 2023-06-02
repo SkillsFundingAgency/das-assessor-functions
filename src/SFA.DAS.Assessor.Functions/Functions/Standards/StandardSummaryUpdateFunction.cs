@@ -6,7 +6,7 @@ using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Standards
 {
-    public class StandardSummaryUpdateFunction
+    public class StandardSummaryUpdateFunction : TimerTriggerFunction
     {
         private readonly IStandardSummaryUpdateCommand _command;
 
@@ -18,25 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
         [FunctionName("StandardSummaryUpdate")]
         public async Task Run([TimerTrigger("%FunctionsOptions:StandardSummaryUpdateOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation($"StandardSummaryUpdate has started later than scheduled");
-                }
-                else
-                {
-                    log.LogInformation($"StandardSummaryUpdate has started");
-                }
-
-                await _command.Execute();
-
-                log.LogInformation("StandardSummaryUpdate has finished");
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "StandardSummaryUpdate has failed");
-            }
+            await base.Run("StandardSummaryUpdate", _command, myTimer, log);
         }
     }
 }
