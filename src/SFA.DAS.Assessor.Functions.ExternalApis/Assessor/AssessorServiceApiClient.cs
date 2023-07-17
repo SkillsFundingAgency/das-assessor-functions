@@ -196,5 +196,13 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 await PostRequestWithoutRetryAndLongerTimeout(request);
             }
         }
+
+        public async Task UpdateAssessmentOrganisationsList()
+        {
+            using (var requst = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/assessment-organisations/list-refresh"))
+            {
+                await PostPutRequest(requst);
+            }
+        }
     }
 }
