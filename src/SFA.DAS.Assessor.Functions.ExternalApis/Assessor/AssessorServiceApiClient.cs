@@ -199,7 +199,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task UpdateAssessmentOrganisationsList()
         {
-            using (var requst = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/assessment-organisations/list-refresh"))
+            using (var requst = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/assessment-organisations/apar-summary-update"))
             {
                 await PostPutRequest(requst);
             }
