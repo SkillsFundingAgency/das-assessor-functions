@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Domain.Print.Interfaces
+namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 {
     public interface IBlobFileTransferClient
     {

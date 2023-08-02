@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
+namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 {
-    public class BlobFileTransferClient : IExternalBlobFileTransferClient, IInternalBlobFileTransferClient
+    public class BlobFileTransferClient : IExternalBlobFileTransferClient, IInternalBlobFileTransferClient, IOfqualDownloadsBlobFileTransferClient
     {
         private readonly ILogger<BlobFileTransferClient> _logger;
         private string _connectionString { get; }
@@ -40,7 +41,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             try
             {
                 var blobs = await GetBlobsHierarchicalListingAsync(await GetCloudBlobDirectory(directory), recursive);
-                fileNames.AddRange(blobs.ConvertAll<string>(p => GetBlobFileName(p.Name)));
+                fileNames.AddRange(blobs.ConvertAll(p => GetBlobFileName(p.Name)));
             }
             catch (Exception ex)
             {
@@ -81,9 +82,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             try
             {
-                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
-                var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
-
                 _logger.LogDebug($"Downloading {path} from blob storage {_containerName}");
 
                 using (var stream = new MemoryStream())
@@ -157,7 +155,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             using (var memoryStream = new MemoryStream())
             {
                 await blob.DownloadToStreamAsync(memoryStream);
-                
+
                 memoryStream.Position = 0;
                 memoryStream.CopyTo(stream);
                 stream.Position = 0;
@@ -176,15 +174,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return directory;
         }
 
-        private string GetBlobFileName(string path)
+        private static string GetBlobFileName(string path)
         {
             return Path.GetFileName(path);
         }
 
-        private string GetBlobDirectoryName(string path)
+        private static string GetBlobDirectoryName(string path)
         {
             var directoryName = Path.GetDirectoryName(path);
-            
+
             directoryName = !string.IsNullOrEmpty(directoryName)
                 ? directoryName.Replace('\\', '/').TrimStart('/')
                 : path;
@@ -244,11 +242,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 SharedAccessExpiryTime = expiryTime
             };
 
-            if(permissions.HasValue)
+            if (permissions.HasValue)
             {
                 policy.Permissions = permissions.Value;
             }
-            else if(string.IsNullOrEmpty(groupPolicyIdentifier))
+            else if (string.IsNullOrEmpty(groupPolicyIdentifier))
             {
                 throw new Exception("A Sas token cannot be generated when permissions are not specified unless a group policy is used");
             }

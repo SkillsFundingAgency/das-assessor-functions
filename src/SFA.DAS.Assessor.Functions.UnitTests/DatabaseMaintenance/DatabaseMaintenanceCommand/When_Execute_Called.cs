@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.DatabaseMaintenance
 {

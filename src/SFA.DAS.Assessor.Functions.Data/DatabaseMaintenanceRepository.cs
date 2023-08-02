@@ -1,12 +1,12 @@
-﻿using Dapper;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
+using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Extensions.Options;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options;
 
 namespace SFA.DAS.Assessor.Functions.Data
 {
@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.Data
     {
         private readonly IDbConnection _connection;
 
-        public DatabaseMaintenanceRepository(IOptions<DatabaseMaintenanceOptions> options, IDbConnection connection)
+        public DatabaseMaintenanceRepository(IOptions<FunctionsOptions> options, IDbConnection connection)
         {
             _connection = connection;
 

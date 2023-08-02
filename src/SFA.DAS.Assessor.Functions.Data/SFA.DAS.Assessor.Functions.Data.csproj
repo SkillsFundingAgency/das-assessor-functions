@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -8,9 +8,11 @@
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="Z.Dapper.Plus" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SFA.DAS.Assessor.Domain\SFA.DAS.Assessor.Functions.Domain.csproj" />
     <ProjectReference Include="..\SFA.DAS.Assessor.Functions.Infrastructure\SFA.DAS.Assessor.Functions.Infrastructure.csproj" />
   </ItemGroup>
 
