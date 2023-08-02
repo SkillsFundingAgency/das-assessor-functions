@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
                     log.LogInformation($"StandardSummaryUpdate has started");
                 }
 
-                await _command.Execute();
+                //await _command.Execute();
 
                 log.LogInformation("StandardSummaryUpdate has finished");
             }

@@ -22,7 +22,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             {
                 log.LogDebug($"ImportLearners has started.");
 
-                await _command.Execute();
+                //await _command.Execute();
 
                 log.LogDebug($"ImportLearners has finished.");
             }

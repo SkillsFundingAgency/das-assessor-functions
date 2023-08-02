@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.DatabaseMaintenance
                     log.LogInformation($"DatabaseMaintenance has started");
                 }
 
-                await _command.Execute();
+                //await _command.Execute();
 
                 log.LogInformation("DatabaseMaintenance has finished");
             }

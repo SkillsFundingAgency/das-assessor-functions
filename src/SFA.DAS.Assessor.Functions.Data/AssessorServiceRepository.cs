@@ -2,6 +2,7 @@
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -15,6 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Data
     {
         Task<Dictionary<string, long>> GetLearnersWithoutEmployerInfo();
         Task<int> UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
+        Task<int> InsertSearchLogsDataBase(string searchData);
     }
 
     public class AssessorServiceRepository : IAssessorServiceRepository
@@ -60,5 +62,42 @@ namespace SFA.DAS.Assessor.Functions.Data
             return affectedRows;
         }
 
+        public async Task<int> InsertSearchLogsDataBase(string searchData)
+        {
+            try
+            {
+                var query = new StringBuilder();
+                var sqlParameters = new DynamicParameters();
+
+                var idParameterName = "@id";
+                var surnameParameterName = "@surname";
+                var ulnParameterName = "@uln";
+                var searchTimeParameterName = "@searchTime";
+                var searchDataParameterName = "@searchData";
+                var numberOfResultsParameterName = "@numberOfResults";
+                var userNameParameterName = "@username";
+
+                sqlParameters.Add(idParameterName, Guid.NewGuid(), DbType.Guid);
+                sqlParameters.Add(surnameParameterName, string.Empty, DbType.String);
+                sqlParameters.Add(ulnParameterName, 0, DbType.Int32);
+                sqlParameters.Add(searchTimeParameterName, DateTime.Now, DbType.DateTime);
+                sqlParameters.Add(searchDataParameterName, searchData, DbType.String);
+                sqlParameters.Add(numberOfResultsParameterName, string.Empty, DbType.String);
+                sqlParameters.Add(userNameParameterName, string.Empty, DbType.String);
+
+                query.AppendLine("INSERT INTO [dbo].[SearchLogs]([Id],[Surname],[Uln],[SearchTime],[SearchData],[NumberOfResults],[Username]) " +
+                        $"VALUES({idParameterName}, {surnameParameterName}, {ulnParameterName}, {searchTimeParameterName}, {searchDataParameterName}, " +
+                        $"{numberOfResultsParameterName}, {userNameParameterName})");
+
+                var affectedRows = await _connection.ExecuteAsync(query.ToString(), sqlParameters);
+
+                return affectedRows;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
-    public class BlobFileTransferClient : IExternalBlobFileTransferClient, IInternalBlobFileTransferClient
+    public class BlobFileTransferClient : IExternalBlobFileTransferClient, IInternalBlobFileTransferClient, IOfqualDownloadsBlobFileTransferClient
     {
         private readonly ILogger<BlobFileTransferClient> _logger;
         private string _connectionString { get; }

@@ -43,6 +43,8 @@ using System.Data.SqlClient;
 using System.Net.Http;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.OfqualImport;
+using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -97,6 +99,9 @@ namespace SFA.DAS.Assessor.Functions
 
             var databaseMaintenanceOptions = $"{functionsOptions}:{nameof(DatabaseMaintenanceOptions)}";
             builder.Services.Configure<DatabaseMaintenanceOptions>(config.GetSection(databaseMaintenanceOptions));
+
+            var ofqualImportOptions = $"{functionsOptions}:{nameof(OfqualImportOptions)}";
+            builder.Services.Configure<OfqualImportOptions>(config.GetSection(ofqualImportOptions));
 
             var printCertificatesOptions = $"{functionsOptions}:{nameof(PrintCertificatesOptions)}";
             builder.Services.Configure<PrintRequestOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}"));
@@ -169,6 +174,7 @@ namespace SFA.DAS.Assessor.Functions
 
             var storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
             var optionsCertificateFunctions = config.GetSection(functionsOptions).GetSection(nameof(printCertificatesOptions)).Get<PrintCertificatesOptions>();
+            var optionsOfqualImport = config.GetSection(functionsOptions).GetSection(nameof(ofqualImportOptions)).Get<OfqualImportOptions>();
 
             builder.Services.AddTransient(s => new BlobFileTransferClient(
                 s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
@@ -179,6 +185,12 @@ namespace SFA.DAS.Assessor.Functions
                 s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
                 storageConnectionString,
                 optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
+
+            builder.Services.AddTransient(s => new BlobFileTransferClient(
+                s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
+                storageConnectionString,
+                optionsOfqualImport.DownloadBlobContainer) as IOfqualDownloadsBlobFileTransferClient);
+
 
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
 

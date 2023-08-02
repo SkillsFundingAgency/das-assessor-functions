@@ -27,7 +27,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
                 log.LogDebug($"RefreshIlrsDequeueProviders has started for {message}");
 
                 _command.StorageQueue = refreshIlrsQueue;
-                await _command.Execute(message);
+                //await _command.Execute(message);
 
                 log.LogDebug($"RefreshIlrsDequeueProviders has finished for {message}");
             }

@@ -27,7 +27,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
 
                 log.LogInformation($"RebuildExternalApiSandbox has started");
 
-                await _command.Execute();
+                //await _command.Execute();
                 
                 log.LogInformation("RebuildExternalApiSandbox has finished");
             }

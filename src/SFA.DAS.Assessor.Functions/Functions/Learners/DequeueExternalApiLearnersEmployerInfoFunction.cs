@@ -23,7 +23,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             {
                 log.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has started for {message}");
 
-                await _command.Execute(message);
+                //await _command.Execute(message);
 
                 log.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has finished for {message}");
             }

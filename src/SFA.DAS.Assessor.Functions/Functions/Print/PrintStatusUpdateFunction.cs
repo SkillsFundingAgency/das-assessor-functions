@@ -27,17 +27,17 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             {
                 log.LogDebug($"CertificatePrintStatusUpdate has started for {message.ToJson()}");
 
-                var validationErrorMessages = await _command.Execute(message);
-                validationErrorMessages?.ForEach(p => storageQueue.Add(p));
+                //var validationErrorMessages = await _command.Execute(message);
+                //validationErrorMessages?.ForEach(p => storageQueue.Add(p));
 
-                if ((validationErrorMessages?.Count ?? 0) > 0)
+                /*if ((validationErrorMessages?.Count ?? 0) > 0)
                 {
                     log.LogWarning($"CertificatePrintStatusUpdate has completed for {message.ToJson()} with {validationErrorMessages.Count} error(s)");
                 }
                 else
                 {
                     log.LogDebug($"CertificatePrintStatusUpdate has completed for {message.ToJson()}");
-                }
+                }*/
             }
             catch (Exception ex)
             {

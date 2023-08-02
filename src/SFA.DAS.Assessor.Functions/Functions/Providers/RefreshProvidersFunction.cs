@@ -22,7 +22,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Providers
             {
                 log.LogDebug($"RefreshProviders has started.");
 
-                await _command.Execute();
+                //await _command.Execute();
 
                 log.LogDebug($"RefreshProviders has finished.");
             }

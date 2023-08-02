@@ -32,7 +32,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
                 log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has started.");
 
                 _command.StorageQueue = startUpdatingLearnersQueue;
-                await _command.Execute();
+                //await _command.Execute();
 
                 log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has finished.");
 

@@ -43,7 +43,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
                 }
 
                 _command.StorageQueue = refreshIlrsQueue;
-                await _command.Execute();
+                //await _command.Execute();
 
                 log.LogInformation("RefreshIlrsEnqueueProviders has finished");
             }

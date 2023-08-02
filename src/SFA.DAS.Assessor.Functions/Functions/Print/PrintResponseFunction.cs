@@ -26,8 +26,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             {
                 log.LogInformation("CertificatePrintResponse has started" + (myTimer.IsPastDue ? " later than scheduled" : string.Empty));
 
-                var printStatusUpdateMessages = await _command.Execute();
-                printStatusUpdateMessages?.ForEach(p => storageQueue.Add(p));
+                //var printStatusUpdateMessages = await _command.Execute();
+                //printStatusUpdateMessages?.ForEach(p => storageQueue.Add(p));
 
                 log.LogInformation("CertificatePrintResponse has finished");
             }

@@ -27,7 +27,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
 
                 log.LogInformation($"BlobSasTokenGenerator started");
 
-                await _command.Execute();
+                //await _command.Execute();
 
                 log.LogInformation("BlobSasTokenGenerator finished");
             }
