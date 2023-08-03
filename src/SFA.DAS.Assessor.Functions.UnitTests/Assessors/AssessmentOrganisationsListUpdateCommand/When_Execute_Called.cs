@@ -12,16 +12,16 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisations
 {
     public class When_Execute_Called
     {
-        private Domain.Assessors.AssessmentOrganisationsListUpdateCommand _sut;
+        private Domain.Assessors.AparSummaryUpdateCommand _sut;
         private Mock<IAssessorServiceApiClient> _assessorServiceApiClient;
 
         [SetUp]
         public void Arrange()
         {
-            var logger = new Mock<ILogger<Domain.Assessors.AssessmentOrganisationsListUpdateCommand>>();
+            var logger = new Mock<ILogger<Domain.Assessors.AparSummaryUpdateCommand>>();
             _assessorServiceApiClient = new Mock<IAssessorServiceApiClient>();
 
-            _sut = new Domain.Assessors.AssessmentOrganisationsListUpdateCommand(logger.Object, _assessorServiceApiClient.Object);
+            _sut = new Domain.Assessors.AparSummaryUpdateCommand(logger.Object, _assessorServiceApiClient.Object);
         }
 
         [Test]

@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces
 {
-    public interface IAssessmentOrganisationsListUpdateCommand : ICommand
+    public interface IAparSummaryUpdateCommand : ICommand
     {
     }
 }

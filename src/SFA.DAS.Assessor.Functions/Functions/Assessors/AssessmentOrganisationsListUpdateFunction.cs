@@ -6,36 +6,36 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Assessors
 {
-    public class AssessmentOrganisationsListUpdateFunction
+    public class AparSummaryUpdateFunction
     {
-        private readonly IAssessmentOrganisationsListUpdateCommand _command;
+        private readonly IAparSummaryUpdateCommand _command;
 
-        public AssessmentOrganisationsListUpdateFunction(IAssessmentOrganisationsListUpdateCommand command)
+        public AparSummaryUpdateFunction(IAparSummaryUpdateCommand command)
         {
             _command = command;
         }
 
-        [FunctionName("AssessmentOrganisationsListUpdate")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:AssessmentOrganisationsListUpdateOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
+        [FunctionName("AparSummaryUpdate")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:AparSummaryUpdateOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation($"AssessmentOrganisationsListUpdate has started later than scheduled");
+                    log.LogInformation($"AparSummaryUpdate has started later than scheduled");
                 }
                 else
                 {
-                    log.LogInformation($"AssessmentOrganisationsListUpdate has started");
+                    log.LogInformation($"AparSummaryUpdate has started");
                 }
 
                 await _command.Execute();
 
-                log.LogInformation("AssessmentOrganisationsListUpdate has finished");
+                log.LogInformation("AparSummaryUpdate has finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "AssessmentOrganisationsListUpdate has failed");
+                log.LogError(ex, "AparSummaryUpdate has failed");
             }
         }
     }

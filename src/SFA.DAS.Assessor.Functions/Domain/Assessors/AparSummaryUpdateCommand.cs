@@ -1,16 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
-using SFA.DAS.Assessor.Functions.Functions.Assessors;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Assessors
 {
-    public class AssessmentOrganisationsListUpdateCommand
+    public class AparSummaryUpdateCommand
     {
-        private readonly ILogger<AssessmentOrganisationsListUpdateCommand> _logger;
+        private readonly ILogger<AparSummaryUpdateCommand> _logger;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
 
-        public AssessmentOrganisationsListUpdateCommand(ILogger<AssessmentOrganisationsListUpdateCommand> logger,
+        public AparSummaryUpdateCommand(ILogger<AparSummaryUpdateCommand> logger,
             IAssessorServiceApiClient assessorServiceApi)
         {
             _logger = logger;

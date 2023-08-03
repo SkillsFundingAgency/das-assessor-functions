@@ -9,17 +9,17 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisations
 {
     public class When_Run_Called
     {
-        private Functions.Assessors.AssessmentOrganisationsListUpdateFunction _sut;
+        private Functions.Assessors.AparSummaryUpdateFunction _sut;
         private Mock<ILogger> _logger;
-        private Mock<IAssessmentOrganisationsListUpdateCommand> _command;
+        private Mock<IAparSummaryUpdateCommand> _command;
 
         [SetUp]
         public void Arrange()
         {
             _logger = new Mock<ILogger>();
-            _command = new Mock<IAssessmentOrganisationsListUpdateCommand>();
+            _command = new Mock<IAparSummaryUpdateCommand>();
 
-            _sut = new Functions.Assessors.AssessmentOrganisationsListUpdateFunction(_command.Object);
+            _sut = new Functions.Assessors.AparSummaryUpdateFunction(_command.Object);
         }
 
         [Test]
