@@ -197,11 +197,11 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-        public async Task UpdateAssessmentOrganisationsList()
+        public async Task UpdateAparSummary()
         {
-            using (var requst = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/assessment-organisations/apar-summary-update"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/assessment-organisations/apar-summary-update"))
             {
-                await PostPutRequest(requst);
+                await PostPutRequest(request);
             }
         }
     }

@@ -2,10 +2,6 @@
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisationsListUpdateCommand
@@ -25,13 +21,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisations
         }
 
         [Test]
-        public async Task ThenItShouldUpdateTheAssessmentOrganisationsList()
+        public async Task ThenItShouldUpdateTheAparSummary()
         {
             // Act
             await _sut.Execute();
 
             // Assert
-            _assessorServiceApiClient.Verify(p => p.UpdateAssessmentOrganisationsList(), Times.Once());
+            _assessorServiceApiClient.Verify(p => p.UpdateAparSummary(), Times.Once());
         }
     }
 }
