@@ -15,8 +15,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Assessors
             _command = command;
         }
 
-        [FunctionName("AparSummaryUpdate")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:AparSummaryUpdateOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
+        [FunctionName("UpdateAparSummary")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:UpdateAparSummaryOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
             try
             {
