@@ -27,7 +27,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
             if (!await FileExists(filePath))
             {
                 logger.LogError($"Failed to find Organisations data file at {filePath}.");
-                throw new FileNotFoundException($"Could not find the Qualifications data file at {filePath}");
+                throw new FileNotFoundException($"Could not find the Organisations data file at {filePath}");
             }
 
             logger.LogInformation($"Organisations data file found at {filePath}. Reading.");
