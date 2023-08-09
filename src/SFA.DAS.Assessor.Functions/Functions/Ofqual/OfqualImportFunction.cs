@@ -62,6 +62,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
             string organisationsDataFilePath = await context.CallActivityAsync<string>(nameof(OrganisationsDownloader.DownloadOrganisationsData), null);
             var ofqualOrganisationData = await context.CallActivityAsync<IEnumerable<OfqualOrganisation>>(nameof(OfqualDataReader.ReadOrganisationsData), organisationsDataFilePath);
             await context.CallActivityAsync<int>(nameof(OrganisationsStager.InsertOrganisationsDataIntoStaging), ofqualOrganisationData);
+            await context.CallActivityAsync(nameof(OfqualFileMover.MoveOfqualFileToProcessed), organisationsDataFilePath);
         }
 
         private async Task DoQualificationsTasks(IDurableOrchestrationContext context)
@@ -69,6 +70,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
             string qualificationsDataFilePath = await context.CallActivityAsync<string>(nameof(QualificationsDownloader.DownloadQualificationsData), null);
             var ofqualQualificationData = await context.CallActivityAsync<IEnumerable<OfqualStandard>>(nameof(OfqualDataReader.ReadQualificationsData), qualificationsDataFilePath);
             await context.CallActivityAsync<int>(nameof(QualificationsStager.InsertQualificationsDataIntoStaging), ofqualQualificationData);
+            await context.CallActivityAsync(nameof(OfqualFileMover.MoveOfqualFileToProcessed), qualificationsDataFilePath);
         }
     }
 }
