@@ -10,7 +10,6 @@ using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options;
-using Z.Dapper.Plus;
 
 namespace SFA.DAS.Assessor.Functions.Data
 {
@@ -18,7 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Data
     {
         Task<Dictionary<string, long>> GetLearnersWithoutEmployerInfo();
         Task<int> UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
-        int InsertIntoOfqualStagingTable(IEnumerable<IOfqualRecord> recordsToInsert);
+        int InsertIntoOfqualStagingTable(IEnumerable<IOfqualRecord> recordsToInsert, OfqualDataType ofqualDataType);
         Task<int> ClearOfqualStagingTable(OfqualDataType ofqualDataType);
         Task<int> LoadOfqualStandards();
     }
@@ -66,17 +65,91 @@ namespace SFA.DAS.Assessor.Functions.Data
             return affectedRows;
         }
 
-        public int InsertIntoOfqualStagingTable(IEnumerable<IOfqualRecord> recordsToInsert)
+        public int InsertIntoOfqualStagingTable(IEnumerable<IOfqualRecord> recordsToInsert, OfqualDataType ofqualDataType)
         {
-            DapperPlusManager.Entity<OfqualStandard>().Table("StagingOfqualStandard");
-            DapperPlusManager.Entity<OfqualOrganisation>().Table("StagingOfqualOrganisation");
+            switch(ofqualDataType)
+            {
+                case OfqualDataType.Organisations:
+                    return InsertIntoOfqualOrganisationStagingTable(recordsToInsert.Select(r => r as OfqualOrganisation));
+                case OfqualDataType.Qualifications:
+                    return InsertIntoOfqualQualificationStagingTable(recordsToInsert.Select(r => r as OfqualStandard));
+                default:
+                    throw new ArgumentException($"{ofqualDataType} is an unknown Ofqual data type.");
+            }
+        }
 
-            var resultInfo = new Z.BulkOperations.ResultInfo();
+        private int InsertIntoOfqualOrganisationStagingTable(IEnumerable<OfqualOrganisation> recordsToInsert) 
+        {
+            int recordsInserted = 0;
 
-            _connection.UseBulkOptions(o => { o.UseRowsAffected = true; o.ResultInfo = resultInfo; })
-                       .BulkInsert(recordsToInsert);
+            foreach (var record in recordsToInsert)
+            {
+                var sqlParameters = new DynamicParameters();
 
-            return resultInfo.RowsAffectedInserted;
+                string recognitionNumberParameterName = "@recognitionNumber";
+                string nameParameterName = "@employerAccountId";
+                string legalNameParameterName = "@legalName";
+                string acronymParameterName = "@acronym";
+                string emailParameterName = "@email";
+                string websiteParameterName = "@website";
+                string headOfficeAddressLine1ParameterName = "@headOfficeAddressLine1";
+                string headOfficeAddressLine2ParameterName = "@headOfficeAddressLine2";
+                string headOfficeAddressTownParameterName = "@headOfficeAddressTown";
+                string headOfficeAddressCountyParameterName = "@headOfficeAddressCounty";
+                string headOfficeAddressPostcodeParameterName = "@headOfficeAddressPostcode";
+                string headOfficeAddressCountryParameterName = "@headOfficeAddressCountry";
+                string headOfficeAddressTelephoneParameterName = "@headOfficeAddressTelephone";
+                string OfqualStatusParameterName = "@ofqualStatus";
+                string OfqualRecognisedFromParameterName = "@ofqualRecognisedFrom";
+                string OfqualRecognisedToParameterName = "@ofqualRecognisedTo";
+
+                sqlParameters.Add(recognitionNumberParameterName, record.RecognitionNumber, DbType.String);
+                sqlParameters.Add(nameParameterName, record.Name, DbType.String);
+                sqlParameters.Add(legalNameParameterName, record.LegalName, DbType.String);
+                sqlParameters.Add(acronymParameterName, record.Acronym, DbType.String);
+                sqlParameters.Add(emailParameterName, record.Email, DbType.String);
+                sqlParameters.Add(websiteParameterName, record.Website, DbType.String);
+                sqlParameters.Add(headOfficeAddressLine1ParameterName, record.HeadOfficeAddressLine1, DbType.String);
+                sqlParameters.Add(headOfficeAddressLine2ParameterName, record.HeadOfficeAddressLine2, DbType.String);
+                sqlParameters.Add(headOfficeAddressTownParameterName, record.HeadOfficeAddressTown, DbType.String);
+                sqlParameters.Add(headOfficeAddressCountyParameterName, record.HeadOfficeAddressCounty, DbType.String);
+                sqlParameters.Add(headOfficeAddressPostcodeParameterName, record.HeadOfficeAddressPostcode, DbType.String);
+                sqlParameters.Add(headOfficeAddressCountryParameterName, record.HeadOfficeAddressCountry, DbType.String);
+                sqlParameters.Add(headOfficeAddressTelephoneParameterName, record.HeadOfficeAddressTelephone, DbType.String);
+                sqlParameters.Add(OfqualStatusParameterName, record.OfqualStatus, DbType.String);
+                sqlParameters.Add(OfqualRecognisedFromParameterName, record.OfqualRecognisedFrom, DbType.DateTime);
+                sqlParameters.Add(OfqualRecognisedToParameterName, record.OfqualRecognisedTo, DbType.DateTime);
+
+                string query = $"INSERT INTO [StagingOfqualOrganisation] VALUES ({recognitionNumberParameterName}, {nameParameterName}, {legalNameParameterName}, {acronymParameterName}, {emailParameterName}, {websiteParameterName}, {headOfficeAddressLine1ParameterName}, {headOfficeAddressLine2ParameterName}, {headOfficeAddressTownParameterName}, {headOfficeAddressCountyParameterName}, {headOfficeAddressPostcodeParameterName}, {headOfficeAddressCountryParameterName}, {headOfficeAddressTelephoneParameterName}, {OfqualStatusParameterName}, {OfqualRecognisedFromParameterName}, {OfqualRecognisedToParameterName})";
+                
+                recordsInserted += _connection.Execute(query, sqlParameters);
+            }
+            return recordsInserted;
+        }
+
+        private int InsertIntoOfqualQualificationStagingTable(IEnumerable<OfqualStandard> recordsToInsert)
+        {
+            int recordsInserted = 0;
+
+            foreach (var record in recordsToInsert)
+            {
+                var sqlParameters = new DynamicParameters();
+
+                string recognitionNumberParameterName = "@recognitionNumber";
+                string operationalStartDateParameterName = "@operationalStartDate";
+                string operationalEndDateParameterName = "@operationalEndDate";
+                string ifateReferenceNumberParameterName = "@ifateReferenceNumber";
+
+                sqlParameters.Add(recognitionNumberParameterName, record.RecognitionNumber, DbType.String);
+                sqlParameters.Add(operationalStartDateParameterName, record.OperationalStartDate, DbType.DateTime);
+                sqlParameters.Add(operationalEndDateParameterName, record.OperationalEndDate, DbType.DateTime);
+                sqlParameters.Add(ifateReferenceNumberParameterName, record.IFateReferenceNumber, DbType.String);
+
+                string query = $"INSERT INTO [StagingOfqualStandard] VALUES ({recognitionNumberParameterName}, {operationalStartDateParameterName}, {operationalEndDateParameterName}, {ifateReferenceNumberParameterName})";
+                
+                recordsInserted += _connection.Execute(query, sqlParameters);
+            }
+            return recordsInserted;
         }
 
         public async Task<int> LoadOfqualStandards()

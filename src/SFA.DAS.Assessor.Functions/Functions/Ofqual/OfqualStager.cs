@@ -30,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
 
             logger.LogInformation($"{oldRecordsDeleted} records deleted. Inserting new data into {_ofqualDataType} staging table.");
 
-            int rowsInserted = _assessorServiceRepository.InsertIntoOfqualStagingTable(records);
+            int rowsInserted = _assessorServiceRepository.InsertIntoOfqualStagingTable(records, _ofqualDataType);
 
             logger.LogInformation($"{rowsInserted} rows were staged."   );
 
