@@ -4,7 +4,7 @@ using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
 using System;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Functions.Assessors
+namespace SFA.DAS.Assessor.Functions.Functions.Apar
 {
     public class AparSummaryUpdateFunction
     {
@@ -15,8 +15,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Assessors
             _command = command;
         }
 
-        [FunctionName("UpdateAparSummary")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:UpdateAparSummaryOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
+        [FunctionName("AparSummaryUpdate")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:AparSummaryUpdateOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
             try
             {

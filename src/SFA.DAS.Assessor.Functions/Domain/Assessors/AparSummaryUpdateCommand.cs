@@ -19,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Assessors
         public async Task Execute()
         {
             _logger.LogInformation("Requesting update for APAR summary");
-            await _assessorServiceApi.UpdateAparSummary();
+            await _assessorServiceApi.AparSummaryUpdate();
         }
     }
 }

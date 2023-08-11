@@ -5,11 +5,11 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisationsListUpdateFunction
+namespace SFA.DAS.Assessor.Functions.UnitTests.Apar.AparSummaryUpdateFunction
 {
     public class When_Run_Called
     {
-        private Functions.Assessors.AparSummaryUpdateFunction _sut;
+        private Functions.Apar.AparSummaryUpdateFunction _sut;
         private Mock<ILogger> _logger;
         private Mock<IAparSummaryUpdateCommand> _command;
 
@@ -19,7 +19,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisations
             _logger = new Mock<ILogger>();
             _command = new Mock<IAparSummaryUpdateCommand>();
 
-            _sut = new Functions.Assessors.AparSummaryUpdateFunction(_command.Object);
+            _sut = new Functions.Apar.AparSummaryUpdateFunction(_command.Object);
         }
 
         [Test]

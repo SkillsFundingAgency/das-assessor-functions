@@ -4,7 +4,7 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisationsListUpdateCommand
+namespace SFA.DAS.Assessor.Functions.UnitTests.Apar.AparSummaryUpdateCommand
 {
     public class When_Execute_Called
     {
@@ -21,13 +21,13 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Assessors.AssessmentOrganisations
         }
 
         [Test]
-        public async Task ThenItShouldUpdateTheAparSummary()
+        public async Task Then_AparSummaryUpdate_ShouldBeCalled()
         {
             // Act
             await _sut.Execute();
 
             // Assert
-            _assessorServiceApiClient.Verify(p => p.UpdateAparSummary(), Times.Once());
+            _assessorServiceApiClient.Verify(p => p.AparSummaryUpdate(), Times.Once());
         }
     }
 }
