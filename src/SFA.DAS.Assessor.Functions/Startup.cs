@@ -43,6 +43,8 @@ using System.Data.SqlClient;
 using System.Net.Http;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
+using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Assessors;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -200,6 +202,7 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
             builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
+            builder.Services.AddTransient<IAparSummaryUpdateCommand, AparSummaryUpdateCommand>();
 
             builder.Services.Configure<OuterApi>(config.GetSection(nameof(OuterApi)));
 

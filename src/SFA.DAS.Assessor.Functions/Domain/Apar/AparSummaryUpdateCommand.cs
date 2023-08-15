@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Assessors
 {
-    public class AparSummaryUpdateCommand
+    public class AparSummaryUpdateCommand : IAparSummaryUpdateCommand
     {
         private readonly ILogger<AparSummaryUpdateCommand> _logger;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
