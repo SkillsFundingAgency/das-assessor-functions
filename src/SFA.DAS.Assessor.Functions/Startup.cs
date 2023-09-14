@@ -1,13 +1,11 @@
-using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.Net.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Data;
+using SFA.DAS.Assessor.Functions.Domain.Assessors;
+using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance;
 using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
@@ -28,6 +26,8 @@ using SFA.DAS.Assessor.Functions.Domain.Standards;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
@@ -48,13 +48,13 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options.Providers;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using System;
+using System;
+using System.Data;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SqlClient;
 using System.Net.Http;
-using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
-using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
-using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Assessors;
+using System.Net.Http;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
