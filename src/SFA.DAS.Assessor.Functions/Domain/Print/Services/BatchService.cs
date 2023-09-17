@@ -1,15 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
@@ -50,11 +48,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
         public async Task<Batch> BuildPrintBatchReadyToPrint(DateTime scheduledDate, int maxCertificatesToBeAdded)
         {
-            if(maxCertificatesToBeAdded <= 0)
+            if (maxCertificatesToBeAdded <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxCertificatesToBeAdded), maxCertificatesToBeAdded, "The value must be greater than zero");
             }
-            
+
             var nextBatchNumberReadyToPrint = await GetExistingReadyToPrintBatchNumber();
             if (await ReadyToPrintCertificatesNotInBatch())
             {
@@ -63,25 +61,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     nextBatchNumberReadyToPrint = await CreateNewBatchNumber(scheduledDate);
                 }
 
-                if (nextBatchNumberReadyToPrint.HasValue)
+                do
                 {
-                    do
-                    {
-                        var addedCount = await _assessorServiceApiClient.UpdateBatchLogReadyToPrintAddCertifictes(
-                            nextBatchNumberReadyToPrint.Value,
-                            maxCertificatesToBeAdded);
+                    var addedCount = await _assessorServiceApiClient.UpdateBatchLogReadyToPrintAddCertifictes(
+                        nextBatchNumberReadyToPrint.Value,
+                        maxCertificatesToBeAdded);
 
-                        _logger.LogInformation($"Added {addedCount} ready to print certificates to batch {nextBatchNumberReadyToPrint.Value}");
-                    }
-                    while (await ReadyToPrintCertificatesNotInBatch());
+                    _logger.LogInformation($"Added {addedCount} ready to print certificates to batch {nextBatchNumberReadyToPrint.Value}");
                 }
-                else
-                {
-                    _logger.LogError($"Unable to create a new batch log for scheduled date {scheduledDate}");
-                }
+                while (await ReadyToPrintCertificatesNotInBatch());
             }
 
-            if(nextBatchNumberReadyToPrint.HasValue)
+            if (nextBatchNumberReadyToPrint.HasValue)
             {
                 var batch = await Get(nextBatchNumberReadyToPrint.Value);
                 batch.Certificates = await GetCertificatesForBatchNumber(nextBatchNumberReadyToPrint.Value);
@@ -94,12 +85,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         public async Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber)
         {
             var response = await _assessorServiceApiClient.GetCertificatesForBatchNumber(batchNumber);
-            if(response == null)
+            if (response == null)
             {
                 throw new Exception($"Unable to get the certificates for batch number {batchNumber}");
             }
 
-            return response.Certificates?.Select(Map).ToList();
+            return response.Certificates?.Select(c => Certificate.FromCertificatePrintSummary(c))
+                                         .ToList();
         }
 
         public async Task<List<CertificatePrintStatusUpdateMessage>> Update(Batch batch)
@@ -148,7 +140,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 }
             }
 
-            if(printStatusUpdateMessages.Count > 0)
+            if (printStatusUpdateMessages.Count > 0)
             {
                 _logger.LogInformation($"Batch log {batch.BatchNumber} contained {batch.Certificates.Count} certificates, for which {printStatusUpdateMessages.Count} messages will be queued");
             }
@@ -195,38 +187,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             });
 
             return messages;
-        }
-
-        private Certificate Map(CertificatePrintSummary certificateToBePrinted)
-        {
-            var certificate = new Certificate
-            {
-                Uln = certificateToBePrinted.Uln,
-                StandardCode = certificateToBePrinted.StandardCode,
-                ProviderUkPrn = certificateToBePrinted.ProviderUkPrn,
-                EndPointAssessorOrganisationId = certificateToBePrinted.EndPointAssessorOrganisationId,
-                EndPointAssessorOrganisationName = certificateToBePrinted.EndPointAssessorOrganisationName,
-                CertificateReference = certificateToBePrinted.CertificateReference,
-                LearnerGivenNames = certificateToBePrinted.LearnerGivenNames,
-                LearnerFamilyName = certificateToBePrinted.LearnerFamilyName,
-                StandardName = certificateToBePrinted.StandardName,
-                StandardLevel = certificateToBePrinted.StandardLevel,
-                ContactName = certificateToBePrinted.ContactName,
-                ContactOrganisation = certificateToBePrinted.ContactOrganisation,
-                ContactAddLine1 = certificateToBePrinted.ContactAddLine1,
-                ContactAddLine2 = certificateToBePrinted.ContactAddLine2,
-                ContactAddLine3 = certificateToBePrinted.ContactAddLine3,
-                ContactAddLine4 = certificateToBePrinted.ContactAddLine4,
-                ContactPostCode = certificateToBePrinted.ContactPostCode,
-                AchievementDate = certificateToBePrinted.AchievementDate,
-                CourseOption = certificateToBePrinted.CourseOption,
-                OverallGrade = certificateToBePrinted.OverallGrade,
-                Department = certificateToBePrinted.Department,
-                FullName = certificateToBePrinted.FullName,
-                Status = certificateToBePrinted.Status
-            };
-
-            return certificate;
         }
     }
 }
