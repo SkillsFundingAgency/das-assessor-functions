@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
@@ -97,7 +95,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     printData.Certificates.Add(new PrintCertificate
                     {
                         CertificateNumber = c.CertificateReference,
-                        ApprenticeName = $"{c.LearnerGivenNames.ProperCase()} {c.LearnerFamilyName.ProperCase(true)}",
+                        ApprenticeName = $"{c.LearnerGivenNames} {c.LearnerFamilyName}",
                         LearningDetails = new LearningDetails()
                         {
                             StandardTitle = c.StandardName,
@@ -105,7 +103,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                             Option = string.IsNullOrWhiteSpace(c.CourseOption) ? string.Empty : $"({c.CourseOption}):",
                             GradeText = gradeText,
                             Grade = grade,
-                            AchievementDate = !c.AchievementDate.HasValue ? string.Empty : $"{c.AchievementDate.Value:dd MMMM yyyy}"
+                            AchievementDate = !c.AchievementDate.HasValue ? string.Empty : $"{c.AchievementDate.Value:dd MMMM yyyy}",
+                            CoronationEmblem = c.CoronationEmblem
                         }
                     });
                 });

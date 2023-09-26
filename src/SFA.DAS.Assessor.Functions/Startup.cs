@@ -1,3 +1,7 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,13 +10,16 @@ using NLog.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance;
 using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
 using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync;
 using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.FileTransfer;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Services;
 using SFA.DAS.Assessor.Functions.Domain.Learners;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Services;
@@ -20,6 +27,8 @@ using SFA.DAS.Assessor.Functions.Domain.Providers.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.Extensions;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
+using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
@@ -33,16 +42,11 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.DatabaseMaintenance;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.ExternalApiDataSync;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.Learners;
+using SFA.DAS.Assessor.Functions.Infrastructure.Options.OfqualImport;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.Providers;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
-using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.Net.Http;
-using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
-using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
 
@@ -92,11 +96,15 @@ namespace SFA.DAS.Assessor.Functions
             builder.Services.Configure<DataCollectionMock>(config.GetSection(nameof(DataCollectionMock)));
 
             var functionsOptions = nameof(FunctionsOptions);
+            builder.Services.Configure<FunctionsOptions>(config.GetSection($"{functionsOptions}"));
             builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
             builder.Services.Configure<RefreshIlrsOptions>(config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
 
             var databaseMaintenanceOptions = $"{functionsOptions}:{nameof(DatabaseMaintenanceOptions)}";
             builder.Services.Configure<DatabaseMaintenanceOptions>(config.GetSection(databaseMaintenanceOptions));
+
+            var ofqualImportOptions = $"{functionsOptions}:{nameof(OfqualImportOptions)}";
+            builder.Services.Configure<OfqualImportOptions>(config.GetSection(ofqualImportOptions));
 
             var printCertificatesOptions = $"{functionsOptions}:{nameof(PrintCertificatesOptions)}";
             builder.Services.Configure<PrintRequestOptions>(config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}"));
@@ -169,6 +177,7 @@ namespace SFA.DAS.Assessor.Functions
 
             var storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
             var optionsCertificateFunctions = config.GetSection(functionsOptions).GetSection(nameof(printCertificatesOptions)).Get<PrintCertificatesOptions>();
+            var optionsOfqualImport = config.GetSection(functionsOptions).GetSection(nameof(ofqualImportOptions)).Get<OfqualImportOptions>();
 
             builder.Services.AddTransient(s => new BlobFileTransferClient(
                 s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
@@ -180,10 +189,16 @@ namespace SFA.DAS.Assessor.Functions
                 storageConnectionString,
                 optionsCertificateFunctions.InternalBlobContainer) as IInternalBlobFileTransferClient);
 
+            builder.Services.AddTransient(s => new BlobFileTransferClient(
+                s.GetRequiredService<ILogger<BlobFileTransferClient>>(),
+                storageConnectionString,
+                optionsOfqualImport.DownloadBlobContainer) as IOfqualDownloadsBlobFileTransferClient);
+
+
             builder.Services.AddTransient<IPrintCreator, PrintingJsonCreator>();
 
-            var optionsDatabaseMigration = config.GetSection(functionsOptions).GetSection(nameof(databaseMaintenanceOptions)).Get<DatabaseMaintenanceOptions>();
-            builder.Services.AddTransient(s => new SqlConnection(optionsDatabaseMigration.SqlConnectionString) as IDbConnection);
+            var optionsFunctions = config.GetSection(functionsOptions).Get<FunctionsOptions>();
+            builder.Services.AddTransient(s => new SqlConnection(optionsFunctions.SqlConnectionString) as IDbConnection);
             builder.Services.AddTransient<IDatabaseMaintenanceRepository, DatabaseMaintenanceRepository>();
 
             builder.Services.AddTransient<IDatabaseMaintenanceCommand, DatabaseMaintenanceCommand>();
@@ -205,6 +220,8 @@ namespace SFA.DAS.Assessor.Functions
 
             builder.Services.AddTransient<IAssessorServiceRepository, AssessorServiceRepository>();
             builder.Services.AddHttpClient<IOuterApiClient, OuterApiClient>();
+            builder.Services.AddHttpClient(OfqualDataType.Organisations.ToString(), c => c.BaseAddress = new Uri(optionsOfqualImport.OrganisationsDataUrl));
+            builder.Services.AddHttpClient(OfqualDataType.Qualifications.ToString(), c => c.BaseAddress = new Uri(optionsOfqualImport.QualificationsDataUrl));
             builder.Services.AddTransient<IEnqueueLearnerInfoCommand, EnqueueLearnerInfoCommand>();
             builder.Services.AddTransient<IDequeueLearnerInfoCommand, DequeueLearnerInfoCommand>();
             builder.Services.AddTransient<IEnqueueApprovalLearnerInfoBatchCommand, EnqueueApprovalLearnerInfoBatchCommand>();
