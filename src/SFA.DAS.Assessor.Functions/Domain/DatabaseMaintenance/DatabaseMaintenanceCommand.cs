@@ -11,13 +11,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance
     {
         private readonly DatabaseMaintenanceOptions _options;
         
-        private readonly IDatabaseMaintenanceRepository _databaseMaintanenceRepository;
+        private readonly IAssessorServiceRepository _assessorServiceRepository;
         private readonly ILogger<DatabaseMaintenanceCommand> _logger;
         
-        public DatabaseMaintenanceCommand(IOptions<DatabaseMaintenanceOptions> options, IDatabaseMaintenanceRepository databaseMaintanenceRepository, ILogger<DatabaseMaintenanceCommand> logger)
+        public DatabaseMaintenanceCommand(IOptions<DatabaseMaintenanceOptions> options, IAssessorServiceRepository databaseMaintanenceRepository, ILogger<DatabaseMaintenanceCommand> logger)
         {
             _options = options?.Value;
-            _databaseMaintanenceRepository = databaseMaintanenceRepository;
+            _assessorServiceRepository = databaseMaintanenceRepository;
             _logger = logger;
         }
 
@@ -27,7 +27,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance
             {
                 _logger.LogInformation("Performing database maintenance");
 
-                var results = await _databaseMaintanenceRepository.DatabaseMaintenance();
+                var results = await _assessorServiceRepository.DatabaseMaintenance();
                 var logMessage = string.Join(", ", results.ToArray());
                 
                 _logger.LogInformation($"Database maintenance results: {logMessage}");
