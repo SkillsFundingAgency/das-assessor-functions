@@ -4,7 +4,7 @@ using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
 using System;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.Assessor.Functions.Functions.Apar
+namespace SFA.DAS.Assessor.Functions.Functions.Ofs
 {
     public class OfsImportFunction
     {
