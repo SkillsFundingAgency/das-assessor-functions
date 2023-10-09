@@ -17,8 +17,7 @@ namespace SFA.DAS.Assessor.Functions
             {
                 var sqlConnection = new SqlConnection(options.Value.SqlConnectionString);
 
-                var useSqlConnectionMI = options?.Value.UseSqlConnectionMI ?? false;
-                if (useSqlConnectionMI)
+                if (options.Value.UseSqlConnectionMI)
                 {
                     var tokenProvider = new AzureServiceTokenProvider();
                     sqlConnection.AccessToken = tokenProvider.GetAccessTokenAsync(AzureResource).GetAwaiter().GetResult();
