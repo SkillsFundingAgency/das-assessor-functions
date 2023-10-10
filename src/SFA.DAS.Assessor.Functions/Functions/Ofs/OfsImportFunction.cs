@@ -22,7 +22,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofs
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation($"OfsImport has started later than scheduled");
+                    log.LogInformation($"OfsImport has started later than the expected time of {myTimer.ScheduleStatus.Next}");
                 }
                 else
                 {

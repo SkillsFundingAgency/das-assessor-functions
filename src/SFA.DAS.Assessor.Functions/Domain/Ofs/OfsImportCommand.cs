@@ -30,24 +30,30 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ofs
         {
             try
             {
-                _logger.LogInformation("Importing Ofs Standards started");
+                _logger.LogInformation("Importing Ofs standards started");
 
+                _logger.LogInformation("Importing Ofs standards, getting providers");
                 var providers = await _ofsRegisterApiClient.GetProviders();
 
                 _unitOfWork.Begin();
 
+                _logger.LogInformation("Importing Ofs standards, clearing staging for ofs organisations");
                 await _assessorServiceRepository.ClearStagingOfsOrganisationsTable();
+
+                _logger.LogInformation("Importing Ofs standards, inserting staging for ofs organisations");
                 await _assessorServiceRepository.InsertIntoStagingOfsOrganisationTable(providers.Select(p => (OfsOrganisation)p).ToList());
+
+                _logger.LogInformation("Importing Ofs standards, loading ofs organisations and standards");
                 var standardsImported = await _assessorServiceRepository.LoadOfsStandards();
 
                 _unitOfWork.Commit();
 
-                _logger.LogInformation($"Importing Ofs Standards completed, {standardsImported} standards imported");
+                _logger.LogInformation($"Importing Ofs standards completed, {standardsImported} standards imported");
             }
             catch(Exception ex)
             {
                 _unitOfWork.Rollback();
-                _logger.LogError(ex, "Importing Ofs Standards failed");
+                _logger.LogError(ex, "Importing Ofs standards failed");
                 throw;
             }
         }
