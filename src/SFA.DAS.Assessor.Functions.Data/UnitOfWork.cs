@@ -1,17 +1,20 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 
 namespace SFA.DAS.AssessorService.Functions.Data
 {
     public class UnitOfWork : IUnitOfWork
     {
+        private bool _disposed = false;
+
         public UnitOfWork(IDbConnection connection)
         {
             Connection = connection;
         }
 
-        public IDbConnection Connection { get; private set; } = null;
+        public IDbConnection Connection { get; private set; }
 
-        public IDbTransaction Transaction { get; private set; } = null;
+        public IDbTransaction Transaction { get; private set; }
 
         public void Begin()
         {
@@ -33,15 +36,33 @@ namespace SFA.DAS.AssessorService.Functions.Data
             Dispose();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    if (Transaction != null)
+                        Transaction.Dispose();
+
+                    if (Connection != null && Connection.State != ConnectionState.Closed)
+                        Connection.Close();
+                }
+
+                Transaction = null;
+                _disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            if (Transaction != null)
-                Transaction.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (Connection.State != ConnectionState.Closed)
-                Connection.Close();
-
-            Transaction = null;
+        ~UnitOfWork()
+        {
+            Dispose(false);
         }
     }
 }

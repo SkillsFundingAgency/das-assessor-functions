@@ -1,16 +1,12 @@
-﻿using System;
+﻿using Dapper;
+using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
+using SFA.DAS.Assessor.Functions.Domain.Entities.Ofs;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dapper;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
-using SFA.DAS.Assessor.Functions.Domain.Entities.Ofs;
-using SFA.DAS.Assessor.Functions.Infrastructure.Options;
 
 namespace SFA.DAS.Assessor.Functions.Data
 {
