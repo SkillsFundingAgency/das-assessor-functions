@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions
 {
-    public class TimerTriggerFunction
+    public class FunctionHelper
     {
-        public async Task Run(string name, ICommand command, TimerInfo myTimer, ILogger log)
+        public async static Task Run(string name, Func<Task> func, TimerInfo myTimer, ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation($"{name} has started later than scheduled");
+                    log.LogInformation($"{name} has started later than the expected time of {myTimer.ScheduleStatus.Next}");
                 }
                 else
                 {
                     log.LogInformation($"{name} has started");
                 }
 
-                await command.Execute();
+                await func();
 
                 log.LogInformation($"{name} has finished");
             }

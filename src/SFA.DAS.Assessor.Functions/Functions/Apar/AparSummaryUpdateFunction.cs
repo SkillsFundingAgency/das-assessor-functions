@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
-using System;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Apar
@@ -18,25 +17,10 @@ namespace SFA.DAS.Assessor.Functions.Functions.Apar
         [FunctionName("AparSummaryUpdate")]
         public async Task Run([TimerTrigger("%FunctionsOptions:AparSummaryUpdateOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation($"AparSummaryUpdate has started later than scheduled");
-                }
-                else
-                {
-                    log.LogInformation($"AparSummaryUpdate has started");
-                }
-
-                await _command.Execute();
-
-                log.LogInformation("AparSummaryUpdate has finished");
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "AparSummaryUpdate has failed");
-            }
+            await FunctionHelper.Run("AparSummaryUpdate", async () => 
+            { 
+                await _command.Execute(); 
+            }, myTimer, log);
         }
     }
 }

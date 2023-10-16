@@ -26,8 +26,6 @@ using SFA.DAS.Assessor.Functions.Domain.Standards;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
-using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
-using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication;
@@ -48,12 +46,8 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options.Providers;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using System;
-using System;
-using System.Data;
 using System.Data;
 using System.Data.SqlClient;
-using System.Data.SqlClient;
-using System.Net.Http;
 using System.Net.Http;
 
 [assembly: FunctionsStartup(typeof(SFA.DAS.Assessor.Functions.Startup))]
