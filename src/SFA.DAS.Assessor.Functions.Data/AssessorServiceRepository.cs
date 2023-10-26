@@ -1,51 +1,50 @@
-﻿using System;
+﻿using Dapper;
+using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
+using SFA.DAS.Assessor.Functions.Domain.Entities.Ofs;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dapper;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.Extensions.Options;
-using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
-using SFA.DAS.Assessor.Functions.Infrastructure.Options;
 
 namespace SFA.DAS.Assessor.Functions.Data
 {
-    public interface IAssessorServiceRepository
-    {
-        Task<Dictionary<string, long>> GetLearnersWithoutEmployerInfo();
-        Task<int> UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo);
-        int InsertIntoOfqualStagingTable(IEnumerable<IOfqualRecord> recordsToInsert, OfqualDataType ofqualDataType);
-        Task<int> ClearOfqualStagingTable(OfqualDataType ofqualDataType);
-        Task<int> LoadOfqualStandards();
-    }
-
+    /// <summary>
+    /// This class contains methods which directly access the Assessor database.
+    /// 
+    /// This is an exception to the general rule of allowing only the API for each service to connect 
+    /// with the database for a given service. The justification being that writing large amounts of data 
+    /// into a database is overly complicated when using an API endpoint in conjunction with message queuing
+    /// which is the usual pattern commonly followed to distribute load over a period and thus avoid function timeouts.
+    /// 
+    /// This approach was implemented at the behest of the Technical Authority who has given an architectural waiver 
+    /// for this deviation from the usual pattern.
+    ///
+    /// There should be no logic contained in any SQL statements included in this class e.g. not even a
+    /// predicate should be allowed. If logic is required to be triggered after data loading e.g. to 
+    /// transform staging data then a Stored Procedure should be called to perform that logic. This strikes
+    /// a balance between reducing the complexity of the service and degrading the maintainability.
+    /// </summary>
     public class AssessorServiceRepository : IAssessorServiceRepository
     {
         private readonly IDbConnection _connection;
 
-        public AssessorServiceRepository(IOptions<FunctionsOptions> options, IDbConnection connection)
+        public AssessorServiceRepository(IDbConnection connection)
         {
             _connection = connection;
-
-            var useSqlConnectionMI = options?.Value.UseSqlConnectionMI ?? false;
-            if (useSqlConnectionMI && _connection is SqlConnection sqlConnection)
-            {
-                var tokenProvider = new AzureServiceTokenProvider();
-                sqlConnection.AccessToken = tokenProvider.GetAccessTokenAsync("https://database.windows.net/").GetAwaiter().GetResult();
-            }
         }
 
         public async Task<Dictionary<string, long>> GetLearnersWithoutEmployerInfo()
         {
+            // this is breaking the rule about not including logic in this class by having a predicate in the SQL statement. It MUST not be used to jusify adding other logic to this class
             var results = await _connection.QueryAsync<long>("SELECT DISTINCT [Uln] FROM  [dbo].[Learner] WHERE [EmployerAccountId] IS NULL");
             return results.ToDictionary(x => x.ToString(), y => y);
         }
 
         public async Task<int> UpdateLearnerInfo((long uln, int standardCode, long employerAccountId, string employerName) learnerInfo)
         {
+            // this is breaking the rule about not including logic in this class by having a predicate in the SQL statement. It MUST not be used to jusify adding other logic to this class
             var query = new StringBuilder();
             var sqlParameters = new DynamicParameters();
 
@@ -180,6 +179,55 @@ namespace SFA.DAS.Assessor.Functions.Data
                 OfqualDataType.Qualifications => ClearStagingOfqualStandardTable(),
                 _ => throw new ArgumentException($"Could not determine which staging table to delete for Ofqual data type {ofqualDataType}")
             };
+        }
+
+        public async Task<int> ClearStagingOfsOrganisationsTable()
+        {
+            return await _connection.ExecuteAsync("DELETE FROM [dbo].[StagingOfsOrganisation]");
+        }
+
+        public async Task<int> InsertIntoStagingOfsOrganisationTable(IEnumerable<OfsOrganisation> recordsToInsert)
+        {
+            int recordsInserted = 0;
+
+            foreach (var record in recordsToInsert)
+            {
+                var sqlParameters = new DynamicParameters();
+
+                string ukprnParameterName = "@ukprn";
+                string registrationStatusParameterName = "@registrationStatus";
+                string highestLevelOfDegreeAwardingPowersParameterName = "@highestLevelOfDegreeAwardingPowers";
+
+                sqlParameters.Add(ukprnParameterName, record.Ukprn, DbType.Int32);
+                sqlParameters.Add(registrationStatusParameterName, record.RegistrationStatus, DbType.String);
+                sqlParameters.Add(highestLevelOfDegreeAwardingPowersParameterName, record.HighestLevelOfDegreeAwardingPowers, DbType.String);
+                
+                string query = $"INSERT INTO [StagingOfsOrganisation] VALUES ({ukprnParameterName}, {registrationStatusParameterName}, {highestLevelOfDegreeAwardingPowersParameterName})";
+
+                recordsInserted += await _connection.ExecuteAsync(query, sqlParameters);
+            }
+
+            return recordsInserted;
+        }
+
+        public async Task<int> LoadOfsStandards()
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@inserted", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            await _connection.ExecuteAsync("Load_Ofs_Standards", parameters, commandType: CommandType.StoredProcedure);
+
+            return parameters.Get<int>("@inserted");
+        }
+
+        public async Task<List<string>> DatabaseMaintenance()
+        {
+            var results = await _connection.QueryAsync<string>("DatabaseMaintenance",
+                commandTimeout: 28800,
+                commandType: CommandType.StoredProcedure);
+
+            return results
+                .ToList();
         }
     }
 }
