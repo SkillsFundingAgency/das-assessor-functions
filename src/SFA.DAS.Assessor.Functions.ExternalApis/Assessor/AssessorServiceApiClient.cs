@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             HttpClient httpClient,
             IOptions<AssessorApiAuthentication> options,
             ILogger<AssessorServiceApiClient> logger)
-            : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
+            : base(httpClient, new Uri(options?.Value.ApiBaseUrl), logger)
         {
         }
 

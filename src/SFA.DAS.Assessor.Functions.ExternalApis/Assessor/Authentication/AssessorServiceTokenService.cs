@@ -2,8 +2,6 @@
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using SFA.DAS.Assessor.Functions.ExternalApis.Config;
 using System;
 using System.Threading.Tasks;
 
@@ -16,43 +14,32 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
 
         private string _accessToken = null;
 
-        public AssessorServiceTokenService(IOptions<AssessorApiAuthentication> options, IConfiguration configuaration)
+        public AssessorServiceTokenService(IOptions<AssessorApiAuthentication> options, IConfiguration configuration)
         {
             _assessorApiAuthenticationOptions = options?.Value;
-            _configuration = configuaration;
+            _configuration = configuration;
         }
 
         public async Task<string> GetToken()
-        {
-            if (_accessToken != null)
-                return _accessToken;
+        {          
+                if (_accessToken != null)
+                    return _accessToken;
 
-            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-            {
-                _accessToken = string.Empty;
-            }
-            else
-            {
-                // var tenantId = _assessorApiAuthenticationOptions.TenantId;
-                // var clientId = _assessorApiAuthenticationOptions.ClientId;
-                // var appKey = _assessorApiAuthenticationOptions.ClientSecret;
-                // var resourceId = _assessorApiAuthenticationOptions.ResourceId;
-                   
-                // var authority = $"https://login.microsoftonline.com/{tenantId}";
-                // var clientCredential = new ClientCredential(clientId, appKey);
-                // var context = new AuthenticationContext(authority, true);
-                // var result = await context.AcquireTokenAsync(resourceId, clientCredential);
+                if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
+                {
+                     _accessToken = string.Empty;
+                }
+                else
+                {
+                    var defaultAzureCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions());
+                    var result = await defaultAzureCredential.GetTokenAsync(
+                        new TokenRequestContext(scopes: new string[] { _assessorApiAuthenticationOptions.IdentifierUri + "/.default" }) { });
 
-                // _accessToken = result.AccessToken;
+                    _accessToken = result.Token;
+                }
 
-                var defaultAzureCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions());
-                var result = await defaultAzureCredential.GetTokenAsync(
-                    new TokenRequestContext(scopes: new string[] { _assessorApiAuthenticationOptions.IdentifierUri + "/.default" }) { });
-
-                _accessToken = result.Token;
-            }
-
-            return _accessToken;
+               return _accessToken;
+           
         }
 
         public async Task<string> RefreshToken()
