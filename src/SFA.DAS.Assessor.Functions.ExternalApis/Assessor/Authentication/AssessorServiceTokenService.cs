@@ -21,25 +21,25 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
         }
 
         public async Task<string> GetToken()
-        {          
-                if (_accessToken != null)
-                    return _accessToken;
+        {
+            if (_accessToken != null)
+                return _accessToken;
 
-                if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-                {
-                     _accessToken = string.Empty;
-                }
-                else
-                {
-                    var defaultAzureCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions());
-                    var result = await defaultAzureCredential.GetTokenAsync(
-                        new TokenRequestContext(scopes: new string[] { _assessorApiAuthenticationOptions.IdentifierUri + "/.default" }) { });
+            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
+            {
+                _accessToken = string.Empty;
+            }
+            else
+            {
+                var defaultAzureCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions());
+                var result = await defaultAzureCredential.GetTokenAsync(
+                    new TokenRequestContext(scopes: new string[] { _assessorApiAuthenticationOptions.IdentifierUri + "/.default" }) { });
 
-                    _accessToken = result.Token;
-                }
+                _accessToken = result.Token;
+            }
 
-               return _accessToken;
-           
+            return _accessToken;
+
         }
 
         public async Task<string> RefreshToken()
