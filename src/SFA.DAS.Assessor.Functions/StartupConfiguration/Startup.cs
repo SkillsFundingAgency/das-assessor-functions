@@ -51,6 +51,8 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using SFA.DAS.Assessor.Functions.StartupConfiguration;
 using SFA.DAS.AssessorService.Functions.Data;
+using SFA.DAS.Http.Configuration;
+using SFA.DAS.Http.TokenGenerators;
 using System;
 using System.Net.Http;
 
@@ -95,13 +97,13 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             var config = builder.GetCurrentConfiguration();
 
             builder.Services.AddOptions();
-
-            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection(nameof(AssessorApiAuthentication)));
+            var ssj = config.GetSection(nameof(AssessorManagedIdentityClientConfiguration));
+            builder.Services.Configure<AssessorManagedIdentityClientConfiguration>(config.GetSection(nameof(AssessorManagedIdentityClientConfiguration)));
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection(nameof(DataCollectionApiAuthentication)));
             builder.Services.Configure<OfsRegisterApiAuthentication>(config.GetSection(nameof(OfsRegisterApiAuthentication)));
             builder.Services.Configure<SecureMessageApiAuthentication>(config.GetSection(nameof(SecureMessageApiAuthentication)));
             builder.Services.Configure<DataCollectionMock>(config.GetSection(nameof(DataCollectionMock)));
-
+            var test = builder.Services.BuildServiceProvider().GetService<AssessorManagedIdentityClientConfiguration>();
             var functionsOptions = nameof(FunctionsOptions);
             builder.Services.Configure<FunctionsOptions>(config.GetSection($"{functionsOptions}"));
             builder.Services.Configure<RebuildExternalApiSandboxOptions>(config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
@@ -126,7 +128,14 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             var refreshProvidersOptions = $"{functionsOptions}:{nameof(RefreshProvidersOptions)}";
             builder.Services.Configure<RefreshProvidersOptions>(config.GetSection(refreshProvidersOptions));
 
-            builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            // builder.Services.AddSingleton<IManagedIdentityTokenGenerator, ManagedIdentityTokenGenerator>(c => c.);
+            // builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
+
+            builder.Services.AddSingleton(s => new AssessorServiceTokenService(
+                new ManagedIdentityTokenGenerator(
+                    s.GetRequiredService<AssessorManagedIdentityClientConfiguration>())
+                ) as IAssessorServiceTokenService);
+
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
             builder.Services.AddSingleton<ISecureMessageTokenService, SecureMessageTokenService>();
 
