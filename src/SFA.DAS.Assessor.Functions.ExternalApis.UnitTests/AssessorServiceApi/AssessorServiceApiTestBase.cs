@@ -12,7 +12,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         protected AssessorServiceApiClient _sut;
 
         protected Mock<HttpMessageHandler> _mockHttpMessageHandler;
-        protected Mock<IOptions<AssessorManagedIdentityClientConfiguration>> _mockOptions;
+        protected Mock<IOptions<AssessorApiAuthentication>> _mockOptions;
         protected Mock<ILogger<AssessorServiceApiClient>> _mockLogger;
 
         public virtual void Arrange()
@@ -20,8 +20,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
             _mockLogger = new Mock<ILogger<AssessorServiceApiClient>>();
 
-            _mockOptions = new Mock<IOptions<AssessorManagedIdentityClientConfiguration>>();
-            _mockOptions.Setup(m => m.Value).Returns(new AssessorManagedIdentityClientConfiguration { ApiBaseUrl = "http://localhost:8080" });
+            _mockOptions = new Mock<IOptions<AssessorApiAuthentication>>();
+            _mockOptions.Setup(m => m.Value).Returns(new AssessorApiAuthentication { ApiBaseUrl = "http://localhost:8080" });
 
             _sut = new AssessorServiceApiClient(new HttpClient(_mockHttpMessageHandler.Object), _mockOptions.Object, _mockLogger.Object);
         }
