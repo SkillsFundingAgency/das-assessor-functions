@@ -51,6 +51,7 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using SFA.DAS.Assessor.Functions.StartupConfiguration;
 using SFA.DAS.AssessorService.Functions.Data;
+using SFA.DAS.Http.TokenGenerators;
 using System;
 using System.Net.Http;
 
@@ -126,7 +127,14 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             var refreshProvidersOptions = $"{functionsOptions}:{nameof(RefreshProvidersOptions)}";
             builder.Services.Configure<RefreshProvidersOptions>(config.GetSection(refreshProvidersOptions));
 
-            builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            builder.Services.AddSingleton(s => new AssessorServiceTokenService(
+                new ManagedIdentityTokenGenerator(
+                    s.GetRequiredService<IOptions<AssessorManagedIdentityClientConfiguration>>().Value
+                    ),
+                s.GetRequiredService<ILogger<AssessorServiceTokenService>>()
+                ) as IAssessorServiceTokenService);
+
+
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
             builder.Services.AddSingleton<ISecureMessageTokenService, SecureMessageTokenService>();
 

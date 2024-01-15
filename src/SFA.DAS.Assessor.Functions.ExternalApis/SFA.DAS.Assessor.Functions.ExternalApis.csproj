@@ -13,7 +13,7 @@
 		<PackageReference Include="Polly.Extensions.Http" Version="2.0.1" />
 		<PackageReference Include="SFA.DAS.Http" Version="3.2.69" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.Assessor.Domain\SFA.DAS.Assessor.Functions.Domain.csproj" />
 		<ProjectReference Include="..\SFA.DAS.Assessor.Functions.Infrastructure\SFA.DAS.Assessor.Functions.Infrastructure.csproj" />
