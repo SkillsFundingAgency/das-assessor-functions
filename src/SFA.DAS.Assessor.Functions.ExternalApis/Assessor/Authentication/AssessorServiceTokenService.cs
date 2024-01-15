@@ -9,15 +9,13 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
 {
     public class AssessorServiceTokenService : IAssessorServiceTokenService
     {
-        private readonly IConfiguration _configuration;
-        private readonly AssessorApiAuthentication _assessorApiAuthenticationOptions;
+        private readonly AssessorManagedIdentityClientConfiguration _assessorApiAuthenticationOptions;
 
         private string _accessToken = null;
 
-        public AssessorServiceTokenService(IOptions<AssessorApiAuthentication> options, IConfiguration configuration)
+        public AssessorServiceTokenService(IOptions<AssessorManagedIdentityClientConfiguration> options)
         {
             _assessorApiAuthenticationOptions = options?.Value;
-            _configuration = configuration;
         }
 
         public async Task<string> GetToken()

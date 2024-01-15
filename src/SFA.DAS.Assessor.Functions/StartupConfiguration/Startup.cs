@@ -96,7 +96,7 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
 
             builder.Services.AddOptions();
 
-            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection(nameof(AssessorApiAuthentication)));
+            builder.Services.Configure<AssessorManagedIdentityClientConfiguration>(config.GetSection(nameof(AssessorManagedIdentityClientConfiguration)));
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection(nameof(DataCollectionApiAuthentication)));
             builder.Services.Configure<OfsRegisterApiAuthentication>(config.GetSection(nameof(OfsRegisterApiAuthentication)));
             builder.Services.Configure<SecureMessageApiAuthentication>(config.GetSection(nameof(SecureMessageApiAuthentication)));
