@@ -31,8 +31,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
                 
                 return _accessToken;
                 }
-                    
-     
+
+
                 if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
                 {
                     _accessToken = string.Empty;
@@ -46,7 +46,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
             catch (Exception ex)
             {
                 _logger.LogError($"Error generating token in AssessorServiceTokenService {ex.Message}");
-                throw;
             }
             
 
