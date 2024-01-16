@@ -26,8 +26,13 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
             try
             {
                 if (_accessToken != null)
-                    return _accessToken;
-
+                {
+                    _logger.LogInformation($"_accessToken is not null in AssessorServiceTokenService");
+                
+                return _accessToken;
+                }
+                    
+     
                 if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
                 {
                     _accessToken = string.Empty;

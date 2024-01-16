@@ -137,7 +137,6 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
 
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
             builder.Services.AddSingleton<ISecureMessageTokenService, SecureMessageTokenService>();
-
             builder.Services.AddScoped<AssessorTokenHandler>();
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>()
                 .AddHttpMessageHandler<AssessorTokenHandler>();

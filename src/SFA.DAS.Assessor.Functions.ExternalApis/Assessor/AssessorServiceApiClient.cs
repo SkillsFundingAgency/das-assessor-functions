@@ -10,16 +10,20 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 {
     public class AssessorServiceApiClient : ApiClientBase, IAssessorServiceApiClient
     {
+        private readonly ILogger<AssessorServiceApiClient> _logger;
         public AssessorServiceApiClient(
             HttpClient httpClient,
             IOptions<AssessorManagedIdentityClientConfiguration> options,
             ILogger<AssessorServiceApiClient> logger)
             : base(httpClient, new Uri(options?.Value.ApiBaseUrl), logger)
         {
+            _logger = logger;
         }
 
         public async Task UpdateStandards()
         {
+            _logger.LogInformation("AssessorServiceApiClient - UpdateStandards");
+
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/standard-version/update-standards"))
             {
                 await PostPutRequest(request, new { });
@@ -28,6 +32,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task UpdateStandardSummary()
         {
+            _logger.LogInformation("AssessorServiceApiClient - UpdateStandardSummary");
+
             using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
             {
                 await PostRequestWithoutRetryAndLongerTimeout(request);
@@ -36,6 +42,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task SetAssessorSetting(string name, string value)
         {
+            _logger.LogInformation("AssessorServiceApiClient - SetAssessorSetting");
+
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"api/v1/assessor-setting/{name}/{value}"))
             {
                 await PostPutRequest(request);
@@ -44,6 +52,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task<string> GetAssessorSetting(string name)
         {
+            _logger.LogInformation("AssessorServiceApiClient - GetAssessorSetting");
+
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"api/v1/assessor-setting/{name}"))
             {
                 return await GetAsync<string>(request);
@@ -52,6 +62,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task<BatchLogResponse> CreateBatchLog(CreateBatchLogRequest createBatchLogRequest)
         {
+            _logger.LogInformation("AssessorServiceApiClient - CreateBatchLog");
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/batches/create"))
             {
                 return await PostPutRequestWithResponse<CreateBatchLogRequest, BatchLogResponse>(request, createBatchLogRequest);
@@ -60,6 +71,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task<BatchLogResponse> GetBatchLog(int batchNumber)
         {
+            _logger.LogInformation("AssessorServiceApiClient - GetBatchLog");
+
             using (var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/batches/{batchNumber}"))
             {
                 return await GetAsync<BatchLogResponse>(request);
@@ -68,6 +81,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task<int> UpdateBatchLogReadyToPrintAddCertifictes(int batchNumber, int maxCertificatesToBeAdded)
         {
+            _logger.LogInformation("AssessorServiceApiClient - UpdateBatchLogReadyToPrintAddCertifictes");
+
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-ready-to-print-add-certificates"))
             {
                 return await PostPutRequestWithResponse<UpdateBatchLogReadyToPrintAddCertificatesRequest, int>(
@@ -78,6 +93,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task<ValidationResponse> UpdateBatchLogSentToPrinter(int batchNumber, UpdateBatchLogSentToPrinterRequest model)
         {
+            _logger.LogInformation("AssessorServiceApiClient - UpdateBatchLogSentToPrinter");
+
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-sent-to-printer"))
             {
                 return await PostPutRequestWithResponse<UpdateBatchLogSentToPrinterRequest, ValidationResponse>(request, model);
@@ -86,6 +103,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
 
         public async Task<ValidationResponse> UpdateBatchLogPrinted(int batchNumber, UpdateBatchLogPrintedRequest model)
         {
+            _logger.LogInformation("AssessorServiceApiClient - UpdateBatchLogPrinted");
+
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/batches/{batchNumber}/update-printed"))
             {
                 return await PostPutRequestWithResponse<UpdateBatchLogPrintedRequest, ValidationResponse>(request, model);
