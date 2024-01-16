@@ -19,8 +19,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Standards
 
         public async Task Execute()
         {
-            _logger.LogInformation("Requesting update for standard summary data");
-            await _assessorServiceApi.UpdateStandardSummary();
+            _logger.LogInformation("Requesting update for summary data");
+            try
+            {
+                await _assessorServiceApi.UpdateStandardSummary();
+            }
+            catch (System.Exception ex)
+            {
+
+                _logger.LogError($"StandardSummaryUpdateCommand errro {ex}");
+            }
+           
         }
     }
 }
