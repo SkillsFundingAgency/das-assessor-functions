@@ -127,8 +127,12 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             var refreshProvidersOptions = $"{functionsOptions}:{nameof(RefreshProvidersOptions)}";
             builder.Services.Configure<RefreshProvidersOptions>(config.GetSection(refreshProvidersOptions));
 
-            builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
-
+            builder.Services.AddSingleton(s => new AssessorServiceTokenService(
+              new ManagedIdentityTokenGenerator(
+                  s.GetRequiredService<IOptions<AssessorManagedIdentityClientConfiguration>>().Value
+                  ),
+              s.GetRequiredService<ILogger<AssessorServiceTokenService>>()
+              ) as IAssessorServiceTokenService);
 
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
             builder.Services.AddSingleton<ISecureMessageTokenService, SecureMessageTokenService>();
