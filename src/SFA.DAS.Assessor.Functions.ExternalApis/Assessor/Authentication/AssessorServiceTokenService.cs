@@ -1,9 +1,9 @@
 ﻿using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Http.TokenGenerators;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using SFA.DAS.Assessor.Functions.ExternalApis.Config;
 using System;
 using System.Threading.Tasks;
 
@@ -11,46 +11,48 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Authentication
 {
     public class AssessorServiceTokenService : IAssessorServiceTokenService
     {
-        private readonly IManagedIdentityTokenGenerator _managedIdentityTokenGenerator;
-        private readonly ILogger<AssessorServiceTokenService> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly AssessorManagedIdentityClientConfiguration _assessorManagedIdentityClientConfiguration;
+
         private string _accessToken = null;
 
-        public AssessorServiceTokenService(IManagedIdentityTokenGenerator managedIdentityTokenGenerator, ILogger<AssessorServiceTokenService> logger)
+        public AssessorServiceTokenService(IOptions<AssessorManagedIdentityClientConfiguration> options, IConfiguration configuaration)
         {
-            _managedIdentityTokenGenerator = managedIdentityTokenGenerator;
-            _logger = logger;
+            _assessorManagedIdentityClientConfiguration = options?.Value;
+            _configuration = configuaration;
         }
 
         public async Task<string> GetToken()
         {
-            try
-            {
-                if (_accessToken != null)
-                {
-                    _logger.LogInformation($"_accessToken is not null in AssessorServiceTokenService");
-                
+            if (_accessToken != null)
                 return _accessToken;
-                }
 
-
-                if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
-                {
-                    _accessToken = string.Empty;
-                }
-                else
-                {
-                    _accessToken = await _managedIdentityTokenGenerator.Generate();
-                    _logger.LogInformation($"Successfully generated token in AssessorServiceTokenService");
-                }
-            }
-            catch (Exception ex)
+            if (string.Equals("LOCAL", Environment.GetEnvironmentVariable("EnvironmentName")))
             {
-                _logger.LogError($"Error generating token in AssessorServiceTokenService {ex.Message}");
+                _accessToken = string.Empty;
             }
-            
+            else
+            {
+                // var tenantId = _assessorApiAuthenticationOptions.TenantId;
+                // var clientId = _assessorApiAuthenticationOptions.ClientId;
+                // var appKey = _assessorApiAuthenticationOptions.ClientSecret;
+                // var resourceId = _assessorApiAuthenticationOptions.ResourceId;
+
+                // var authority = $"https://login.microsoftonline.com/{tenantId}";
+                // var clientCredential = new ClientCredential(clientId, appKey);
+                // var context = new AuthenticationContext(authority, true);
+                // var result = await context.AcquireTokenAsync(resourceId, clientCredential);
+
+                // _accessToken = result.AccessToken;
+
+                var defaultAzureCredential = new DefaultAzureCredential(new DefaultAzureCredentialOptions());
+                var result = await defaultAzureCredential.GetTokenAsync(
+                    new TokenRequestContext(scopes: new string[] { _assessorManagedIdentityClientConfiguration.IdentifierUri + "/.default" }) { });
+
+                _accessToken = result.Token;
+            }
 
             return _accessToken;
-
         }
 
         public async Task<string> RefreshToken()
