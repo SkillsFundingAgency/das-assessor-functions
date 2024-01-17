@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             HttpClient httpClient,
             IOptions<AssessorManagedIdentityClientConfiguration> options,
             ILogger<AssessorServiceApiClient> logger)
-            : base(httpClient, new Uri("https://at-assessors-api.apprenticeships.education.gov.uk"), logger)
+            : base(httpClient, new Uri(options?.Value.ApiBaseUrl), logger)
         {
         }
 
