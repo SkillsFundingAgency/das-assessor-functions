@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
+using System;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Standards
@@ -24,7 +25,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Standards
             {
                 await _assessorServiceApi.UpdateStandardSummary();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Error occurred in StandardSummaryUpdateCommand {ex}");
             }
