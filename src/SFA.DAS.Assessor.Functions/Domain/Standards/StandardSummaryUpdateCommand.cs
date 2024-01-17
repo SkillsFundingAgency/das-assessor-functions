@@ -9,7 +9,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Standards
     {
         private readonly ILogger<StandardSummaryUpdateCommand> _logger;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
-        
+
         public StandardSummaryUpdateCommand(ILogger<StandardSummaryUpdateCommand> logger,
             IAssessorServiceApiClient assessorServiceApi)
         {
@@ -26,10 +26,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Standards
             }
             catch (System.Exception ex)
             {
-
-                _logger.LogError($"StandardSummaryUpdateCommand errro {ex}");
+                _logger.LogError($"Error occurred in StandardSummaryUpdateCommand {ex}");
             }
-           
+
         }
     }
 }
