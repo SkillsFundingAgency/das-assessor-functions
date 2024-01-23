@@ -18,22 +18,6 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
         }
 
-        public async Task UpdateStandards()
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/standard-version/update-standards"))
-            {
-                await PostPutRequest(request, new { });
-            }
-        }
-
-        public async Task UpdateStandardSummary()
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
-            {
-                await PostRequestWithoutRetryAndLongerTimeout(request);
-            }
-        }
-
         public async Task SetAssessorSetting(string name, string value)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Put, $"api/v1/assessor-setting/{name}/{value}"))
@@ -173,11 +157,23 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
+        public async Task UpdateStandards()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/standard-version/update-standards"))
+            {
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
+            }
+        }
+
         public async Task RebuildExternalApiSandbox()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/externalapidatasync/rebuild-sandbox"))
             {
-                await PostPutRequest(request);
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
             }
         }
 
@@ -185,7 +181,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/approvals/update-approvals"))
             {
-                await PostRequestWithoutRetryAndLongerTimeout(request);
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
             }
         }
 
@@ -193,7 +191,19 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/providers/refresh-providers"))
             {
-                await PostRequestWithoutRetryAndLongerTimeout(request);
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
+            }
+        }
+
+        public async Task UpdateStandardSummary()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/oppfinder/update-standard-summary"))
+            {
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
             }
         }
 
@@ -201,7 +211,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/assessment-organisations/apar-summary-update"))
             {
-                await PostPutRequest(request);
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
             }
         }
     }

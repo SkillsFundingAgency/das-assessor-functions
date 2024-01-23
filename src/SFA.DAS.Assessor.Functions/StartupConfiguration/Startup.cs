@@ -52,6 +52,8 @@ using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using SFA.DAS.Assessor.Functions.StartupConfiguration;
 using SFA.DAS.AssessorService.Functions.Data;
 using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Net.Http;
 
 [assembly: FunctionsStartup(typeof(Startup))]

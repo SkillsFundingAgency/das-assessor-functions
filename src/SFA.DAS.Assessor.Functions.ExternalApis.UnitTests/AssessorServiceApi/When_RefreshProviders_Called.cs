@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
 {
-    public class When_ImportLearners_Called : AssessorServiceApiTestBase
+    public class When_RefreshProviders_Called : AssessorServiceApiTestBase
     {
         [SetUp]
         public override void Arrange()
@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
         }
 
         [Test]
-        public async Task Then_ApiCalled_ToImportLearners()
+        public async Task Then_ApiCalled_ToRefreshProviders()
         {
             // Arrange
 
@@ -25,14 +25,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
                 .Setup<Task<HttpResponseMessage>>
                 (
                     "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(r => r.RequestUri.AbsolutePath == $"/api/approvals/update-approvals" && r.Method == HttpMethod.Post),
+                    ItExpr.Is<HttpRequestMessage>(r => r.RequestUri.AbsolutePath == $"/api/providers/refresh-providers" && r.Method == HttpMethod.Post),
                     ItExpr.IsAny<CancellationToken>()
                 )
                 .ReturnsAsync(new HttpResponseMessage { StatusCode = System.Net.HttpStatusCode.Accepted })
                 .Verifiable();
 
             // Act
-            await _sut.ImportLearners();
+            await _sut.RefreshProviders();
 
             // Assert
             _mockHttpMessageHandler.Verify();
