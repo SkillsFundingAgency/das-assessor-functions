@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Standards
 {
@@ -18,25 +17,10 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
         [FunctionName("StandardImport")]
         public async Task Run([TimerTrigger("%FunctionsOptions:StandardImportOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation($"StandardImport has started later than scheduled");
-                }
-                else
-                {
-                    log.LogInformation($"StandardImport has started");
-                }
-
-                await _command.Execute();
-
-                log.LogInformation("StandardImport has finished");
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "StandardImport has failed");
-            }
+            await FunctionHelper.Run("StandardImport", async () => 
+            { 
+                await _command.Execute(); 
+            }, myTimer, log);
         }
     }
 }

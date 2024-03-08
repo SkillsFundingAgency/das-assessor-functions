@@ -1,8 +1,7 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Standards
 {
@@ -18,25 +17,10 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
         [FunctionName("StandardSummaryUpdate")]
         public async Task Run([TimerTrigger("%FunctionsOptions:StandardSummaryUpdateOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation($"StandardSummaryUpdate has started later than scheduled");
-                }
-                else
-                {
-                    log.LogInformation($"StandardSummaryUpdate has started");
-                }
-
-                await _command.Execute();
-
-                log.LogInformation("StandardSummaryUpdate has finished");
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "StandardSummaryUpdate has failed");
-            }
+            await FunctionHelper.Run("StandardSummaryUpdate", async () => 
+            { 
+                await _command.Execute(); 
+            }, myTimer, log);
         }
     }
 }

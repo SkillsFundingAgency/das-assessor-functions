@@ -1,16 +1,15 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
 using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.ExternalApis
 {
@@ -220,23 +219,18 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
             }
         }
 
-        protected async Task PostRequestWithoutRetryAndLongerTimeout(HttpRequestMessage requestMessage)
+        protected async Task PostRequestWithoutRetry(HttpRequestMessage requestMessage)
         {
             if (requestMessage.Method != HttpMethod.Post)
             {
                 throw new ArgumentOutOfRangeException(nameof(requestMessage), $"Request must be {nameof(HttpMethod.Post)}");
             }
 
-            // Set timeout for this request to be longer as the import 
-            // can take a while if it's a complete refresh
-            // No retry as this can't run more than once a day.
-            _httpClient.Timeout = TimeSpan.FromHours(2);
             var response = await _httpClient.PostAsJsonAsync(requestMessage.RequestUri, new { });
 
-
-            if (response?.StatusCode == HttpStatusCode.InternalServerError)
+            if (response.StatusCode != HttpStatusCode.Accepted)
             {
-                throw new HttpRequestException();
+                throw new HttpRequestException($"Unexpected response status code {response.StatusCode} received");
             }
         }
 

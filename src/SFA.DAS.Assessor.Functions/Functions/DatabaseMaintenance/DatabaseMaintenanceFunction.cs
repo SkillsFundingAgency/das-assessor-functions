@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance.Interfaces;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.DatabaseMaintenance
 {
@@ -18,25 +17,10 @@ namespace SFA.DAS.Assessor.Functions.Functions.DatabaseMaintenance
         [FunctionName("DatabaseMaintenance")]
         public async Task Run([TimerTrigger("%FunctionsOptions:DatabaseMaintenanceOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                if (myTimer.IsPastDue)
-                {
-                    log.LogInformation($"DatabaseMaintenance has started later than scheduled");
-                }
-                else
-                {
-                    log.LogInformation($"DatabaseMaintenance has started");
-                }
-
-                await _command.Execute();
-
-                log.LogInformation("DatabaseMaintenance has finished");
-            }
-            catch (Exception ex)
-            {
-                log.LogError(ex, "DatabaseMaintenance has failed");
-            }
+            await FunctionHelper.Run("DatabaseMaintenance", async () => 
+            { 
+                await _command.Execute(); 
+            }, myTimer, log);
         }
     }
 }

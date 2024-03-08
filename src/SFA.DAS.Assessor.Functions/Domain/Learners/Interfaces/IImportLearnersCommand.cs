@@ -1,9 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using SFA.DAS.Assessor.Functions.Domain.Interfaces;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces
 {
-    public interface IImportLearnersCommand
+    public interface IImportLearnersCommand : ICommand
     {
-        Task Execute();
     }
 }

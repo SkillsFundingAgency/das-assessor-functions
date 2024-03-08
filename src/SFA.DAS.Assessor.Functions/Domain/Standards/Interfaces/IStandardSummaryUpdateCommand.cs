@@ -3,6 +3,6 @@
 namespace SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces
 {
     public interface IStandardSummaryUpdateCommand : ICommand
-    {     
+    {
     }
 }
