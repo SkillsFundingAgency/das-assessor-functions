@@ -12,9 +12,9 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
     {
         public AssessorServiceApiClient(
             HttpClient httpClient,
-            IOptions<AssessorApiAuthentication> options,
+            IOptions<AssessorManagedIdentityClientConfiguration> options,
             ILogger<AssessorServiceApiClient> logger)
-            : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
+            : base(httpClient, new Uri(options?.Value.ApiBaseUrl), logger)
         {
         }
 

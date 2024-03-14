@@ -51,6 +51,7 @@ using SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs;
 using SFA.DAS.Assessor.Functions.MockApis.DataCollection;
 using SFA.DAS.Assessor.Functions.StartupConfiguration;
 using SFA.DAS.AssessorService.Functions.Data;
+using SFA.DAS.Http.TokenGenerators;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -98,7 +99,7 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
 
             builder.Services.AddOptions();
 
-            builder.Services.Configure<AssessorApiAuthentication>(config.GetSection(nameof(AssessorApiAuthentication)));
+            builder.Services.Configure<AssessorManagedIdentityClientConfiguration>(config.GetSection(nameof(AssessorManagedIdentityClientConfiguration)));
             builder.Services.Configure<DataCollectionApiAuthentication>(config.GetSection(nameof(DataCollectionApiAuthentication)));
             builder.Services.Configure<OfsRegisterApiAuthentication>(config.GetSection(nameof(OfsRegisterApiAuthentication)));
             builder.Services.Configure<SecureMessageApiAuthentication>(config.GetSection(nameof(SecureMessageApiAuthentication)));
@@ -128,10 +129,15 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             var refreshProvidersOptions = $"{functionsOptions}:{nameof(RefreshProvidersOptions)}";
             builder.Services.Configure<RefreshProvidersOptions>(config.GetSection(refreshProvidersOptions));
 
-            builder.Services.AddSingleton<IAssessorServiceTokenService, AssessorServiceTokenService>();
+            builder.Services.AddSingleton(s => new AssessorServiceTokenService(
+              new ManagedIdentityTokenGenerator(
+                  s.GetRequiredService<IOptions<AssessorManagedIdentityClientConfiguration>>().Value
+                  ),
+              s.GetRequiredService<ILogger<AssessorServiceTokenService>>()
+              ) as IAssessorServiceTokenService);
+
             builder.Services.AddSingleton<IDataCollectionTokenService, DataCollectionTokenService>();
             builder.Services.AddSingleton<ISecureMessageTokenService, SecureMessageTokenService>();
-
             builder.Services.AddScoped<AssessorTokenHandler>();
             builder.Services.AddHttpClient<IAssessorServiceApiClient, AssessorServiceApiClient>()
                 .AddHttpMessageHandler<AssessorTokenHandler>();
