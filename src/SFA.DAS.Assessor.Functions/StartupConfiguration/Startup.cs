@@ -230,7 +230,6 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
             builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
-            builder.Services.AddTransient<IAparSummaryUpdateCommand, AparSummaryUpdateCommand>();
             builder.Services.AddTransient<IOfsImportCommand, OfsImportCommand>();
 
             builder.Services.Configure<OuterApi>(config.GetSection(nameof(OuterApi)));
