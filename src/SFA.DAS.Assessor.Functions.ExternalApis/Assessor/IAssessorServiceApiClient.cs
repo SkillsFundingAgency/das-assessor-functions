@@ -33,6 +33,5 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
         Task RebuildExternalApiSandbox();
         Task ImportLearners();
         Task RefreshProviders();
-        Task AparSummaryUpdate();
     }
 }
