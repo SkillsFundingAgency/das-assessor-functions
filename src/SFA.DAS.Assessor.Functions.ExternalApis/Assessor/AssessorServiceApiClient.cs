@@ -206,15 +206,5 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
                 await PostRequestWithoutRetry(request);
             }
         }
-
-        public async Task AparSummaryUpdate()
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, $"/api/ao/assessment-organisations/apar-summary-update"))
-            {
-                // no retry as this should not run more than once a day, this is a background task
-                // which will return 202 immediately as it takes a long time to complete on production data
-                await PostRequestWithoutRetry(request);
-            }
-        }
     }
 }
