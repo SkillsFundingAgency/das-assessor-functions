@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -12,18 +12,16 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
     {
         private Functions.Print.PrintStatusUpdateFunction _sut;
         
-        private Mock<ILogger> _mockLogger;
+        private Mock<ILogger<Functions.Print.PrintStatusUpdateFunction>> _mockLogger;
         private Mock<IPrintStatusUpdateCommand> _mockCommand;
-        private Mock<ICollector<CertificatePrintStatusUpdateErrorMessage>> _mockCollector;
 
         [SetUp]
         public void Arrange()
         {
-            _mockLogger = new Mock<ILogger>();
+            _mockLogger = new Mock<ILogger<Functions.Print.PrintStatusUpdateFunction>>();
             _mockCommand = new Mock<IPrintStatusUpdateCommand>();
-            _mockCollector = new Mock<ICollector<CertificatePrintStatusUpdateErrorMessage>>();
 
-            _sut = new Functions.Print.PrintStatusUpdateFunction(_mockCommand.Object);
+            _sut = new Functions.Print.PrintStatusUpdateFunction(_mockCommand.Object, _mockLogger.Object);
         }
 
         [Test]
@@ -32,7 +30,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
             var message = new CertificatePrintStatusUpdateMessage();
 
             // Act - TimerSchedule is not used so null allowed
-            await _sut.Run(message, _mockCollector.Object, _mockLogger.Object);
+            await _sut.Run(message);
 
             // Assert
             _mockCommand.Verify(p => p.Execute(message), Times.Once());

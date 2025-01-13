@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
 using System;
@@ -9,33 +9,35 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofs
     public class OfsImportFunction
     {
         private readonly IOfsImportCommand _command;
+        private readonly ILogger<OfsImportFunction> _logger;
 
-        public OfsImportFunction(IOfsImportCommand command)
+        public OfsImportFunction(IOfsImportCommand command, ILogger<OfsImportFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
-        [FunctionName("OfsImport")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:OfsImportOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
+        [Function("OfsImport")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:OfsImportOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation($"OfsImport has started later than the expected time of {myTimer.ScheduleStatus.Next}");
+                    _logger.LogInformation($"OfsImport has started later than the expected time of {myTimer.ScheduleStatus.Next}");
                 }
                 else
                 {
-                    log.LogInformation($"OfsImport has started");
+                    _logger.LogInformation($"OfsImport has started");
                 }
 
                 await _command.Execute();
 
-                log.LogInformation("OfsImport has finished");
+                _logger.LogInformation("OfsImport has finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "OfsImport has failed");
+                _logger.LogError(ex, "OfsImport has failed");
             }
         }
     }

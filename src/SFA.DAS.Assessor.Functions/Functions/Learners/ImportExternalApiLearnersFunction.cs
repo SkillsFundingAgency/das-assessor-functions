@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             _command = command;
         }
 
-        [FunctionName("ImportLearners")]
+        [Function("ImportLearners")]
         public async Task Run([TimerTrigger("%FunctionsOptions:ImportLearnersOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
         {
             await FunctionHelper.Run("ImportLearners", async () => 

@@ -5,32 +5,33 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using CsvHelper;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
 using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
 {
     public class OfqualDataReader
     {
         private readonly IOfqualDownloadsBlobFileTransferClient _blobFileTransferClient;
+        private readonly ILogger<OfqualDataReader> _logger;
 
-        public OfqualDataReader(IOfqualDownloadsBlobFileTransferClient blobFileTransferClient)
+        public OfqualDataReader(IOfqualDownloadsBlobFileTransferClient blobFileTransferClient, ILogger<OfqualDataReader> logger)
         {
             _blobFileTransferClient = blobFileTransferClient;
+            _logger = logger;
         }
 
-        [FunctionName(nameof(ReadOrganisationsData))]
-        public async Task<IEnumerable<OfqualOrganisation>> ReadOrganisationsData([ActivityTrigger] string filePath, ILogger logger)
+        [Function(nameof(ReadOrganisationsData))]
+        public async Task<IEnumerable<OfqualOrganisation>> ReadOrganisationsData([ActivityTrigger] string filePath)
         {
             if (!await FileExists(filePath))
             {
-                logger.LogError($"Failed to find Organisations data file at {filePath}.");
+                _logger.LogError($"Failed to find Organisations data file at {filePath}.");
                 throw new FileNotFoundException($"Could not find the Organisations data file at {filePath}");
             }
 
-            logger.LogInformation($"Organisations data file found at {filePath}. Reading.");
+            _logger.LogInformation($"Organisations data file found at {filePath}. Reading.");
 
             string organisationsData = await _blobFileTransferClient.DownloadFile(filePath);
             using var stringReader = new StringReader(organisationsData);
@@ -66,16 +67,16 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
             return records;
         }
 
-        [FunctionName(nameof(ReadQualificationsData))]
-        public async Task<IEnumerable<OfqualStandard>> ReadQualificationsData([ActivityTrigger] string filePath, ILogger logger)
+        [Function(nameof(ReadQualificationsData))]
+        public async Task<IEnumerable<OfqualStandard>> ReadQualificationsData([ActivityTrigger] string filePath)
         {
             if (!await FileExists(filePath))
             {
-                logger.LogError($"Failed to find Qualifications data file at {filePath}.");
+                _logger.LogError($"Failed to find Qualifications data file at {filePath}.");
                 throw new FileNotFoundException($"Could not find the Qualifications data file at {filePath}");
             }
 
-            logger.LogInformation($"Qualifications data file found at {filePath}. Reading.");
+            _logger.LogInformation($"Qualifications data file found at {filePath}. Reading.");
 
             string qualificationsData = await _blobFileTransferClient.DownloadFile(filePath);
             using var stringReader = new StringReader(qualificationsData);

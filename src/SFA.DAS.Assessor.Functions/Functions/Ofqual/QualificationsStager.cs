@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
@@ -15,10 +12,9 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
         {
         }
 
-        [FunctionName(nameof(InsertQualificationsDataIntoStaging))]
-        public async Task<int> InsertQualificationsDataIntoStaging([ActivityTrigger] IDurableActivityContext context, ILogger logger)
+        [Function(nameof(InsertQualificationsDataIntoStaging))]
+        public async Task<int> InsertQualificationsDataIntoStaging([ActivityTrigger] IEnumerable<OfqualStandard> input, ILogger logger)
         {
-            var input = context.GetInput<IEnumerable<OfqualStandard>>();
             return await InsertDataIntoStagingTable(input, logger);
         }
     }

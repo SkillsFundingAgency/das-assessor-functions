@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 
@@ -15,7 +15,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("BlobStorageSamples")]
+        [Function("BlobStorageSamples")]
         public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:BlobStorageSamplesOptions:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try

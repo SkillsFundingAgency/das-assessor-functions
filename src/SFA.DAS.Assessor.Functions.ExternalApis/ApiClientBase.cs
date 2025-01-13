@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Polly;
-using Polly.Extensions.Http;
 using Polly.Retry;
 using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
 using System;
@@ -17,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<ApiClientBase> _logger;
-        private readonly RetryPolicy<HttpResponseMessage> _retryPolicy;
+        private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy;
 
         protected readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
@@ -39,7 +38,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
             _logger = logger;
 
-            _retryPolicy = HttpPolicyExtensions.HandleTransientHttpError().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            _retryPolicy = Policy
+                .Handle<HttpRequestException>()
+                .OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         public string BaseAddress()

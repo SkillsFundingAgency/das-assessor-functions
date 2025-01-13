@@ -1,5 +1,5 @@
 ﻿using FizzWare.NBuilder;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -28,7 +28,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         private Mock<IExternalBlobFileTransferClient> _mockExternalFileTransferClient;
         private Mock<IInternalBlobFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<PrintRequestOptions>> _mockOptions;
-        private Mock<ICollector<string>> _mockMessageQueue;
 
         private int _batchNumberWithCertificates = 1;
         private Guid _batchWithCertificatesId;
@@ -54,7 +53,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
             _mockExternalFileTransferClient = new Mock<IExternalBlobFileTransferClient>();
             _mockInternalFileTransferClient = new Mock<IInternalBlobFileTransferClient>();
             _mockOptions = new Mock<IOptions<PrintRequestOptions>>();
-            _mockMessageQueue = new Mock<ICollector<string>>();
 
             _options = new PrintRequestOptions
             {

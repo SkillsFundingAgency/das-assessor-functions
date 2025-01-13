@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             _command = command;
         }
 
-        [FunctionName("DequeueExternalApiLearnersEmployerInfoFunction")]
+        [Function("DequeueExternalApiLearnersEmployerInfoFunction")]
         public async Task Run([QueueTrigger(QueueNames.UpdateLearnersInfo)] string message, ILogger log)
         {
             try

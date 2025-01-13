@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using System;
@@ -15,7 +15,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
             _command = command;
         }
 
-        [FunctionName("BlobSasTokenGenerator")]
+        [Function("BlobSasTokenGenerator")]
         public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:BlobSasTokenGeneratorOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
             try

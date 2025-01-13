@@ -1,10 +1,12 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersCommand
@@ -18,12 +20,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersC
         {
             // Arrange
             Mock<IRefreshIlrsLearnerService> refreshIlrsLearnerService = new Mock<IRefreshIlrsLearnerService>();
-            Mock<ICollector<string>> storageQueue = new Mock<ICollector<string>>();
+            Mock<IQueueService> queueServiceMock = new Mock<IQueueService>();
 
-            Domain.Ilrs.RefreshIlrsDequeueProvidersCommand sut = new Domain.Ilrs.RefreshIlrsDequeueProvidersCommand(refreshIlrsLearnerService.Object)
-            {
-                StorageQueue = storageQueue.Object
-            };
+            Domain.Ilrs.RefreshIlrsDequeueProvidersCommand sut = new Domain.Ilrs.RefreshIlrsDequeueProvidersCommand(refreshIlrsLearnerService.Object, queueServiceMock.Object);
 
             JObject inputQueueMessage = new JObject
             {
@@ -51,7 +50,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersC
             await sut.Execute(inputQueueMessage.ToString());
 
             // Assert
-            storageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, outputQueueMessage.ToString()))));
+            queueServiceMock.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs,  It.Is<RefreshIlrsProviderMessage>(m => MessageEquals(JsonConvert.SerializeObject(m), outputQueueMessage.ToString()))));
         }
 
         private bool MessageEquals(string first, string second)
