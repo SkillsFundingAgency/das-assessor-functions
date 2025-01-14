@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
         [Function("RefreshIlrsEnqueueProviders")]
         public async Task Run(
-            [TimerTrigger("%FunctionsOptions:RefreshIlrsOptions:EnqueueProvidersSchedule%", RunOnStartup = false)]TimerInfo myTimer)
+            [TimerTrigger("%EnqueueProvidersTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             try
             {

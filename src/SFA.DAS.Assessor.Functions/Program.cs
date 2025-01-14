@@ -15,7 +15,7 @@ namespace SFA.DAS.Assessor.Functions
                 .ConfigureFunctionsWebApplication()
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    config.AddConfiguration(hostingContext.Configuration);
+                    config.AddConfiguration();
                 })
                 .ConfigureServices((context, services) =>
                 {

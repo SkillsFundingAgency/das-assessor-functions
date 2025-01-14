@@ -10,26 +10,28 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
     public class DequeueExternalApiLearnersEmployerInfoFunction
     {
         private readonly IDequeueLearnerInfoCommand _command;
+        private readonly ILogger<DequeueExternalApiLearnersEmployerInfoFunction> _logger;
 
-        public DequeueExternalApiLearnersEmployerInfoFunction(IDequeueLearnerInfoCommand command)
+        public DequeueExternalApiLearnersEmployerInfoFunction(IDequeueLearnerInfoCommand command, ILogger<DequeueExternalApiLearnersEmployerInfoFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
         [Function("DequeueExternalApiLearnersEmployerInfoFunction")]
-        public async Task Run([QueueTrigger(QueueNames.UpdateLearnersInfo)] string message, ILogger log)
+        public async Task Run([QueueTrigger(QueueNames.UpdateLearnersInfo)] string message)
         {
             try
             {
-                log.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has started for {message}");
+                _logger.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has started for {message}");
 
                 await _command.Execute(message);
 
-                log.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has finished for {message}");
+                _logger.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has finished for {message}");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, $"DequeueExternalApiLearnersEmployerInfoFunction has failed for {message}");
+                _logger.LogError(ex, $"DequeueExternalApiLearnersEmployerInfoFunction has failed for {message}");
                 throw;
             }
         }

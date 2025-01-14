@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
 
         [Function("OfqualImport")]
         public async Task Run(
-            [TimerTrigger("%FunctionsOptions:OfqualImportOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer,
+            [TimerTrigger("%OfqualImportTimerSchedule%", RunOnStartup = false)] TimerInfo myTimer,
             [DurableClient] DurableTaskClient starter)
         {
             try

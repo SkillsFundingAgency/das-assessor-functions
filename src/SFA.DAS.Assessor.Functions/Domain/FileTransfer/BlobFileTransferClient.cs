@@ -21,7 +21,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 
             var blobServiceClient = new BlobServiceClient(connectionString);
             _blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            _blobContainerClient.CreateIfNotExists();
+
+            try
+            {
+                _blobContainerClient.CreateIfNotExists();
+                _logger.LogInformation($"Blob container '{containerName}' ensured to exist.");
+            }
+            catch (RequestFailedException ex) when (ex.Status == 409)
+            {
+                _logger.LogWarning($"Blob container '{containerName}' already exists. Details: {ex.Message}");
+                // Optionally, you can choose to ignore or handle this scenario differently.
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error while creating/accessing blob container '{containerName}'.");
+                throw; // Re-throw to ensure the error is propagated.
+            }
         }
 
         public string ContainerName => _blobContainerClient.Name;

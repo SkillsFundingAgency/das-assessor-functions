@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofs
         }
 
         [Function("OfsImport")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:OfsImportOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%OfsImportTimerSchedule%", RunOnStartup = false)] TimerInfo myTimer)
         {
             try
             {

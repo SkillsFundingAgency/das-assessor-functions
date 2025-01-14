@@ -17,7 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
         }
 
         [Function("StandardSummaryUpdate")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:StandardSummaryUpdateOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%StandardSummaryUpdateTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             await FunctionHelper.Run("StandardSummaryUpdate", async () => 
             { 

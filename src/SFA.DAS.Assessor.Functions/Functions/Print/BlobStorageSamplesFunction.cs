@@ -9,31 +9,33 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
     public class BlobStorageSamplesFunction
     {
         private readonly IBlobStorageSamplesCommand _command;
+        private readonly ILogger<BlobStorageSamplesFunction> _logger;
 
-        public BlobStorageSamplesFunction(IBlobStorageSamplesCommand command)
+        public BlobStorageSamplesFunction(IBlobStorageSamplesCommand command, ILogger<BlobStorageSamplesFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
         [Function("BlobStorageSamples")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:BlobStorageSamplesOptions:Schedule%", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%BlobStorageSamplesTimerSchedule%", RunOnStartup = true)]TimerInfo myTimer)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("BlobStorageSamples timer trigger has started later than scheduled");
+                    _logger.LogInformation("BlobStorageSamples timer trigger has started later than scheduled");
                 }
 
-                log.LogInformation($"BlobStorageSamples started");
+                _logger.LogInformation($"BlobStorageSamples started");
 
                 await _command.Execute();
 
-                log.LogInformation("BlobStorageSamples finished");
+                _logger.LogInformation("BlobStorageSamples finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "BlobStorageSamples failed");
+                _logger.LogError(ex, "BlobStorageSamples failed");
             }
         }
     }

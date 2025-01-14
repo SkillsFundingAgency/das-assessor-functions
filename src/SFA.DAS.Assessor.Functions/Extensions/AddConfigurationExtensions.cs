@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using SFA.DAS.Configuration.AzureTableStorage;
+using System.Diagnostics;
 
 namespace SFA.DAS.Assessor.Functions.Extensions
 {
@@ -14,6 +15,11 @@ namespace SFA.DAS.Assessor.Functions.Extensions
 
             builder.AddAzureTableStorage(options =>
             {
+                Debug.WriteLine("ConfigurationStorageConnectionString " + config["ConfigurationStorageConnectionString"]);
+                Debug.WriteLine("ConfigNames " + config["ConfigNames"]);
+                Debug.WriteLine("EnvironmentName " + config["EnvironmentName"]);
+
+
                 options.ConfigurationKeys = config["ConfigNames"]?.Split(",") ?? [];
                 options.StorageConnectionString = config["ConfigurationStorageConnectionString"];
                 options.EnvironmentName = config["EnvironmentName"];

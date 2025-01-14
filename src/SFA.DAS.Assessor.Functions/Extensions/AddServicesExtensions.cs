@@ -88,6 +88,9 @@ namespace SFA.DAS.RequestApprenticeTraining.Functions.Extensions
 
             services.Configure<RebuildExternalApiSandboxOptions>(
                 config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}"));
+            var section1 = config.GetSection($"{functionsOptions}:{nameof(RebuildExternalApiSandboxOptions)}");
+
+
             services.Configure<RefreshIlrsOptions>(
                 config.GetSection($"{functionsOptions}:{nameof(RefreshIlrsOptions)}"));
 
@@ -100,6 +103,7 @@ namespace SFA.DAS.RequestApprenticeTraining.Functions.Extensions
                 config.GetSection(ofqualImportOptions));
 
             var printCertificatesOptions = $"{functionsOptions}:{nameof(PrintCertificatesOptions)}";
+            var section = config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}");
             services.Configure<PrintRequestOptions>(
                 config.GetSection($"{printCertificatesOptions}:{nameof(PrintRequestOptions)}"));
 
@@ -257,43 +261,43 @@ namespace SFA.DAS.RequestApprenticeTraining.Functions.Extensions
         {
             var storageConnectionString = config.GetValue<string>("AzureWebJobsStorage");
 
-            services.AddTransient<IExternalBlobFileTransferClient>(sp =>
-            {
-                var logger = sp.GetRequiredService<ILogger<BlobFileTransferClient>>();
+            //services.AddTransient<IExternalBlobFileTransferClient>(sp =>
+            //{
+            //    var logger = sp.GetRequiredService<ILogger<BlobFileTransferClient>>();
 
-                var printCertificatesOptions = sp
-                   .GetRequiredService<IOptions<PrintCertificatesOptions>>()
-                   .Value;
+            //    var printCertificatesOptions = sp
+            //       .GetRequiredService<IOptions<PrintCertificatesOptions>>()
+            //       .Value;
 
-                return new BlobFileTransferClient(logger,
-                    storageConnectionString,
-                    printCertificatesOptions.ExternalBlobContainer);
-            });
+            //    return new BlobFileTransferClient(logger,
+            //        storageConnectionString,
+            //        printCertificatesOptions.ExternalBlobContainer);
+            //});
 
-            services.AddTransient<IInternalBlobFileTransferClient>(sp =>
-            {
-                var logger = sp.GetRequiredService<ILogger<BlobFileTransferClient>>();
-                var printCertificatesOptions = sp
-                   .GetRequiredService<IOptions<PrintCertificatesOptions>>()
-                   .Value;
+            //services.AddTransient<IInternalBlobFileTransferClient>(sp =>
+            //{
+            //    var logger = sp.GetRequiredService<ILogger<BlobFileTransferClient>>();
+            //    var printCertificatesOptions = sp
+            //       .GetRequiredService<IOptions<PrintCertificatesOptions>>()
+            //       .Value;
 
-                return new BlobFileTransferClient(logger,
-                    storageConnectionString,
-                    printCertificatesOptions.InternalBlobContainer);
-            });
+            //    return new BlobFileTransferClient(logger,
+            //        storageConnectionString,
+            //        printCertificatesOptions.InternalBlobContainer);
+            //});
 
-            services.AddTransient<IOfqualDownloadsBlobFileTransferClient>(sp =>
-            {
-                var logger = sp.GetRequiredService<ILogger<BlobFileTransferClient>>();
+            //services.AddTransient<IOfqualDownloadsBlobFileTransferClient>(sp =>
+            //{
+            //    var logger = sp.GetRequiredService<ILogger<BlobFileTransferClient>>();
 
-                var ofqualImportOptions = sp
-                    .GetRequiredService<IOptions<OfqualImportOptions>>()
-                    .Value;
+            //    var ofqualImportOptions = sp
+            //        .GetRequiredService<IOptions<OfqualImportOptions>>()
+            //        .Value;
 
-                return new BlobFileTransferClient(logger,
-                    storageConnectionString,
-                    ofqualImportOptions.DownloadBlobContainer);
-            });
+            //    return new BlobFileTransferClient(logger,
+            //        storageConnectionString,
+            //        ofqualImportOptions.DownloadBlobContainer);
+            //});
 
             services.AddTransient<IPrintCreator, PrintingJsonCreator>();
 

@@ -20,7 +20,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         [Function("CertificatePrintRequest")]
         [QueueOutput(QueueNames.CertificatePrintStatusUpdate)]
         public async Task<List<CertificatePrintStatusUpdateMessage>> Run(
-            [TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:PrintRequestOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer)
+            [TimerTrigger("%CertificatePrintRequestTimerSchedule%", RunOnStartup = false)] TimerInfo myTimer)
         {
             try
             {

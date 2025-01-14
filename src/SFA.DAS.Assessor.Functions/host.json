@@ -1,5 +1,6 @@
 {
 	"version": "2.0",
+	"functions": [ "RefreshIlrsEnqueueProviders", "RefreshIlrsDequeueProviders" ],
 	"functionTimeout": "09:00:00",
 	"extensions": {
 		"queues": {

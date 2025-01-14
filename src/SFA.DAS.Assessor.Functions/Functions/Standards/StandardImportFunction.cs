@@ -17,7 +17,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Standards
         }
 
         [Function("StandardImport")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:StandardImportOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%StandardImportTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             await FunctionHelper.Run("StandardImport", async () => 
             { 

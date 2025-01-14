@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.DatabaseMaintenance
         }
 
         [Function("DatabaseMaintenance")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:DatabaseMaintenanceOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%DatabaseMaintenanceTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             await FunctionHelper.Run("DatabaseMaintenance", async () => 
             { 

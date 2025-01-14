@@ -8,19 +8,21 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
     public class RebuildExternalApiSandboxFunction
     {
         private readonly IRebuildExternalApiSandboxCommand _command;
+        private readonly ILogger<RebuildExternalApiSandboxFunction> _logger;
 
-        public RebuildExternalApiSandboxFunction(IRebuildExternalApiSandboxCommand command)
+        public RebuildExternalApiSandboxFunction(IRebuildExternalApiSandboxCommand command, ILogger<RebuildExternalApiSandboxFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
-        
+
         [Function("RebuildExternalApiSandbox")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:RebuildExternalApiSandboxOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("%RebuildExternalApiSandboxTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             await FunctionHelper.Run("RebuildExternalApiSandbox", async () => 
             { 
                 await _command.Execute(); 
-            }, myTimer, log);
+            }, myTimer, _logger);
         }
     }
 }
