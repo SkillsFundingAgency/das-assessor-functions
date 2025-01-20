@@ -9,7 +9,7 @@ namespace SFA.DAS.Assessor.Functions.Extensions
     {
         public static void AddLogging(this ILoggingBuilder logBuilder)
         {
-            logBuilder.SetMinimumLevel(LogLevel.Trace);
+            logBuilder.SetMinimumLevel(LogLevel.Information);
             logBuilder.AddConsole();
             logBuilder.AddNLog(new NLogProviderOptions
             {

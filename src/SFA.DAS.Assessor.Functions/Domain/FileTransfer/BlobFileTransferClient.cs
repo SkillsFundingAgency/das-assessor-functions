@@ -53,7 +53,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 
             try
             {
-                var blobs = await GetBlobsHierarchicalListingAsync(directory, recursive);
+                string prefix = GetBlobDirectoryName(directory);
+                var blobs = await GetBlobsHierarchicalListingAsync(prefix, recursive);
                 fileNames.AddRange(blobs.ConvertAll(p => GetBlobFileName(p.Name)));
             }
             catch (Exception ex)
@@ -71,7 +72,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             {
                 string directoryName = GetBlobDirectoryName(path);
                 string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}/{blobName}";
+                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
 
                 _logger.LogDebug($"Uploading {path} to blob storage {ContainerName}");
 
@@ -100,7 +101,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             {
                 string directoryName = GetBlobDirectoryName(path);
                 string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}/{blobName}";
+                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
 
                 _logger.LogDebug($"Downloading {path} from blob storage {_blobContainerClient.Name}");
 
@@ -130,7 +131,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             {
                 string directoryName = GetBlobDirectoryName(path);
                 string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}/{blobName}";
+                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
 
                 _logger.LogDebug($"Deleting {path} from blob storage {_blobContainerClient.Name}");
 
@@ -153,7 +154,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             {
                 string directoryName = GetBlobDirectoryName(path);
                 string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}/{blobName}";
+                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
 
                 BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
                 exists = await blobClient.ExistsAsync();
@@ -188,6 +189,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 : directoryName += '/';
         }
 
+
         private async Task<List<BlobItem>> GetBlobsHierarchicalListingAsync(string prefix, bool recursive)
         {
             var blobs = new List<BlobItem>();
@@ -196,19 +198,25 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             {
                 await foreach (BlobHierarchyItem blobItem in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: prefix, delimiter: "/"))
                 {
-                    if (blobItem.IsPrefix && recursive)
+                    if (blobItem.IsPrefix)
                     {
-                        blobs.AddRange(await GetBlobsHierarchicalListingAsync(blobItem.Prefix, recursive));
+                        _logger.LogInformation($"Found prefix: {blobItem.Prefix}");
+                        if (recursive)
+                        {
+                            string newPrefix = blobItem.Prefix.EndsWith("/") ? blobItem.Prefix : $"{blobItem.Prefix}/";
+                            blobs.AddRange(await GetBlobsHierarchicalListingAsync(newPrefix, recursive));
+                        }
                     }
                     else if (blobItem.IsBlob)
                     {
+                        _logger.LogInformation($"Found blob: {blobItem.Blob.Name}");
                         blobs.Add(blobItem.Blob);
                     }
                 }
             }
             catch (RequestFailedException ex)
             {
-                _logger.LogError(ex, $"Error listing file in blob storage {_blobContainerClient.Name} with prefix '{prefix}'");
+                _logger.LogError(ex, $"Error listing files in blob storage {_blobContainerClient.Name} with prefix '{prefix}'");
                 throw;
             }
 
@@ -224,7 +232,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             BlobSasBuilder sasBuilder = new BlobSasBuilder
             {
                 BlobContainerName = _blobContainerClient.Name,
-                Resource = "c", // 'c' for container
+                Resource = "c", 
                 StartsOn = startTime,
                 ExpiresOn = expiryTime
             };

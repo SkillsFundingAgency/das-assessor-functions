@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Data;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
@@ -14,7 +13,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
         }
 
         [Function(nameof(LoadStandards))]
-        public async Task<int> LoadStandards([ActivityTrigger] string unused, ILogger logger)
+        public async Task<int> LoadStandards([ActivityTrigger] string unused)
         {
             return await _assessorServiceRepository.LoadOfqualStandards();
         }

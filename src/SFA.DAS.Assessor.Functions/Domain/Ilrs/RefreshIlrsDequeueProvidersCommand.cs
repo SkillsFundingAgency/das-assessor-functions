@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.Functions.Worker;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
@@ -26,6 +25,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
             {
                 await _queueService.EnqueueMessageAsync(QueueNames.RefreshIlrs, nextPageProviderMessage);
             }
-        }
     }
+}
 }

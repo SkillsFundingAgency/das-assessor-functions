@@ -138,7 +138,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
 
         public void VerifyNoMessageAddedToStorageQueue()
         {
-            QueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.StartUpdateLearnersInfo, It.IsAny<string>()), Times.Never);
+            QueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.StartUpdateLearnersInfo, It.IsAny<ProcessApprovalBatchLearnersCommand>()), Times.Never);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersC
             await sut.Execute(inputQueueMessage.ToString());
 
             // Assert
-            _queueServiceMock.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs, It.IsAny<string>()), Times.Never());
+            _queueServiceMock.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs, It.IsAny<RefreshIlrsProviderMessage>()), Times.Never());
         }
     }
 }

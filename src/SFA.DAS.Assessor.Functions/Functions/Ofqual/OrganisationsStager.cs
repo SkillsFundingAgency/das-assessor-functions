@@ -7,15 +7,15 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
 {
     public class OrganisationsStager : OfqualStager
     {
-        public OrganisationsStager(IAssessorServiceRepository assessorServiceRepository) 
-            : base(assessorServiceRepository, OfqualDataType.Organisations)
+        public OrganisationsStager(IAssessorServiceRepository assessorServiceRepository, ILogger<OrganisationsStager> logger) 
+            : base(assessorServiceRepository, OfqualDataType.Organisations, logger)
         {
         }
 
         [Function(nameof(InsertOrganisationsDataIntoStaging))]
-        public async Task<int> InsertOrganisationsDataIntoStaging([ActivityTrigger] IEnumerable<OfqualOrganisation> records, ILogger logger)
+        public async Task<int> InsertOrganisationsDataIntoStaging([ActivityTrigger] IEnumerable<OfqualOrganisation> records)
         {
-            return await InsertDataIntoStagingTable(records, logger);
+            return await InsertDataIntoStagingTable(records);
         }
     }
 }

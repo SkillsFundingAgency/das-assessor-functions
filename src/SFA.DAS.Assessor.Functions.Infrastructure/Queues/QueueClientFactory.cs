@@ -22,7 +22,7 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure.Queues
 
             return _queueClients.GetOrAdd(queueName, name =>
             {
-                var queueClient = new QueueClient(_connectionString, name);
+                var queueClient = new QueueClient(_connectionString, name, new QueueClientOptions { MessageEncoding = QueueMessageEncoding.Base64});
                 queueClient.CreateIfNotExists(); 
                 return queueClient;
             });

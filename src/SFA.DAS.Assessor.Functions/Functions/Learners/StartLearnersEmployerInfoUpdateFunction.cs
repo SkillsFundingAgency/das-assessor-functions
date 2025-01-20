@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 using Microsoft.Azure.Functions.Worker;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners

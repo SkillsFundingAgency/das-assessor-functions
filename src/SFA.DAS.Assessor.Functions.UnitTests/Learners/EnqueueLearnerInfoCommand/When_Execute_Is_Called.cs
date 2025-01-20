@@ -155,7 +155,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
         public void VerifyMessageAddedToStorageQueue(UpdateLearnersInfoMessage message)
         {
-            _mockQueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.UpdateLearnersInfo, It.Is<UpdateLearnersInfoMessage>(m => MessageEquals(m, message))));
+            _mockQueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.UpdateLearnersInfo, It.Is<UpdateLearnersInfoMessage>(m => m.Equals(message))));
         }
 
         public void VerifyNoCallToApprovalApi()

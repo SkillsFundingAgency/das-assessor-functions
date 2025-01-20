@@ -24,41 +24,33 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersC
 
             Domain.Ilrs.RefreshIlrsDequeueProvidersCommand sut = new Domain.Ilrs.RefreshIlrsDequeueProvidersCommand(refreshIlrsLearnerService.Object, queueServiceMock.Object);
 
-            JObject inputQueueMessage = new JObject
+            RefreshIlrsProviderMessage inputQueueMessage = new RefreshIlrsProviderMessage
             {
-                { "Source", "1920" },
-                { "Ukprn", "222222" },
-                { "LearnerPageNumber", pageNumber }
+                Source = "1920",
+                Ukprn = 222222,
+                LearnerPageNumber= pageNumber,
             };
 
-            JObject outputQueueMessage = new JObject
+            RefreshIlrsProviderMessage outputQueueMessage = new RefreshIlrsProviderMessage
             {
-                { "Source", "1920" },
-                { "Ukprn", "222222" },
-                { "LearnerPageNumber", pageNumber + 1 }
+                Source = "1920",
+                Ukprn = 222222,
+                LearnerPageNumber = pageNumber + 1,
             };
 
             refreshIlrsLearnerService.Setup(p => p.ProcessLearners(It.IsAny<RefreshIlrsProviderMessage>()))
-                .ReturnsAsync((RefreshIlrsProviderMessage message) => new RefreshIlrsProviderMessage 
-                { 
-                    Source = message.Source, 
-                    Ukprn = message.Ukprn, 
-                    LearnerPageNumber = message.LearnerPageNumber + 1 
+                .ReturnsAsync((RefreshIlrsProviderMessage message) => new RefreshIlrsProviderMessage
+                {
+                    Source = message.Source,
+                    Ukprn = message.Ukprn,
+                    LearnerPageNumber = message.LearnerPageNumber + 1
                 });
 
             // Act
-            await sut.Execute(inputQueueMessage.ToString());
+            await sut.Execute(JsonConvert.SerializeObject(inputQueueMessage));
 
             // Assert
-            queueServiceMock.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs,  It.Is<RefreshIlrsProviderMessage>(m => MessageEquals(JsonConvert.SerializeObject(m), outputQueueMessage.ToString()))));
-        }
-
-        private bool MessageEquals(string first, string second)
-        {
-            var firstMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(first);
-            var secondMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(second);
-
-            return firstMessage.Equals(secondMessage);
+            queueServiceMock.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs, It.Is<RefreshIlrsProviderMessage>(m => m.Equals(outputQueueMessage))));
         }
     }
 }

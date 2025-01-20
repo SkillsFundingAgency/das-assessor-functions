@@ -187,7 +187,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
 
             public void VerifyProviderAddedToStorageQueue(RefreshIlrsProviderMessage provider)
             {
-                QueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs,  It.Is<RefreshIlrsProviderMessage>(m => m.Equals(provider))));
+                QueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs, It.Is<RefreshIlrsProviderMessage>(m => m.Equals(provider))));
             }
 
             public void VerifyProcessProviderCalled()
