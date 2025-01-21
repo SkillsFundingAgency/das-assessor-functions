@@ -27,15 +27,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 _blobContainerClient.CreateIfNotExists();
                 _logger.LogInformation($"Blob container '{containerName}' ensured to exist.");
             }
-            catch (RequestFailedException ex) when (ex.Status == 409)
-            {
-                _logger.LogWarning($"Blob container '{containerName}' already exists. Details: {ex.Message}");
-                // Optionally, you can choose to ignore or handle this scenario differently.
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error while creating/accessing blob container '{containerName}'.");
-                throw; // Re-throw to ensure the error is propagated.
+                throw; 
             }
         }
 
@@ -70,13 +65,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
         {
             try
             {
-                string directoryName = GetBlobDirectoryName(path);
-                string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
-
                 _logger.LogDebug($"Uploading {path} to blob storage {ContainerName}");
 
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
+                BlobClient blobClient = _blobContainerClient.GetBlobClient(GetFullBlobName(path));
                 byte[] array = Encoding.UTF8.GetBytes(fileContents);
 
                 using (var stream = new MemoryStream(array))
@@ -99,13 +90,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 
             try
             {
-                string directoryName = GetBlobDirectoryName(path);
-                string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
-
                 _logger.LogDebug($"Downloading {path} from blob storage {_blobContainerClient.Name}");
 
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
+                BlobClient blobClient = _blobContainerClient.GetBlobClient(GetFullBlobName(path));
 
                 using (var memoryStream = new MemoryStream())
                 {
@@ -187,6 +174,13 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             return directoryName.EndsWith('/')
                 ? directoryName
                 : directoryName += '/';
+        }
+
+        private static string GetFullBlobName(string path)
+        {
+            string directoryName = GetBlobDirectoryName(path);
+            string blobName = GetBlobFileName(path);
+            return string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
         }
 
 

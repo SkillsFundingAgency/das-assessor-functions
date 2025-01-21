@@ -1,149 +1,149 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-  "parameters": {
-    "environmentName": {
-      "type": "string",
-      "metadata": {
-        "description": "Short name of the environment. Used for the reference of the environment in table storage"
-      }
+    "parameters": {
+        "environmentName": {
+            "type": "string",
+            "metadata": {
+                "description": "Short name of the environment. Used for the reference of the environment in table storage"
+            }
+        },
+        "resourceEnvironmentName": {
+            "type": "string",
+            "metadata": {
+                "description": "Short name of the environment. Used for the naming of azure resources"
+            }
+        },
+        "serviceName": {
+            "type": "string",
+            "metadata": {
+                "description": "Short name of the service. Used for the name of resources created"
+            }
+        },
+        "storageAccountAllowedIPs": {
+            "type": "array",
+            "metadata": {
+                "description": "Allowed IP's"
+            },
+            "defaultValue": []
+        },
+        "loggingRedisConnectionString": {
+            "type": "securestring"
+        },
+        "configurationStorageConnectionString": {
+            "type": "securestring"
+        },
+        "appServicePlanSize": {
+            "type": "string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "metadata": {
+                "description": "The app service plan size"
+            },
+            "defaultValue": "1"
+        },
+        "appServicePlanInstances": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of the app service plan instance"
+            },
+            "defaultValue": 2
+        },
+        "functionsExtensionVersion": {
+            "type": "string",
+            "defaultValue": "~4"
+        },
+        "sharedApimResourceGroup": {
+            "type": "string"
+        },
+        "sharedApimName": {
+            "type": "string"
+        },
+        "sharedEnvResourceGroup": {
+            "type": "string"
+        },
+        "sharedEnvVirtualNetworkName": {
+            "type": "string"
+        },
+        "subnetObject": {
+            "type": "object"
+        },
+        "subnetServiceEndpointList": {
+            "type": "array"
+        },
+        "subnetDelegations": {
+            "type": "array"
+        },
+        "storagePolicyRules": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "A list of management policy rules"
+            }
+        },
+        "sharedSQLServerName": {
+            "type": "string"
+        },
+        "utcNow": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "Used to datestamp resource names to ensure that a unique record is added to deployment history"
+            }
+        },
+        "workerAccessRestrictions": {
+            "type": "array"
+        },
+        "minimumTlsVersion": {
+            "type": "string",
+            "defaultValue": "TLS1_2"
+        },
+        "databaseMaintenanceTimerSchedule": {
+          "type": "string"
+        },
+        "rebuildExternalApiSandboxTimerSchedule": {
+          "type": "string"
+        },
+        "enqueueProvidersTimerSchedule": {
+          "type": "string"
+        },
+        "importLearnersTimerSchedule": {
+          "type": "string"
+        },
+        "ofqualImportTimerSchedule": {
+          "type": "string"
+        },
+        "ofsImportTimerSchedule": {
+          "type": "string"
+        },
+        "blobSasTokenGeneratorTimerSchedule": {
+          "type": "string"
+        },
+        "blobStorageSamplesTimerSchedule": {
+          "type": "string"
+        },
+        "certificateDeliveryNotificationTimerSchedule": {
+          "type": "string"
+        },
+        "certificatePrintRequestTimerSchedule": {
+          "type": "string"
+        },
+        "certificatePrintResponseTimerSchedule": {
+          "type": "string"
+        },
+        "refreshProvidersTimerSchedule": {
+          "type": "string"
+        },
+        "standardImportTimerSchedule": {
+          "type": "string"
+        },
+        "standardSummaryUpdateTimerSchedule": {
+          "type": "string"
+        }
     },
-    "resourceEnvironmentName": {
-      "type": "string",
-      "metadata": {
-        "description": "Short name of the environment. Used for the naming of azure resources"
-      }
-    },
-    "serviceName": {
-      "type": "string",
-      "metadata": {
-        "description": "Short name of the service. Used for the name of resources created"
-      }
-    },
-    "storageAccountAllowedIPs": {
-      "type": "array",
-      "metadata": {
-        "description": "Allowed IP's"
-      },
-      "defaultValue": []
-    },
-    "loggingRedisConnectionString": {
-      "type": "securestring"
-    },
-    "configurationStorageConnectionString": {
-      "type": "securestring"
-    },
-    "appServicePlanSize": {
-      "type": "string",
-      "allowedValues": [
-        "1",
-        "2",
-        "3"
-      ],
-      "metadata": {
-        "description": "The app service plan size"
-      },
-      "defaultValue": "1"
-    },
-    "appServicePlanInstances": {
-      "type": "int",
-      "metadata": {
-        "description": "Number of the app service plan instance"
-      },
-      "defaultValue": 2
-    },
-    "functionsExtensionVersion": {
-      "type": "string",
-      "defaultValue": "~4"
-    },
-    "sharedApimResourceGroup": {
-      "type": "string"
-    },
-    "sharedApimName": {
-      "type": "string"
-    },
-    "sharedEnvResourceGroup": {
-      "type": "string"
-    },
-    "sharedEnvVirtualNetworkName": {
-      "type": "string"
-    },
-    "subnetObject": {
-      "type": "object"
-    },
-    "subnetServiceEndpointList": {
-      "type": "array"
-    },
-    "subnetDelegations": {
-      "type": "array"
-    },
-    "storagePolicyRules": {
-      "type": "array",
-      "defaultValue": [],
-      "metadata": {
-        "description": "A list of management policy rules"
-      }
-    },
-    "sharedSQLServerName": {
-      "type": "string"
-    },
-    "utcNow": {
-      "type": "string",
-      "defaultValue": "[utcNow()]",
-      "metadata": {
-        "description": "Used to datestamp resource names to ensure that a unique record is added to deployment history"
-      }
-    },
-    "workerAccessRestrictions": {
-      "type": "array"
-    },
-    "minimumTlsVersion": {
-      "type": "string",
-      "defaultValue": "TLS1_2"
-    },
-    "databaseMaintenanceTimerSchedule": {
-      "type": "string"
-    },
-    "rebuildExternalApiSandboxTimerSchedule": {
-      "type": "string"
-    },
-    "enqueueProvidersTimerSchedule": {
-      "type": "string"
-    },
-    "importLearnersTimerSchedule": {
-      "type": "string"
-    },
-    "ofqualImportTimerSchedule": {
-      "type": "string"
-    },
-    "ofsImportTimerSchedule": {
-      "type": "string"
-    },
-    "blobSasTokenGeneratorTimerSchedule": {
-      "type": "string"
-    },
-    "blobStorageSamplesTimerSchedule": {
-      "type": "string"
-    },
-    "certificateDeliveryNotificationTimerSchedule": {
-      "type": "string"
-    },
-    "certificatePrintRequestTimerSchedule": {
-      "type": "string"
-    },
-    "certificatePrintResponseTimerSchedule": {
-      "type": "string"
-    },
-    "refreshProvidersTimerSchedule": {
-      "type": "string"
-    },
-    "standardImportTimerSchedule": {
-      "type": "string"
-    },
-    "standardSummaryUpdateTimerSchedule": {
-      "type": "string"
-    }
-  },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
@@ -301,102 +301,100 @@
                     },
                     "functionAppAppSettings": {
                         "value": {
-                          "array": [
-                            {
-                              "name": "AzureWebJobsStorage",
-                              "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
-                            },
-                            {
-                              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                              "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))).outputs.InstrumentationKey.value]"
-                            },
-                            {
-                              "name": "FUNCTIONS_EXTENSION_VERSION",
-                              "value": "[parameters('functionsExtensionVersion')]"
-                            },
-                            {
-                              "name": "EnvironmentName",
-                              "value": "[toUpper(parameters('environmentName'))]"
-                            },
-                            {
-                              "name": "LoggingRedisConnectionString",
-                              "value": "[parameters('loggingRedisConnectionString')]"
-                            },
-                            {
-                              "name": "ConfigurationStorageConnectionString",
-                              "value": "[parameters('configurationStorageConnectionString')]"
-                            },
-                            {
-                              "name": "AppName",
-                              "value": "das-assessor-functions"
-                            },
-                            {
-                              "name": "FUNCTIONS_WORKER_RUNTIME",
-                              "value": "dotnet"
-                            },
-                            {
-                              "name": "WEBSITE_RUN_FROM_PACKAGE",
-                              "value": "1"
-                            },
-                            {
-                              "name": "DatabaseMaintenanceTimerSchedule",
-                              "value": "[parameters('databaseMaintenanceTimerSchedule')]"
-                            },
-                            {
-                              "name": "RebuildExternalApiSandboxTimerSchedule",
-                              "value": "[parameters('rebuildExternalApiSandboxTimerSchedule')]"
-                            },
-                            {
-                              "name": "EnqueueProvidersTimerSchedule",
-                              "value": "[parameters('enqueueProvidersTimerSchedule')]"
-                            },
-                            {
-                              "name": "ImportLearnersTimerSchedule",
-                              "value": "[parameters('importLearnersTimerSchedule')]"
-                            },
-                            {
-                              "name": "OfqualImportTimerSchedule",
-                              "value": "[parameters('ofqualImportTimerSchedule')]"
-                            },
-                            {
-                              "name": "OfsImportTimerSchedule",
-                              "value": "[parameters('ofsImportTimerSchedule')]"
-                            },
-
-                            {
-                              "name": "BlobSasTokenGeneratorTimerSchedule",
-                              "value": "[parameters('blobSasTokenGeneratorTimerSchedule')]"
-                            },
-                            {
-                              "name": "BlobStorageSamplesTimerSchedule",
-                              "value": "[parameters('blobStorageSamplesTimerSchedule')]"
-                            },
-                            {
-                              "name": "CertificateDeliveryNotificationTimerSchedule",
-                              "value": "[parameters('certificateDeliveryNotificationTimerSchedule')]"
-                            },
-                            {
-                              "name": "CertificatePrintRequestTimerSchedule",
-                              "value": "[parameters('certificatePrintRequestTimerSchedule')]"
-                            },
-
-                            {
-                              "name": "CertificatePrintResponseTimerSchedule",
-                              "value": "[parameters('certificatePrintResponseTimerSchedule')]"
-                            },
-                            {
-                              "name": "RefreshProvidersTimerSchedule",
-                              "value": "[parameters('refreshProvidersTimerSchedule')]"
-                            },
-                            {
-                              "name": "StandardImportTimerSchedule",
-                              "value": "[parameters('standardImportTimerSchedule')]"
-                            },
-                            {
-                              "name": "StandardSummaryUpdateTimerSchedule",
-                              "value": "[parameters('standardSummaryUpdateTimerSchedule')]"
-                            }
-                          ]
+                            "array": [
+                                {
+                                    "name": "AzureWebJobsStorage",
+                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
+                                },
+                                {
+                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))).outputs.InstrumentationKey.value]"
+                                },
+                                {
+                                    "name": "FUNCTIONS_EXTENSION_VERSION",
+                                    "value": "[parameters('functionsExtensionVersion')]"
+                                },
+                                {
+                                    "name": "EnvironmentName",
+                                    "value": "[toUpper(parameters('environmentName'))]"
+                                },
+                                {
+                                    "name": "LoggingRedisConnectionString",
+                                    "value": "[parameters('loggingRedisConnectionString')]"
+                                },
+                                {
+                                    "name": "ConfigurationStorageConnectionString",
+                                    "value": "[parameters('configurationStorageConnectionString')]"
+                                },
+                                {
+                                    "name": "AppName",
+                                    "value": "das-assessor-functions"
+                                },
+                                {
+                                    "name": "FUNCTIONS_WORKER_RUNTIME",
+                                    "value": "dotnet"
+                                },
+                                {
+                                    "name": "WEBSITE_RUN_FROM_PACKAGE",
+                                    "value": "1"
+                                },
+                                {
+                                  "name": "DatabaseMaintenanceTimerSchedule",
+                                  "value": "[parameters('databaseMaintenanceTimerSchedule')]"
+                                },
+                                {
+                                  "name": "RebuildExternalApiSandboxTimerSchedule",
+                                  "value": "[parameters('rebuildExternalApiSandboxTimerSchedule')]"
+                                },
+                                {
+                                  "name": "EnqueueProvidersTimerSchedule",
+                                  "value": "[parameters('enqueueProvidersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "ImportLearnersTimerSchedule",
+                                  "value": "[parameters('importLearnersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "OfqualImportTimerSchedule",
+                                  "value": "[parameters('ofqualImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "OfsImportTimerSchedule",
+                                  "value": "[parameters('ofsImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "BlobSasTokenGeneratorTimerSchedule",
+                                  "value": "[parameters('blobSasTokenGeneratorTimerSchedule')]"
+                                },
+                                {
+                                  "name": "BlobStorageSamplesTimerSchedule",
+                                  "value": "[parameters('blobStorageSamplesTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificateDeliveryNotificationTimerSchedule",
+                                  "value": "[parameters('certificateDeliveryNotificationTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificatePrintRequestTimerSchedule",
+                                  "value": "[parameters('certificatePrintRequestTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificatePrintResponseTimerSchedule",
+                                  "value": "[parameters('certificatePrintResponseTimerSchedule')]"
+                                },
+                                {
+                                  "name": "RefreshProvidersTimerSchedule",
+                                  "value": "[parameters('refreshProvidersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "StandardImportTimerSchedule",
+                                  "value": "[parameters('standardImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "StandardSummaryUpdateTimerSchedule",
+                                  "value": "[parameters('standardSummaryUpdateTimerSchedule')]"
+                                }
+                            ]
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "SFA.DAS.RequestApprenticeTraining.Jobs": {
+    "SFA.DAS.Assessor.Functions": {
       "commandName": "Project",
       "commandLineArgs": "--port 8081"
     }
