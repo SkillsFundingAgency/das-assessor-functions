@@ -51,8 +51,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
 
             // Assert
             _mockCommand.Verify(p => p.Execute(), Times.Once());
-            //_mockCollector.Verify(p => p.Add(It.IsAny<CertificatePrintStatusUpdateMessage>()), Times.Exactly(certificatesReadyToPrint));
-            //TODO: move check to  command
         }
     }
 }

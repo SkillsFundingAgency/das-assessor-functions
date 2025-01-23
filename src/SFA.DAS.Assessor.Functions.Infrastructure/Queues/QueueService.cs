@@ -38,7 +38,7 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure.Queues
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to enqueue message to queue '{queueName}'.");
-                throw; // Re-throw to allow higher-level handling if necessary
+                throw; 
             }
         }
     }

@@ -29,7 +29,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateFunction
         {
             var message = new CertificatePrintStatusUpdateMessage();
 
-            // Act - TimerSchedule is not used so null allowed
+            // Act 
             await _sut.Run(message);
 
             // Assert
