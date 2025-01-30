@@ -5,18 +5,136 @@ trigger:
       - "master"
 
 variables:
-  - name: buildConfiguration
-    value: 'release'
+- group: Release Management Resources
+- group: RELEASE das-assessor-functions
+- name: SolutionBaseName
+  value: SFA.DAS.Assessor.Functions
+- name: BuildConfiguration
+  value: release
+- name: BuildPlatform
+  value: any cpu
 
 resources:
   repositories:
+  - repository: self
   - repository: das-platform-building-blocks
     type: github
     name: SkillsFundingAgency/das-platform-building-blocks
-    ref: refs/tags/2.1.28
+    ref: refs/tags/2.2.20
     endpoint: SkillsFundingAgency
+  - repository: das-platform-automation
+    type: github
+    name: SkillsFundingAgency/das-platform-automation
+    ref: refs/tags/5.1.15
+    endpoint: SkillsFundingAgency
+  pipelines:
+  - pipeline: das-employer-config
+    project: Digital Apprenticeship Service
+    source: das-employer-config
+    branch: master
 
 stages:
 - stage: Build
   jobs:
   - template: pipeline-templates/job/code-build.yml
+    parameters:
+      SolutionBaseName: $(SolutionBaseName)
+      BuildConfiguration: $(BuildConfiguration)
+
+- stage: Deploy_AT
+  dependsOn: Build
+  displayName: Deploy to AT
+  variables:
+  - group: DevTest Management Resources
+  - group: AT DevTest Shared Resources
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: AT
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      SolutionBaseName: $(SolutionBaseName)
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
+
+- stage: Deploy_TEST
+  dependsOn: Build
+  displayName: Deploy to TEST
+  variables:
+  - group: DevTest Management Resources
+  - group: TEST DevTest Shared Resources
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: TEST
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      SolutionBaseName: $(SolutionBaseName)
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
+
+- stage: Deploy_TEST2
+  dependsOn: Build
+  displayName: Deploy to TEST2
+  variables:
+  - group: DevTest Management Resources
+  - group: TEST2 DevTest Shared Resources
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: TEST2
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      SolutionBaseName: $(SolutionBaseName)
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
+
+- stage: Deploy_DEMO
+  dependsOn: Build
+  displayName: Deploy to DEMO
+  variables:
+  - group: DevTest Management Resources
+  - group: DEMO DevTest Shared Resources
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: DEMO
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      SolutionBaseName: $(SolutionBaseName)
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS      
+
+- stage: Deploy_PP
+  dependsOn: Build
+  displayName: Deploy to PP
+  variables:
+  - group: PREPROD Management Resources
+  - group: PREPROD Shared Resources
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: PP
+      ServiceConnection: SFA-DIG-PreProd-ARM
+      SolutionBaseName: $(SolutionBaseName)
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
+
+- stage: Deploy_MO
+  dependsOn: Build
+  displayName: Deploy to MO
+  variables:
+  - group: MO Management Resources
+  - group: MO Shared Resources
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: MO
+      ServiceConnection: SFA-DIG-PreProd-ARM
+      SolutionBaseName: $(SolutionBaseName)
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
+
+- stage: Deploy_PROD
+  dependsOn: Build
+  displayName: Deploy to PROD
+  variables:
+  - group: PROD Management Resources
+  - group: PROD Shared Resources
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: PROD
+      ServiceConnection: SFA-DIG-Prod-ARM
+      SolutionBaseName: $(SolutionBaseName)
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
