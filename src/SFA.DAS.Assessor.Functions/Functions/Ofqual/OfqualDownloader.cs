@@ -12,20 +12,23 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
         private readonly IOfqualDownloadsBlobFileTransferClient _blobFileTransferClient;
         private readonly HttpClient _httpClient;
         private readonly OfqualDataType _ofqualFileType;
+        private readonly ILogger<OfqualDownloader> _logger;
 
         protected OfqualDownloader(
             IOfqualDownloadsBlobFileTransferClient blobFileTransferClient,
             HttpClient httpClient,
-            OfqualDataType ofqualFileType)
+            OfqualDataType ofqualFileType,
+            ILogger<OfqualDownloader> logger)
         {
             _blobFileTransferClient = blobFileTransferClient;
             _httpClient = httpClient;
             _ofqualFileType = ofqualFileType;
+            _logger = logger;
         }
 
-        protected async Task<string> DownloadData(ILogger logger)
+        protected async Task<string> DownloadData()
         {
-            logger.LogInformation($"Downloading {_ofqualFileType} data from {_httpClient.BaseAddress}.");
+            _logger.LogInformation($"Downloading {_ofqualFileType} data from {_httpClient.BaseAddress}.");
 
             try
             {
@@ -33,24 +36,24 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
 
-                logger.LogInformation($"Finished downloading {_ofqualFileType} data.");
+                _logger.LogInformation($"Finished downloading {_ofqualFileType} data.");
 
-                return await SaveDownloadedFile(responseBody, logger);
+                return await SaveDownloadedFile(responseBody);
             }
             catch (HttpRequestException ex)
             {
-                logger.LogError(ex, $"Error: {ex.Message}");
+                _logger.LogError(ex, $"Error: {ex.Message}");
                 throw;
             }
         }
 
-        private async Task<string> SaveDownloadedFile(string content, ILogger logger)
+        private async Task<string> SaveDownloadedFile(string content)
         {
             string filename = OfqualDataFileName.CreateForFileType(_ofqualFileType);
             string filePath = $"Downloads/{filename}";
 
             await _blobFileTransferClient.UploadFile(content, filePath);
-            logger.LogInformation($"File saved at {filePath}");
+            _logger.LogInformation($"File saved at {filePath}");
 
             return filePath;
         }

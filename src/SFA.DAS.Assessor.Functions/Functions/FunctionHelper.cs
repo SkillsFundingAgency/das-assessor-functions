@@ -1,8 +1,5 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using SFA.DAS.Assessor.Functions.Domain.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions
 {

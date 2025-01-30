@@ -1,8 +1,6 @@
-using Microsoft.Azure.Cosmos.Table;
-
 namespace SFA.DAS.Assessor.Functions.Infrastructure
 {
-    public class ConfigurationItem : TableEntity
+    public class ConfigurationItem : ITableEntity
     {
         public string Data { get; set; }
     }

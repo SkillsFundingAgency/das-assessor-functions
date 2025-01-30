@@ -1,6 +1,6 @@
 ﻿using FizzWare.NBuilder;
 using FluentAssertions;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
@@ -15,7 +15,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
     {
         private Batch _batch;
         private UpdateBatchLogSentToPrinterRequest _request;
-        private Mock<ICollector<string>> _mockStorageQueue;
 
         [SetUp]
         public override void Arrange()
@@ -37,8 +36,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
                 FileUploadStartTime = _batch.FileUploadStartTime,
                 FileUploadEndTime = _batch.FileUploadEndTime,
             };
-
-            _mockStorageQueue = new Mock<ICollector<string>>();
         }
 
         [Test]

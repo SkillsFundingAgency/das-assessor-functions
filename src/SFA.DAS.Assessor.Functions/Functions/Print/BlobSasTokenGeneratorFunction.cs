@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using System;
@@ -9,31 +9,33 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
     public class BlobSasTokenGeneratorFunction
     {
         private readonly IBlobSasTokenGeneratorCommand _command;
+        private readonly ILogger<BlobSasTokenGeneratorFunction> _logger;
 
-        public BlobSasTokenGeneratorFunction(IBlobSasTokenGeneratorCommand command)
+        public BlobSasTokenGeneratorFunction(IBlobSasTokenGeneratorCommand command, ILogger<BlobSasTokenGeneratorFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
-        [FunctionName("BlobSasTokenGenerator")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:BlobSasTokenGeneratorOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
+        [Function("BlobSasTokenGenerator")]
+        public async Task Run([TimerTrigger("%BlobSasTokenGeneratorTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    log.LogInformation("BlobSasTokenGenerator has started later than scheduled");
+                    _logger.LogInformation("BlobSasTokenGenerator has started later than scheduled");
                 }
 
-                log.LogInformation($"BlobSasTokenGenerator started");
+                _logger.LogInformation($"BlobSasTokenGenerator started");
 
                 await _command.Execute();
 
-                log.LogInformation("BlobSasTokenGenerator finished");
+                _logger.LogInformation("BlobSasTokenGenerator finished");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "BlobSasTokenGenerator failed");
+                _logger.LogError(ex, "BlobSasTokenGenerator failed");
             }
         }
     }

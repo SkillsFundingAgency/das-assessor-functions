@@ -1,10 +1,12 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersCommand
@@ -18,48 +20,37 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsDequeueProvidersC
         {
             // Arrange
             Mock<IRefreshIlrsLearnerService> refreshIlrsLearnerService = new Mock<IRefreshIlrsLearnerService>();
-            Mock<ICollector<string>> storageQueue = new Mock<ICollector<string>>();
+            Mock<IQueueService> queueServiceMock = new Mock<IQueueService>();
 
-            Domain.Ilrs.RefreshIlrsDequeueProvidersCommand sut = new Domain.Ilrs.RefreshIlrsDequeueProvidersCommand(refreshIlrsLearnerService.Object)
+            Domain.Ilrs.RefreshIlrsDequeueProvidersCommand sut = new Domain.Ilrs.RefreshIlrsDequeueProvidersCommand(refreshIlrsLearnerService.Object, queueServiceMock.Object);
+
+            RefreshIlrsProviderMessage inputQueueMessage = new RefreshIlrsProviderMessage
             {
-                StorageQueue = storageQueue.Object
+                Source = "1920",
+                Ukprn = 222222,
+                LearnerPageNumber= pageNumber,
             };
 
-            JObject inputQueueMessage = new JObject
+            RefreshIlrsProviderMessage outputQueueMessage = new RefreshIlrsProviderMessage
             {
-                { "Source", "1920" },
-                { "Ukprn", "222222" },
-                { "LearnerPageNumber", pageNumber }
-            };
-
-            JObject outputQueueMessage = new JObject
-            {
-                { "Source", "1920" },
-                { "Ukprn", "222222" },
-                { "LearnerPageNumber", pageNumber + 1 }
+                Source = "1920",
+                Ukprn = 222222,
+                LearnerPageNumber = pageNumber + 1,
             };
 
             refreshIlrsLearnerService.Setup(p => p.ProcessLearners(It.IsAny<RefreshIlrsProviderMessage>()))
-                .ReturnsAsync((RefreshIlrsProviderMessage message) => new RefreshIlrsProviderMessage 
-                { 
-                    Source = message.Source, 
-                    Ukprn = message.Ukprn, 
-                    LearnerPageNumber = message.LearnerPageNumber + 1 
+                .ReturnsAsync((RefreshIlrsProviderMessage message) => new RefreshIlrsProviderMessage
+                {
+                    Source = message.Source,
+                    Ukprn = message.Ukprn,
+                    LearnerPageNumber = message.LearnerPageNumber + 1
                 });
 
             // Act
-            await sut.Execute(inputQueueMessage.ToString());
+            await sut.Execute(JsonConvert.SerializeObject(inputQueueMessage));
 
             // Assert
-            storageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, outputQueueMessage.ToString()))));
-        }
-
-        private bool MessageEquals(string first, string second)
-        {
-            var firstMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(first);
-            var secondMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(second);
-
-            return firstMessage.Equals(secondMessage);
+            queueServiceMock.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs, It.Is<RefreshIlrsProviderMessage>(m => m.Equals(outputQueueMessage))));
         }
     }
 }

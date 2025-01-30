@@ -100,6 +100,48 @@
         "minimumTlsVersion": {
             "type": "string",
             "defaultValue": "TLS1_2"
+        },
+        "databaseMaintenanceTimerSchedule": {
+          "type": "string"
+        },
+        "rebuildExternalApiSandboxTimerSchedule": {
+          "type": "string"
+        },
+        "enqueueProvidersTimerSchedule": {
+          "type": "string"
+        },
+        "importLearnersTimerSchedule": {
+          "type": "string"
+        },
+        "ofqualImportTimerSchedule": {
+          "type": "string"
+        },
+        "ofsImportTimerSchedule": {
+          "type": "string"
+        },
+        "blobSasTokenGeneratorTimerSchedule": {
+          "type": "string"
+        },
+        "blobStorageSamplesTimerSchedule": {
+          "type": "string"
+        },
+        "certificateDeliveryNotificationTimerSchedule": {
+          "type": "string"
+        },
+        "certificatePrintRequestTimerSchedule": {
+          "type": "string"
+        },
+        "certificatePrintResponseTimerSchedule": {
+          "type": "string"
+        },
+        "refreshProvidersTimerSchedule": {
+          "type": "string"
+        },
+        "standardImportTimerSchedule": {
+          "type": "string"
+        },
+        "standardSummaryUpdateTimerSchedule": {
+          "type": "string"
         }
     },
     "variables": {
@@ -295,6 +337,62 @@
                                 {
                                     "name": "WEBSITE_RUN_FROM_PACKAGE",
                                     "value": "1"
+                                },
+                                {
+                                  "name": "DatabaseMaintenanceTimerSchedule",
+                                  "value": "[parameters('databaseMaintenanceTimerSchedule')]"
+                                },
+                                {
+                                  "name": "RebuildExternalApiSandboxTimerSchedule",
+                                  "value": "[parameters('rebuildExternalApiSandboxTimerSchedule')]"
+                                },
+                                {
+                                  "name": "EnqueueProvidersTimerSchedule",
+                                  "value": "[parameters('enqueueProvidersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "ImportLearnersTimerSchedule",
+                                  "value": "[parameters('importLearnersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "OfqualImportTimerSchedule",
+                                  "value": "[parameters('ofqualImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "OfsImportTimerSchedule",
+                                  "value": "[parameters('ofsImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "BlobSasTokenGeneratorTimerSchedule",
+                                  "value": "[parameters('blobSasTokenGeneratorTimerSchedule')]"
+                                },
+                                {
+                                  "name": "BlobStorageSamplesTimerSchedule",
+                                  "value": "[parameters('blobStorageSamplesTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificateDeliveryNotificationTimerSchedule",
+                                  "value": "[parameters('certificateDeliveryNotificationTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificatePrintRequestTimerSchedule",
+                                  "value": "[parameters('certificatePrintRequestTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificatePrintResponseTimerSchedule",
+                                  "value": "[parameters('certificatePrintResponseTimerSchedule')]"
+                                },
+                                {
+                                  "name": "RefreshProvidersTimerSchedule",
+                                  "value": "[parameters('refreshProvidersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "StandardImportTimerSchedule",
+                                  "value": "[parameters('standardImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "StandardSummaryUpdateTimerSchedule",
+                                  "value": "[parameters('standardSummaryUpdateTimerSchedule')]"
                                 }
                             ]
                         }

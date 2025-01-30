@@ -1,44 +1,36 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
+using Microsoft.Azure.Functions.Worker;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
     public class EnqueueExternalApiLearnersEmployerInfoFunction
     {
         private readonly IEnqueueLearnerInfoCommand _command;
+        private readonly ILogger<EnqueueExternalApiLearnersEmployerInfoFunction> _logger;
 
-        public EnqueueExternalApiLearnersEmployerInfoFunction(IEnqueueLearnerInfoCommand command)
+        public EnqueueExternalApiLearnersEmployerInfoFunction(IEnqueueLearnerInfoCommand command, ILogger<EnqueueExternalApiLearnersEmployerInfoFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
-        [FunctionName("EnqueueExternalApiLearnersEmployerInfoFunction")]
-        public async Task Run([QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message,
-            [Queue(QueueNames.UpdateLearnersInfo)] IAsyncCollector<UpdateLearnersInfoMessage> updateLearnersQueue,
-            ILogger log)
+        [Function("EnqueueExternalApiLearnersEmployerInfoFunction")]
+        public async Task Run([QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message)
         {
             try
             {
-                log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has started.");
+                _logger.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has started.");
 
-                _command.StorageQueue = updateLearnersQueue;
                 await _command.Execute(message);
 
-                log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has finished.");
+                _logger.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has finished.");
             }
             catch (Exception ex)
             {
-                log.LogError(ex, $"EnqueueExternalApiLearnersEmployerInfo has failed.");
+                _logger.LogError(ex, $"EnqueueExternalApiLearnersEmployerInfo has failed.");
                 throw;
             }
         }

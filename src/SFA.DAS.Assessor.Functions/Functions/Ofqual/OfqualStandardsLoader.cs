@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Azure.Functions.Worker;
 using SFA.DAS.Assessor.Functions.Data;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
@@ -15,8 +12,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
             _assessorServiceRepository = assessorServiceRepository;
         }
 
-        [FunctionName(nameof(LoadStandards))]
-        public async Task<int> LoadStandards([ActivityTrigger] IDurableActivityContext unused, ILogger logger)
+        [Function(nameof(LoadStandards))]
+        public async Task<int> LoadStandards([ActivityTrigger] string unused)
         {
             return await _assessorServiceRepository.LoadOfqualStandards();
         }
