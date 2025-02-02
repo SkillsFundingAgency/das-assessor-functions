@@ -5,14 +5,17 @@ trigger:
       - "master"
 
 variables:
-- group: Release Management Resources
-- group: RELEASE das-assessor-functions
 - name: SolutionBaseName
   value: SFA.DAS.Assessor.Functions
 - name: BuildConfiguration
   value: release
 - name: BuildPlatform
   value: any cpu
+- group: RELEASE Management Resources
+- group: RELEASE das-assessor-functions
+- name: Deploy
+  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'Manual'), eq(variables['Build.Reason'], 'PullRequest'))]
+
 
 resources:
   repositories:
@@ -44,6 +47,7 @@ stages:
 - stage: Deploy_AT
   dependsOn: Build
   displayName: Deploy to AT
+  condition: and(succeeded(), eq(variables.Deploy, 'true'))
   variables:
   - group: DevTest Management Resources
   - group: AT DevTest Shared Resources
@@ -51,8 +55,8 @@ stages:
   - template: pipeline-templates/job/deploy.yml
     parameters:
       Environment: AT
-      ServiceConnection: SFA-DAS-DevTest-ARM
       SolutionBaseName: $(SolutionBaseName)
+      ServiceConnection: SFA-DAS-DevTest-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
 
 - stage: Deploy_TEST
@@ -65,8 +69,8 @@ stages:
   - template: pipeline-templates/job/deploy.yml
     parameters:
       Environment: TEST
-      ServiceConnection: SFA-DAS-DevTest-ARM
       SolutionBaseName: $(SolutionBaseName)
+      ServiceConnection: SFA-DAS-DevTest-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
 
 - stage: Deploy_TEST2
@@ -79,8 +83,8 @@ stages:
   - template: pipeline-templates/job/deploy.yml
     parameters:
       Environment: TEST2
-      ServiceConnection: SFA-DAS-DevTest-ARM
       SolutionBaseName: $(SolutionBaseName)
+      ServiceConnection: SFA-DAS-DevTest-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
 
 - stage: Deploy_DEMO
@@ -93,23 +97,23 @@ stages:
   - template: pipeline-templates/job/deploy.yml
     parameters:
       Environment: DEMO
-      ServiceConnection: SFA-DAS-DevTest-ARM
       SolutionBaseName: $(SolutionBaseName)
-      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS      
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
 
 - stage: Deploy_PP
   dependsOn: Build
   displayName: Deploy to PP
   variables:
-  - group: PREPROD Management Resources
-  - group: PREPROD Shared Resources
+  - group: PreProd Management Resources
+  - group: PreProd Shared Resources
   - group: PREPROD das-assessor-functions
   jobs:
   - template: pipeline-templates/job/deploy.yml
     parameters:
       Environment: PP
-      ServiceConnection: SFA-DIG-PreProd-ARM
       SolutionBaseName: $(SolutionBaseName)
+      ServiceConnection: SFA-DIG-PreProd-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
 
 - stage: Deploy_MO
@@ -123,8 +127,8 @@ stages:
   - template: pipeline-templates/job/deploy.yml
     parameters:
       Environment: MO
-      ServiceConnection: SFA-DIG-PreProd-ARM
       SolutionBaseName: $(SolutionBaseName)
+      ServiceConnection: SFA-ASM-ModelOffice-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
 
 - stage: Deploy_PROD
@@ -138,6 +142,6 @@ stages:
   - template: pipeline-templates/job/deploy.yml
     parameters:
       Environment: PROD
-      ServiceConnection: SFA-DIG-Prod-ARM
       SolutionBaseName: $(SolutionBaseName)
+      ServiceConnection: SFA-DIG-Prod-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
