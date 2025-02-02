@@ -52,6 +52,7 @@ jobs:
             TargetFileName: '*.schema.json'
             TableName: Configuration
             ConfigurationSecrets:
+              AssessorApimSubscriptionKey: $(AssessorApimSubscriptionKey)
               AzureWebJobsStorage: $(AzureWebJobsStorage)
               NServiceBusLicense: $(NServiceBusLicense)
               ServiceBusConnectionString: $(ServiceBusConnectionString)
