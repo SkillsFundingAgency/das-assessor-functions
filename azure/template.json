@@ -93,12 +93,9 @@
         "sharedSQLServerName": {
             "type": "string"
         },
-        "utcNow": {
-            "type": "string",
-            "defaultValue": "[utcNow()]",
-            "metadata": {
-                "description": "Used to datestamp resource names to ensure that a unique record is added to deployment history"
-            }
+        "utcValue": {
+           "type": "string",
+           "defaultValue": "[utcNow()]"
         },
         "workerAccessRestrictions": {
             "type": "array"
@@ -169,7 +166,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('functionAppName'), '-apim-subscription-key-', parameters('utcNow'))]",
+            "name": "[concat(variables('functionAppName'), '-apim-subscription-key-', parameters('utcValue'))]",
             "resourceGroup": "[parameters('sharedApimResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -193,7 +190,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(parameters('subnetObject').name, '-', parameters('utcNow'))]",
+            "name": "[concat(parameters('subnetObject').name, '-', parameters('utcValue'))]",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -226,7 +223,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(parameters('subnetObject').name, '-sql-firewall-rule-', parameters('utcNow'))]",
+            "name": "[concat(parameters('subnetObject').name, '-sql-firewall-rule-', parameters('utcValue'))]",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -240,14 +237,14 @@
                         "value": "[parameters('sharedSQLServerName')]"
                     },
                     "subnetResourceIdList": {
-                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value)]"
+                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcValue'))).outputs.SubnetResourceId.value)]"
                     }
                 }
             }
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]",
+            "name": "[concat(variables('appServicePlanName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -266,11 +263,14 @@
                         "value": "[parameters('appServicePlanInstances')]"
                     }
                 }
-            }
+            },
+            "dependsOn": [
+                "[variables('resourceGroupName')]"
+            ]
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))]",
+            "name": "[concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -286,12 +286,16 @@
                         "value": "[variables('functionAppName')]"
                     }
                 }
-            }
+            },
+            "dependsOn": [
+                "[variables('resourceGroupName')]"
+            ]
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('functionAppName'), '-', parameters('utcNow'))]",
+            "name": "[concat(variables('functionAppName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[variables('resourceGroupName')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -312,7 +316,7 @@
                         "value": "v6.0"
                     },
                     "subnetResourceId": {
-                        "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value]"
+                        "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcValue'))).outputs.SubnetResourceId.value]"
                     },
                     "ipSecurityRestrictions": {
                         "value": "[parameters('workerAccessRestrictions')]"
@@ -322,11 +326,11 @@
                             "array": [
                                 {
                                     "name": "AzureWebJobsStorage",
-                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
+                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
                                 },
                                 {
                                     "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))).outputs.InstrumentationKey.value]"
+                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.InstrumentationKey.value]"
                                 },
                                 {
                                     "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -418,12 +422,12 @@
                 }
             },
             "dependsOn": [
-                "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]"
+                "[concat(variables('appServicePlanName'), '-', parameters('utcValue'))]"
             ]
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]",
+            "name": "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -439,7 +443,7 @@
                         "value": "[parameters('storageAccountAllowedIPs')]"
                     },
                     "subnetResourceIdList": {
-                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value)]"
+                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcValue'))).outputs.SubnetResourceId.value)]"
                     },
                     "storageKind": {
                         "value": "StorageV2"
@@ -455,7 +459,7 @@
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('storageAccountName'), '-policies-', parameters('utcNow'))]",
+            "name": "[concat(variables('storageAccountName'), '-policies-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -473,7 +477,7 @@
                 }
             },
             "dependsOn": [
-                "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]"
+                "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]"
             ]
         }
     ],
@@ -484,7 +488,7 @@
         },
         "StorageAccountConnectionString": {
             "type": "string",
-            "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
+            "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
         }
     }
 }
