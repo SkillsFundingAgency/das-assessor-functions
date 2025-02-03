@@ -102,46 +102,46 @@
             "defaultValue": "TLS1_2"
         },
         "databaseMaintenanceTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "rebuildExternalApiSandboxTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "enqueueProvidersTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "importLearnersTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "ofqualImportTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "ofsImportTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "blobSasTokenGeneratorTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "blobStorageSamplesTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "certificateDeliveryNotificationTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "certificatePrintRequestTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "certificatePrintResponseTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "refreshProvidersTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "standardImportTimerSchedule": {
-          "type": "string"
+            "type": "string"
         },
         "standardSummaryUpdateTimerSchedule": {
-          "type": "string"
+            "type": "string"
         }
     },
     "variables": {
@@ -231,7 +231,6 @@
             "apiVersion": "2021-04-01",
             "name": "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
-            "location": "[resourceGroup().location]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -275,7 +274,6 @@
             "apiVersion": "2021-04-01",
             "name": "[concat(variables('functionAppName'), '-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
-            "location": "[resourceGroup().location]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -327,139 +325,12 @@
                                 {
                                     "name": "ConfigurationStorageConnectionString",
                                     "value": "[parameters('configurationStorageConnectionString')]"
-                                },
-                                {
-                                    "name": "AppName",
-                                    "value": "das-assessor-functions"
-                                },
-                                {
-                                    "name": "FUNCTIONS_WORKER_RUNTIME",
-                                    "value": "dotnet"
-                                },
-                                {
-                                    "name": "WEBSITE_RUN_FROM_PACKAGE",
-                                    "value": "1"
-                                },
-                                {
-                                  "name": "DatabaseMaintenanceTimerSchedule",
-                                  "value": "[parameters('databaseMaintenanceTimerSchedule')]"
-                                },
-                                {
-                                  "name": "RebuildExternalApiSandboxTimerSchedule",
-                                  "value": "[parameters('rebuildExternalApiSandboxTimerSchedule')]"
-                                },
-                                {
-                                  "name": "EnqueueProvidersTimerSchedule",
-                                  "value": "[parameters('enqueueProvidersTimerSchedule')]"
-                                },
-                                {
-                                  "name": "ImportLearnersTimerSchedule",
-                                  "value": "[parameters('importLearnersTimerSchedule')]"
-                                },
-                                {
-                                  "name": "OfqualImportTimerSchedule",
-                                  "value": "[parameters('ofqualImportTimerSchedule')]"
-                                },
-                                {
-                                  "name": "OfsImportTimerSchedule",
-                                  "value": "[parameters('ofsImportTimerSchedule')]"
-                                },
-                                {
-                                  "name": "BlobSasTokenGeneratorTimerSchedule",
-                                  "value": "[parameters('blobSasTokenGeneratorTimerSchedule')]"
-                                },
-                                {
-                                  "name": "BlobStorageSamplesTimerSchedule",
-                                  "value": "[parameters('blobStorageSamplesTimerSchedule')]"
-                                },
-                                {
-                                  "name": "CertificateDeliveryNotificationTimerSchedule",
-                                  "value": "[parameters('certificateDeliveryNotificationTimerSchedule')]"
-                                },
-                                {
-                                  "name": "CertificatePrintRequestTimerSchedule",
-                                  "value": "[parameters('certificatePrintRequestTimerSchedule')]"
-                                },
-                                {
-                                  "name": "CertificatePrintResponseTimerSchedule",
-                                  "value": "[parameters('certificatePrintResponseTimerSchedule')]"
-                                },
-                                {
-                                  "name": "RefreshProvidersTimerSchedule",
-                                  "value": "[parameters('refreshProvidersTimerSchedule')]"
-                                },
-                                {
-                                  "name": "StandardImportTimerSchedule",
-                                  "value": "[parameters('standardImportTimerSchedule')]"
-                                },
-                                {
-                                  "name": "StandardSummaryUpdateTimerSchedule",
-                                  "value": "[parameters('standardSummaryUpdateTimerSchedule')]"
                                 }
                             ]
                         }
                     }
                 }
-            },
-            "dependsOn": [
-                "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]"
-            ]
-        },
-        {
-            "apiVersion": "2021-04-01",
-            "name": "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]",
-            "type": "Microsoft.Resources/deployments",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "storageAccountName": {
-                        "value": "[variables('storageAccountName')]"
-                    },
-                    "allowedIpAddressesList": {
-                        "value": "[parameters('storageAccountAllowedIPs')]"
-                    },
-                    "subnetResourceIdList": {
-                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value)]"
-                    },
-                    "storageKind": {
-                        "value": "StorageV2"
-                    },
-                    "allowSharedKeyAccess": {
-                        "value": true
-                    },
-                    "minimumTlsVersion": {
-                        "value": "[parameters('minimumTlsVersion')]"
-                    }
-                }
             }
-        },
-        {
-            "apiVersion": "2021-04-01",
-            "name": "[concat(variables('storageAccountName'), '-policies-', parameters('utcNow'))]",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('deploymentUrlBase'),'storage-management-policy.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "storageAccountName": {
-                        "value": "[variables('storageAccountName')]"
-                    },
-                    "policyRules": {
-                        "value": "[parameters('storagePolicyRules')]"
-                    }
-                }
-            },
-            "dependsOn": [
-                "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]"
-            ]
         }
     ],
     "outputs": {
