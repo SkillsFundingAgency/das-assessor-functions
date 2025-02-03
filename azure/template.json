@@ -461,6 +461,10 @@
         }
     ],
     "outputs": {
+        "ResourceGroupName": {
+            "type": "string",
+            "value": "[variables('resourceGroupName')]"
+        },
         "FunctionAppName": {
             "type": "string",
             "value": "[variables('functionAppName')]"
