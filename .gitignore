@@ -282,3 +282,5 @@ src/SFA.DAS.AssessorService.Web.Specflow.Tests/Project/**/*.*
 # AppSetting environment files
 *.development.json
 local.settings.json
+/src/__azurite_db_blob_extent__.json
+/src/__azurite_db_blob__.json

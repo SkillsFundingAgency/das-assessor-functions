@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
@@ -11,29 +9,33 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
     public class PrintRequestFunction
     {
         private readonly IPrintRequestCommand _command;
+        private readonly ILogger<PrintRequestFunction> _logger;
 
-        public PrintRequestFunction(IPrintRequestCommand command)
+        public PrintRequestFunction(IPrintRequestCommand command, ILogger<PrintRequestFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
-        [FunctionName("CertificatePrintRequest")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:PrintCertificatesOptions:PrintRequestOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer,
-            [Queue(QueueNames.CertificatePrintStatusUpdate)] ICollector<CertificatePrintStatusUpdateMessage> storageQueue,
-            ILogger log)
+        [Function("CertificatePrintRequest")]
+        [QueueOutput(QueueNames.CertificatePrintStatusUpdate)]
+        public async Task<List<CertificatePrintStatusUpdateMessage>> Run(
+            [TimerTrigger("%CertificatePrintRequestTimerSchedule%", RunOnStartup = false)] TimerInfo myTimer)
         {
             try
             {
-                log.LogInformation("CertificatePrintRequest has started" + (myTimer.IsPastDue ? " later than scheduled" : string.Empty));
+                _logger.LogInformation("CertificatePrintRequest has started" + (myTimer.IsPastDue ? " later than scheduled" : string.Empty));
 
                 var printStatusUpdateMessages = await _command.Execute();
-                printStatusUpdateMessages?.ForEach(p => storageQueue.Add(p));
 
-                log.LogInformation("CertificatePrintRequest has finished");
+                _logger.LogInformation("CertificatePrintRequest has finished");
+
+                return printStatusUpdateMessages;
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "CertificatePrintRequest has failed");
+                _logger.LogError(ex, "CertificatePrintRequest has failed");
+                return new List<CertificatePrintStatusUpdateMessage>();
             }
         }
     }

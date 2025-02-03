@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using System.Threading.Tasks;
@@ -8,19 +8,21 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
     public class ImportExternalApiLearnersFunction
     {
         private readonly IImportLearnersCommand _command;
+        private readonly ILogger<ImportExternalApiLearnersFunction> _logger;
 
-        public ImportExternalApiLearnersFunction(IImportLearnersCommand command)
+        public ImportExternalApiLearnersFunction(IImportLearnersCommand command, ILogger<ImportExternalApiLearnersFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
-        [FunctionName("ImportLearners")]
-        public async Task Run([TimerTrigger("%FunctionsOptions:ImportLearnersOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer, ILogger log)
+        [Function("ImportLearners")]
+        public async Task Run([TimerTrigger("%ImportLearnersTimerSchedule%", RunOnStartup = false)] TimerInfo myTimer)
         {
             await FunctionHelper.Run("ImportLearners", async () => 
             { 
                 await _command.Execute(); 
-            }, myTimer, log);
+            }, myTimer, _logger);
         }
     }
 }
