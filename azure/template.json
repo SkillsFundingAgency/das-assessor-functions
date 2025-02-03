@@ -32,56 +32,26 @@
         "subnetObject": {
             "type": "object"
         },
-        "storageAccountAllowedIPs": {
-            "type": "array",
-            "defaultValue": []
-        },
-        "appServicePlanSize": {
-            "type": "string",
-            "allowedValues": [
-                "1",
-                "2",
-                "3"
-            ],
-            "defaultValue": "1"
-        },
-        "appServicePlanInstances": {
-            "type": "int",
-            "defaultValue": 2
-        },
-        "functionsExtensionVersion": {
-            "type": "string",
-            "defaultValue": "~4"
-        },
-        "sharedApimResourceGroup": {
-            "type": "string"
-        },
-        "sharedApimName": {
-            "type": "string"
-        },
         "subnetServiceEndpointList": {
             "type": "array"
         },
         "subnetDelegations": {
             "type": "array"
         },
-        "storagePolicyRules": {
-            "type": "array",
-            "defaultValue": []
+        "workerAccessRestrictions": {
+            "type": "array"
         },
-        "sharedSQLServerName": {
-            "type": "string"
+        "appServicePlanInstances": {
+            "type": "int",
+            "defaultValue": 2
+        },
+        "appServicePlanSize": {
+            "type": "string",
+            "defaultValue": "1"
         },
         "utcValue": {
             "type": "string",
             "defaultValue": "[utcNow()]"
-        },
-        "workerAccessRestrictions": {
-            "type": "array"
-        },
-        "minimumTlsVersion": {
-            "type": "string",
-            "defaultValue": "TLS1_2"
         },
         "databaseMaintenanceTimerSchedule": {
           "type": "string"
@@ -124,6 +94,31 @@
         },
         "standardSummaryUpdateTimerSchedule": {
           "type": "string"
+        },
+        "storageAccountAllowedIPs": {
+            "type": "array",
+            "defaultValue": []
+        },
+        "functionsExtensionVersion": {
+            "type": "string",
+            "defaultValue": "~4"
+        },
+        "sharedApimResourceGroup": {
+            "type": "string"
+        },
+        "sharedApimName": {
+            "type": "string"
+        },
+        "storagePolicyRules": {
+            "type": "array",
+            "defaultValue": []
+        },
+        "sharedSQLServerName": {
+            "type": "string"
+        },
+        "minimumTlsVersion": {
+            "type": "string",
+            "defaultValue": "TLS1_2"
         }
     },
     "variables": {
@@ -222,6 +217,7 @@
             "apiVersion": "2021-04-01",
             "name": "[concat(variables('appServicePlanName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[variables('resourceGroupName')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -436,6 +432,7 @@
             "apiVersion": "2021-04-01",
             "name": "[concat(variables('storageAccountName'), '-policies-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[variables('resourceGroupName')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
