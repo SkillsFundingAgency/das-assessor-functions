@@ -3,37 +3,53 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "environmentName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Short name of the environment. Used for the reference of the environment in table storage"
+            }
         },
         "resourceEnvironmentName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Short name of the environment. Used for the naming of azure resources"
+            }
         },
         "serviceName": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+                "description": "Short name of the service. Used for the name of resources created"
+            }
         },
         "storageAccountAllowedIPs": {
             "type": "array",
+            "metadata": {
+                "description": "Allowed IP's"
+            },
             "defaultValue": []
         },
         "loggingRedisConnectionString": {
             "type": "securestring"
-        },
-        "tags": {
-            "type": "object"
-        },
-        "resourceGroupLocation": {
-            "type": "string"
         },
         "configurationStorageConnectionString": {
             "type": "securestring"
         },
         "appServicePlanSize": {
             "type": "string",
-            "allowedValues": ["1", "2", "3"],
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "metadata": {
+                "description": "The app service plan size"
+            },
             "defaultValue": "1"
         },
         "appServicePlanInstances": {
             "type": "int",
+            "metadata": {
+                "description": "Number of the app service plan instance"
+            },
             "defaultValue": 2
         },
         "functionsExtensionVersion": {
@@ -63,14 +79,20 @@
         },
         "storagePolicyRules": {
             "type": "array",
-            "defaultValue": []
+            "defaultValue": [],
+            "metadata": {
+                "description": "A list of management policy rules"
+            }
         },
         "sharedSQLServerName": {
             "type": "string"
         },
-        "utcValue": {
+        "utcNow": {
             "type": "string",
-            "defaultValue": "[utcNow()]"
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "Used to datestamp resource names to ensure that a unique record is added to deployment history"
+            }
         },
         "workerAccessRestrictions": {
             "type": "array"
@@ -80,52 +102,51 @@
             "defaultValue": "TLS1_2"
         },
         "databaseMaintenanceTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "rebuildExternalApiSandboxTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "enqueueProvidersTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "importLearnersTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "ofqualImportTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "ofsImportTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "blobSasTokenGeneratorTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "blobStorageSamplesTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "certificateDeliveryNotificationTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "certificatePrintRequestTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "certificatePrintResponseTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "refreshProvidersTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "standardImportTimerSchedule": {
-            "type": "string"
+          "type": "string"
         },
         "standardSummaryUpdateTimerSchedule": {
-            "type": "string"
+          "type": "string"
         }
     },
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
-        "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'),'-asp')]",
         "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]",
         "storageAccountName": "[concat('das',toLower(parameters('resourceEnvironmentName')),parameters('serviceName'),'str')]"
@@ -133,15 +154,31 @@
     "resources": [
         {
             "apiVersion": "2021-04-01",
-            "name": "[variables('resourceGroupName')]",
-            "type": "Microsoft.Resources/resourceGroups",
-            "location": "[parameters('resourceGroupLocation')]",
-            "tags": "[parameters('tags')]",
-            "properties": {}
+            "name": "[concat(variables('functionAppName'), '-apim-subscription-key-', parameters('utcNow'))]",
+            "resourceGroup": "[parameters('sharedApimResourceGroup')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'apim/apim-subscription.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "apimName": {
+                        "value": "[parameters('sharedApimName')]"
+                    },
+                    "subscriptionName": {
+                        "value": "[variables('functionAppName')]"
+                    },
+                    "subscriptionScope": {
+                        "value": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('sharedApimResourceGroup'), '/providers/Microsoft.ApiManagement/service/', parameters('sharedApimName'), '/products/AssessorsOuterApi')]"
+                    }
+                }
+            }
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(parameters('subnetObject').name, '-', parameters('utcValue'))]",
+            "name": "[concat(parameters('subnetObject').name, '-', parameters('utcNow'))]",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -167,14 +204,11 @@
                         "value": "[parameters('subnetDelegations')]"
                     }
                 }
-            },
-            "dependsOn": [
-                "[variables('resourceGroupName')]"
-            ]
+            }
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(parameters('subnetObject').name, '-sql-firewall-rule-', parameters('utcValue'))]",
+            "name": "[concat(parameters('subnetObject').name, '-sql-firewall-rule-', parameters('utcNow'))]",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -188,76 +222,16 @@
                         "value": "[parameters('sharedSQLServerName')]"
                     },
                     "subnetResourceIdList": {
-                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcValue'))).outputs.SubnetResourceId.value)]"
+                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value)]"
                     }
                 }
-            },
-            "dependsOn": [
-                "[concat(parameters('subnetObject').name, '-', parameters('utcValue'))]"
-            ]
+            }
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]",
+            "name": "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "storageAccountName": {
-                        "value": "[variables('storageAccountName')]"
-                    },
-                    "allowedIpAddressesList": {
-                        "value": "[parameters('storageAccountAllowedIPs')]"
-                    },
-                    "subnetResourceIdList": {
-                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcValue'))).outputs.SubnetResourceId.value)]"
-                    },
-                    "storageKind": {
-                        "value": "StorageV2"
-                    },
-                    "allowSharedKeyAccess": {
-                        "value": true
-                    },
-                    "minimumTlsVersion": {
-                        "value": "[parameters('minimumTlsVersion')]"
-                    }
-                }
-            },
-            "dependsOn": [
-                "[concat(parameters('subnetObject').name, '-', parameters('utcValue'))]"
-            ]
-        },
-        {
-            "apiVersion": "2021-04-01",
-            "name": "[concat(variables('storageAccountName'), '-policies-', parameters('utcValue'))]",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('deploymentUrlBase'),'storage-management-policy.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "storageAccountName": {
-                        "value": "[variables('storageAccountName')]"
-                    },
-                    "policyRules": {
-                        "value": "[parameters('storagePolicyRules')]"
-                    }
-                }
-            },
-            "dependsOn": [
-                "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]"
-            ]
-        },
-        {
-            "apiVersion": "2021-04-01",
-            "name": "[concat(variables('appServicePlanName'), '-', parameters('utcValue'))]",
-            "type": "Microsoft.Resources/deployments",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -275,14 +249,11 @@
                         "value": "[parameters('appServicePlanInstances')]"
                     }
                 }
-            },
-            "dependsOn": [
-                "[variables('resourceGroupName')]"
-            ]
+            }
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))]",
+            "name": "[concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -298,16 +269,13 @@
                         "value": "[variables('functionAppName')]"
                     }
                 }
-            },
-            "dependsOn": [
-                "[variables('resourceGroupName')]"
-            ]
+            }
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('functionAppName'), '-', parameters('utcValue'))]",
+            "name": "[concat(variables('functionAppName'), '-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[variables('resourceGroupName')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -328,7 +296,7 @@
                         "value": "v6.0"
                     },
                     "subnetResourceId": {
-                        "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcValue'))).outputs.SubnetResourceId.value]"
+                        "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value]"
                     },
                     "ipSecurityRestrictions": {
                         "value": "[parameters('workerAccessRestrictions')]"
@@ -338,11 +306,11 @@
                             "array": [
                                 {
                                     "name": "AzureWebJobsStorage",
-                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
+                                    "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
                                 },
                                 {
                                     "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.InstrumentationKey.value]"
+                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))).outputs.InstrumentationKey.value]"
                                 },
                                 {
                                     "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -434,37 +402,63 @@
                 }
             },
             "dependsOn": [
-                "[variables('resourceGroupName')]",
-                "[concat(variables('appServicePlanName'), '-', parameters('utcValue'))]",
-                "[concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))]",
-                "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]"
+                "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]"
             ]
         },
         {
             "apiVersion": "2021-04-01",
-            "name": "[concat(variables('functionAppName'), '-apim-subscription-key-', parameters('utcValue'))]",
-            "resourceGroup": "[parameters('sharedApimResourceGroup')]",
+            "name": "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-account-arm.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
+                    },
+                    "allowedIpAddressesList": {
+                        "value": "[parameters('storageAccountAllowedIPs')]"
+                    },
+                    "subnetResourceIdList": {
+                        "value": "[createArray(reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value)]"
+                    },
+                    "storageKind": {
+                        "value": "StorageV2"
+                    },
+                    "allowSharedKeyAccess": {
+                        "value": true
+                    },
+                    "minimumTlsVersion": {
+                        "value": "[parameters('minimumTlsVersion')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2021-04-01",
+            "name": "[concat(variables('storageAccountName'), '-policies-', parameters('utcNow'))]",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(variables('deploymentUrlBase'),'apim/apim-subscription.json')]",
+                    "uri": "[concat(variables('deploymentUrlBase'),'storage-management-policy.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
-                    "apimName": {
-                        "value": "[parameters('sharedApimName')]"
+                    "storageAccountName": {
+                        "value": "[variables('storageAccountName')]"
                     },
-                    "subscriptionName": {
-                        "value": "[variables('functionAppName')]"
-                    },
-                    "subscriptionScope": {
-                        "value": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('sharedApimResourceGroup'), '/providers/Microsoft.ApiManagement/service/', parameters('sharedApimName'), '/products/AssessorsOuterApi')]"
+                    "policyRules": {
+                        "value": "[parameters('storagePolicyRules')]"
                     }
                 }
             },
             "dependsOn": [
-                "[concat(variables('functionAppName'), '-', parameters('utcValue'))]"
+                "[concat(variables('storageAccountName'), '-', parameters('utcNow'))]"
             ]
         }
     ],
@@ -475,7 +469,7 @@
         },
         "StorageAccountConnectionString": {
             "type": "string",
-            "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
+            "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
         }
     }
 }
