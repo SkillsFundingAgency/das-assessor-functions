@@ -403,6 +403,7 @@
             "apiVersion": "2021-04-01",
             "name": "[concat(variables('storageAccountName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[variables('resourceGroupName')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -429,7 +430,10 @@
                         "value": "[parameters('minimumTlsVersion')]"
                     }
                 }
-            }
+            },
+            "dependsOn": [
+                "[variables('resourceGroupName')]"
+            ]
         },
         {
             "apiVersion": "2021-04-01",
