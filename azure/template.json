@@ -268,8 +268,8 @@
                                     "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
                                 },
                                 {
-                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.InstrumentationKey.value]"
+                                    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.ConnectionString.value]"
                                 },
                                 {
                                     "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -285,7 +285,7 @@
                                 },
                                 {
                                     "name": "FUNCTIONS_WORKER_RUNTIME",
-                                    "value": "dotnet"
+                                    "value": "dotnet-isolated"
                                 },
                                 {
                                     "name": "WEBSITE_RUN_FROM_PACKAGE",
