@@ -16,7 +16,6 @@ variables:
 - name: Deploy
   value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'Manual'), eq(variables['Build.Reason'], 'PullRequest'))]
 
-
 resources:
   repositories:
   - repository: self
@@ -87,20 +86,6 @@ stages:
       ServiceConnection: SFA-DAS-DevTest-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
 
-- stage: Deploy_DEMO
-  dependsOn: Build
-  displayName: Deploy to DEMO
-  variables:
-  - group: DevTest Management Resources
-  - group: DEMO DevTest Shared Resources
-  jobs:
-  - template: pipeline-templates/job/deploy.yml
-    parameters:
-      Environment: DEMO
-      SolutionBaseName: $(SolutionBaseName)
-      ServiceConnection: SFA-DAS-DevTest-ARM
-      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
-
 - stage: Deploy_PP
   dependsOn: Build
   displayName: Deploy to PP
@@ -114,6 +99,21 @@ stages:
       Environment: PP
       SolutionBaseName: $(SolutionBaseName)
       ServiceConnection: SFA-DIG-PreProd-ARM
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
+
+- stage: Deploy_PROD
+  dependsOn: Build
+  displayName: Deploy to PROD
+  variables:
+  - group: PROD Management Resources
+  - group: PROD Shared Resources
+  - group: PROD das-assessor-functions
+  jobs:
+  - template: pipeline-templates/job/deploy.yml
+    parameters:
+      Environment: PROD
+      SolutionBaseName: $(SolutionBaseName)
+      ServiceConnection: SFA-DIG-Prod-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
 
 - stage: Deploy_MO
@@ -131,17 +131,16 @@ stages:
       ServiceConnection: SFA-ASM-ModelOffice-ARM
       AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
 
-- stage: Deploy_PROD
+- stage: Deploy_DEMO
   dependsOn: Build
-  displayName: Deploy to PROD
+  displayName: Deploy to DEMO
   variables:
-  - group: PROD Management Resources
-  - group: PROD Shared Resources
-  - group: PROD das-assessor-functions
+  - group: DevTest Management Resources
+  - group: DEMO DevTest Shared Resources
   jobs:
   - template: pipeline-templates/job/deploy.yml
     parameters:
-      Environment: PROD
+      Environment: DEMO
       SolutionBaseName: $(SolutionBaseName)
-      ServiceConnection: SFA-DIG-Prod-ARM
-      AppRoleAssignmentsServiceConnection: das-app-role-assignments-FCS
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      AppRoleAssignmentsServiceConnection: das-app-role-assignments-CDS
