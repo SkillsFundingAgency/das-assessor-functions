@@ -6,10 +6,12 @@ jobs:
 - job: CodeBuild
   pool:
     name: DAS - Continuous Integration Agents
-    workspace:
-      clean: all
   variables:
+  - name: BuildConfiguration
+    value: release
   - group: BUILD Management Resources
+  workspace:
+    clean: all
   steps:
   - template: azure-pipelines-templates/build/step/gitversion.yml@das-platform-building-blocks
   - template: azure-pipelines-templates/build/step/app-build.yml@das-platform-building-blocks
@@ -23,18 +25,18 @@ jobs:
       command: publish
       publishWebProjects: false
       projects: src/${{ parameters.SolutionBaseName }}/${{ parameters.SolutionBaseName }}.csproj
-      arguments: -o $(build.artifactstagingdirectory)/publish -c ${{ parameters.BuildConfiguration }} --no-build
+      arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)/publish --no-restore --no-build'
 
   - task: CopyFiles@2
-    displayName: Copy Files to $(build.artifactstagingdirectory)/publish
+    displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
     inputs:
       Contents: |
         azure/**
       TargetFolder: $(build.artifactstagingdirectory)/publish
       OverWrite: true
 
-  - task: PublishPipelineArtifact@1
+  - task: PublishBuildArtifacts@1
     displayName: Publish Build Artifact
     inputs:
-      targetPath: $(build.artifactstagingdirectory)/publish
+      PathtoPublish: '$(build.artifactstagingdirectory)/publish'
       artifactName: ${{ parameters.SolutionBaseName }}
