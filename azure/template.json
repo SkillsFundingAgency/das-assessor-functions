@@ -260,6 +260,10 @@
                                     "value": "[toUpper(parameters('environmentName'))]"
                                 },
                                 {
+                                    "name": "ConfigNames",
+                                    "value": "SFA.DAS.AssessorFunctions"
+                                },
+                                {
                                     "name": "ConfigurationStorageConnectionString",
                                     "value": "[parameters('configurationStorageConnectionString')]"
                                 },

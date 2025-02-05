@@ -11,7 +11,11 @@ namespace SFA.DAS.Assessor.Functions.Extensions
         {
             builder
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("local.settings.json", optional: true);
+#if DEBUG
+                .AddJsonFile("local.settings.json", optional: true)
+#endif
+                .AddEnvironmentVariables();
+            
             var config = builder.Build();
 
             builder.AddAzureTableStorage(options =>
