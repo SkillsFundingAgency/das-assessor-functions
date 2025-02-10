@@ -33,6 +33,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
             {
                 _logger.LogInformation("EnqueueLearnerInfoCommand started");
 
+                _logger.LogInformation($"Batch message received  {batchMessage}");
+
                 var approvalBatchLearnersCommand = JsonConvert.DeserializeObject<ProcessApprovalBatchLearnersCommand>(batchMessage);
 
                 _logger.LogInformation($"Started processing approval batch  {approvalBatchLearnersCommand.BatchNumber}");
