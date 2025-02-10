@@ -23,6 +23,13 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             try
             {
                 _logger.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has started.");
+                _logger.LogDebug($"EnqueueExternalApiLearnersEmployerInfo triggered for MESSAGE = {message}");
+
+                if (string.IsNullOrEmpty(message))
+                {
+                    _logger.LogWarning("Received a null or empty message.");
+                    throw new ArgumentException("Message cannot be null or empty");
+                }
 
                 await _command.Execute(message);
 

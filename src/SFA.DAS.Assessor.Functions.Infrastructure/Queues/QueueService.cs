@@ -28,6 +28,8 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure.Queues
             try
             {
                 string messageJson = JsonConvert.SerializeObject(message);
+                _logger.LogInformation($"Message type to be added '{message.GetType().Name}'.");
+                _logger.LogInformation($"Serialised message '{messageJson}'.");
 
                 QueueClient queueClient = _queueClientFactory.GetQueueClient(queueName);
 
