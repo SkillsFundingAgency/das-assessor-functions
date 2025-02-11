@@ -41,7 +41,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
                 //1. Get all Learners From Approvals in batches
                 DateTime? extractStartTime = new DateTime(2000, 1, 1);
-                const int batchSize = 1000;
+                const int batchSize = 100;
                 int batchNumber = 0;
 
                 GetAllLearnersResponse learnersBatch = await _outerApiClient.Get<GetAllLearnersResponse>(new GetAllLearnersRequest(extractStartTime, batchNumber, batchSize));
