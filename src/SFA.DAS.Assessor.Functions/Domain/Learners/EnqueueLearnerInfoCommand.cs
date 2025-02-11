@@ -35,6 +35,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Learners
 
                 _logger.LogInformation($"Batch message received  {batchMessage}");
 
+                try
+                {
+                    var cmd = JsonConvert.DeserializeObject<ProcessApprovalBatchLearnersCommand>(batchMessage);
+                }
+                catch (Exception ex)
+                { 
+                    _logger.LogInformation($"Excepetion deserialising message {ex.Message}");
+                    throw new Exception("EnqueueLearnerInfoCommand deserialise error", ex);
+                }
+
+
                 var approvalBatchLearnersCommand = JsonConvert.DeserializeObject<ProcessApprovalBatchLearnersCommand>(batchMessage);
 
                 _logger.LogInformation($"Started processing approval batch  {approvalBatchLearnersCommand.BatchNumber}");
