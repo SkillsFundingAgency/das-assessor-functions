@@ -128,7 +128,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
         protected async Task<U> PostPutRequestWithResponse<T, U>(HttpRequestMessage requestMessage, T model)
         {
             var response = await PostPutRequestWithResponseInternal(requestMessage, model);
-            var json = await response?.Content?.ReadAsStringAsync();
+            var json = await (response?.Content?.ReadAsStringAsync() ?? Task.FromResult<string>(null));
 
             if (response?.StatusCode == HttpStatusCode.OK
                 || response?.StatusCode == HttpStatusCode.Created
