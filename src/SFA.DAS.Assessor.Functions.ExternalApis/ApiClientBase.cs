@@ -138,7 +138,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
                 throw new HttpRequestException("Response or Content is null");
             }
 
-            var json = await response.Content?.ReadAsStringAsync();
+            var json = await response.Content.ReadAsStringAsync();
 
             if (response?.StatusCode == HttpStatusCode.OK
                 || response?.StatusCode == HttpStatusCode.Created
