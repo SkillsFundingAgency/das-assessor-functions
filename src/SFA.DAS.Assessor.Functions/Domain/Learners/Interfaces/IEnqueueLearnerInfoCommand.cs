@@ -2,6 +2,6 @@
 {
     public interface IEnqueueLearnerInfoCommand
     {
-        Task Execute(string message);
+        Task Execute(string batchMessage);
     }
 }

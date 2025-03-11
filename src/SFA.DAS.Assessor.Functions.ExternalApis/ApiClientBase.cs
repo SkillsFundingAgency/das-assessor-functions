@@ -122,13 +122,23 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
         protected async Task<string> PostPutRequestWithResponse<T>(HttpRequestMessage requestMessage, T model)
         {
             var response = await PostPutRequestWithResponseInternal(requestMessage, model);
-            return await (response?.Content?.ReadAsStringAsync() ?? Task.FromResult<string>(null));
+            if (response == null || response.Content == null)
+            {
+                return null;
+            }
+            return await response.Content.ReadAsStringAsync();
         }
 
         protected async Task<U> PostPutRequestWithResponse<T, U>(HttpRequestMessage requestMessage, T model)
         {
             var response = await PostPutRequestWithResponseInternal(requestMessage, model);
-            var json = await (response?.Content?.ReadAsStringAsync() ?? Task.FromResult<string>(null));
+            if (response == null || response.Content == null)
+            {
+                _logger.LogInformation("HttpRequestException: Response or Content is null");
+                throw new HttpRequestException("Response or Content is null");
+            }
+
+            var json = await response.Content?.ReadAsStringAsync();
 
             if (response?.StatusCode == HttpStatusCode.OK
                 || response?.StatusCode == HttpStatusCode.Created
