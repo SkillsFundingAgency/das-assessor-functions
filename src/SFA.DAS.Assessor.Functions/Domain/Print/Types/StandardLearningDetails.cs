@@ -1,6 +1,6 @@
 ﻿namespace SFA.DAS.Assessor.Functions.Domain.Print.Types
 {
-    public class LearningDetails
+    public class StandardLearningDetails
     {
         public string StandardTitle { get; set; }
         public string Level { get; set; }

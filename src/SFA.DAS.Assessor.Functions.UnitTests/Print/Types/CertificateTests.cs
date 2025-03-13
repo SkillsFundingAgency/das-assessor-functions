@@ -1,6 +1,5 @@
 ﻿using System;
 using NUnit.Framework;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Types
@@ -11,34 +10,33 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Types
         public void FromCertificatePrintSummary_ReturnsNewCertificate_WithPropertiesOfSummary()
         {
             CertificatePrintSummary certificateSummary = GetCertificatePrintSummary();
-            Certificate certificate = Certificate.FromCertificatePrintSummary(certificateSummary);
 
             Assert.Multiple(() =>
             {
-                Assert.That(certificate.Uln, Is.EqualTo(certificateSummary.Uln));
-                Assert.That(certificate.StandardCode, Is.EqualTo(certificateSummary.StandardCode));
-                Assert.That(certificate.ProviderUkPrn, Is.EqualTo(certificateSummary.ProviderUkPrn));
-                Assert.That(certificate.EndPointAssessorOrganisationId, Is.EqualTo(certificateSummary.EndPointAssessorOrganisationId));
-                Assert.That(certificate.EndPointAssessorOrganisationName, Is.EqualTo(certificateSummary.EndPointAssessorOrganisationName));
-                Assert.That(certificate.CertificateReference, Is.EqualTo(certificateSummary.CertificateReference));
-                Assert.That(certificate.LearnerGivenNames, Is.EqualTo(certificateSummary.LearnerGivenNames));
-                Assert.That(certificate.LearnerFamilyName, Is.EqualTo(certificateSummary.LearnerFamilyName));
-                Assert.That(certificate.StandardName, Is.EqualTo(certificateSummary.StandardName));
-                Assert.That(certificate.StandardLevel, Is.EqualTo(certificateSummary.StandardLevel));
-                Assert.That(certificate.CoronationEmblem, Is.EqualTo(certificateSummary.CoronationEmblem));
-                Assert.That(certificate.ContactName, Is.EqualTo(certificateSummary.ContactName));
-                Assert.That(certificate.ContactOrganisation, Is.EqualTo(certificateSummary.ContactOrganisation));
-                Assert.That(certificate.ContactAddLine1, Is.EqualTo(certificateSummary.ContactAddLine1));
-                Assert.That(certificate.ContactAddLine2, Is.EqualTo(certificateSummary.ContactAddLine2));
-                Assert.That(certificate.ContactAddLine3, Is.EqualTo(certificateSummary.ContactAddLine3));
-                Assert.That(certificate.ContactAddLine4, Is.EqualTo(certificateSummary.ContactAddLine4));
-                Assert.That(certificate.ContactPostCode, Is.EqualTo(certificateSummary.ContactPostCode));
-                Assert.That(certificate.AchievementDate, Is.EqualTo(certificateSummary.AchievementDate));
-                Assert.That(certificate.CourseOption, Is.EqualTo(certificateSummary.CourseOption));
-                Assert.That(certificate.OverallGrade, Is.EqualTo(certificateSummary.OverallGrade));
-                Assert.That(certificate.Department, Is.EqualTo(certificateSummary.Department));
-                Assert.That(certificate.FullName, Is.EqualTo(certificateSummary.FullName));
-                Assert.That(certificate.Status, Is.EqualTo(certificateSummary.Status));
+                Assert.That(certificateSummary.Uln, Is.EqualTo(certificateSummary.Uln));
+                Assert.That(certificateSummary.StandardCode, Is.EqualTo(certificateSummary.StandardCode));
+                Assert.That(certificateSummary.ProviderUkPrn, Is.EqualTo(certificateSummary.ProviderUkPrn));
+                Assert.That(certificateSummary.EndPointAssessorOrganisationId, Is.EqualTo(certificateSummary.EndPointAssessorOrganisationId));
+                Assert.That(certificateSummary.EndPointAssessorOrganisationName, Is.EqualTo(certificateSummary.EndPointAssessorOrganisationName));
+                Assert.That(certificateSummary.CertificateReference, Is.EqualTo(certificateSummary.CertificateReference));
+                Assert.That(certificateSummary.LearnerGivenNames, Is.EqualTo(certificateSummary.LearnerGivenNames));
+                Assert.That(certificateSummary.LearnerFamilyName, Is.EqualTo(certificateSummary.LearnerFamilyName));
+                Assert.That(certificateSummary.StandardName, Is.EqualTo(certificateSummary.StandardName));
+                Assert.That(certificateSummary.StandardLevel, Is.EqualTo(certificateSummary.StandardLevel));
+                Assert.That(certificateSummary.CoronationEmblem, Is.EqualTo(certificateSummary.CoronationEmblem));
+                Assert.That(certificateSummary.ContactName, Is.EqualTo(certificateSummary.ContactName));
+                Assert.That(certificateSummary.ContactOrganisation, Is.EqualTo(certificateSummary.ContactOrganisation));
+                Assert.That(certificateSummary.ContactAddLine1, Is.EqualTo(certificateSummary.ContactAddLine1));
+                Assert.That(certificateSummary.ContactAddLine2, Is.EqualTo(certificateSummary.ContactAddLine2));
+                Assert.That(certificateSummary.ContactAddLine3, Is.EqualTo(certificateSummary.ContactAddLine3));
+                Assert.That(certificateSummary.ContactAddLine4, Is.EqualTo(certificateSummary.ContactAddLine4));
+                Assert.That(certificateSummary.ContactPostCode, Is.EqualTo(certificateSummary.ContactPostCode));
+                Assert.That(certificateSummary.AchievementDate, Is.EqualTo(certificateSummary.AchievementDate));
+                Assert.That(certificateSummary.CourseOption, Is.EqualTo(certificateSummary.CourseOption));
+                Assert.That(certificateSummary.OverallGrade, Is.EqualTo(certificateSummary.OverallGrade));
+                Assert.That(certificateSummary.Department, Is.EqualTo(certificateSummary.Department));
+                Assert.That(certificateSummary.FullName, Is.EqualTo(certificateSummary.FullName));
+                Assert.That(certificateSummary.Status, Is.EqualTo(certificateSummary.Status));
             });
         }
 

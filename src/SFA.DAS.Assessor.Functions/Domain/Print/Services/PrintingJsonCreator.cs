@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
@@ -19,20 +19,29 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _certificateDetails = options?.Value;
         }
 
-        public PrintOutput Create(int batchNumber, IEnumerable<Certificate> certificates)
+        public PrintOutput Create(int batchNumber, IEnumerable<CertificatePrintSummaryBase> certificates)
         {
             var printOutput = new PrintOutput
             {
                 Batch = new BatchData()
                 {
                     BatchNumber = batchNumber,
-                    BatchDate = DateTime.UtcNow
+                    BatchDate = DateTime.UtcNow,
+                    TotalCertificateCount = certificates.Count()
                 },
                 PrintData = new List<PrintData>()
             };
 
-            printOutput.Batch.TotalCertificateCount = certificates.Count();
+            var standardsPostalContactCount = AddStandardPrintOuput(printOutput, certificates.OfType<CertificatePrintSummary>());
+            var frameworksPostalContactCount = AddFrameworkPrintOuput(printOutput, certificates.OfType<FrameworkCertificatePrintSummary>());
 
+            printOutput.Batch.PostalContactCount = standardsPostalContactCount + frameworksPostalContactCount;
+
+            return printOutput;
+        }
+
+        private int AddStandardPrintOuput(PrintOutput printOutput, IEnumerable<CertificatePrintSummary> certificates)
+        {
             var groupedByRecipient = certificates.GroupBy(c =>
                 new
                 {
@@ -45,8 +54,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     c.ContactAddLine4,
                     c.ContactPostCode
                 }).ToList();
-
-            printOutput.Batch.PostalContactCount = groupedByRecipient.Count;
 
             groupedByRecipient.ForEach(g =>
             {
@@ -92,11 +99,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                         grade = c.OverallGrade;
                     }
 
-                    printData.Certificates.Add(new PrintCertificate
+                    printData.Certificates.Add(new StandardPrintCertificate
                     {
                         CertificateNumber = c.CertificateReference,
-                        ApprenticeName = $"{c.LearnerGivenNames} {c.LearnerFamilyName}",
-                        LearningDetails = new LearningDetails()
+                        ApprenticeName = learnerName,
+                        LearningDetails = new StandardLearningDetails()
                         {
                             StandardTitle = c.StandardName,
                             Level = $"LEVEL {c.StandardLevel}",
@@ -112,7 +119,70 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 printOutput.PrintData.Add(printData);
             });
 
-            return printOutput;
+            return groupedByRecipient.Count;
+        }
+
+        private int AddFrameworkPrintOuput(PrintOutput printOutput, IEnumerable<FrameworkCertificatePrintSummary> certificates)
+        {
+            var groupedByRecipient = certificates.GroupBy(c =>
+                new
+                {
+                    c.ContactName,
+                    c.ContactAddLine1,
+                    c.ContactAddLine2,
+                    c.ContactAddLine3,
+                    c.ContactAddLine4,
+                    c.ContactPostCode,
+                    Type = c.GetType()
+                }).ToList();
+
+            groupedByRecipient.ForEach(g =>
+            {
+                var contactName = string.Empty;
+                if (g.Key.ContactName != null)
+                    contactName = g.Key.ContactName.Replace("\t", " ");
+
+                var printData = new PrintData
+                {
+                    PostalContact = new PostalContact
+                    {
+                        Name = contactName,
+                        AddressLine1 = g.Key.ContactAddLine1,
+                        AddressLine2 = g.Key.ContactAddLine2,
+                        AddressLine3 = g.Key.ContactAddLine3,
+                        AddressLine4 = g.Key.ContactAddLine4,
+                        Postcode = g.Key.ContactPostCode,
+                        CertificateCount = g.Count()
+                    },
+                    CoverLetter = new CoverLetter
+                    {
+                        ChairName = _certificateDetails.FrameworksChairName,
+                        ChairTitle = _certificateDetails.FrameworksChairTitle
+                    },
+                    Certificates = new List<PrintCertificate>()
+                };
+
+                g.ToList().ForEach(c =>
+                {
+                    printData.Certificates.Add(new FrameworkPrintCertificate
+                    {
+                        CertificateNumber = c.CertificateReference,
+                        ApprenticeName = c.FullName,
+                        LearningDetails = new FrameworkLearningDetails()
+                        {
+                            FrameworkName = c.FrameworkName,
+                            PathwayName = c.PathwayName,
+                            LevelName = c.FrameworkLevelName,
+                            FrameworkCertificateNumber = c.FrameworkCertificateNumber,
+                            AchievementDate = !c.AchievementDate.HasValue ? string.Empty : $"{c.AchievementDate.Value:dd MMMM yyyy}",
+                        }
+                    });
+                });
+
+                printOutput.PrintData.Add(printData);
+            });
+
+            return groupedByRecipient.Count;
         }
     }
 }

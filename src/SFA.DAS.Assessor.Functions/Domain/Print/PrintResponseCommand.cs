@@ -72,12 +72,12 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                     {
                         fileInfo.ValidationMessages.Add(ex.Message);
                         await CreateErrorFile(fileInfo, _options.ErrorDirectory);
-                        throw new Exception($"The print response file [{fileInfo.FileName}] contained invalid entries, an error file has been created", ex);
+                        throw new FileFormatValidationException($"The print response file: {fileInfo.FileName} contained invalid entries, an error file has been created", ex);
                     }
                 }
                 catch(Exception ex)
                 {
-                    _logger.LogError(ex, $"PrintResponseCommand - Could not process print response file [{fileName}]");
+                    _logger.LogError(ex, "PrintResponseCommand - Could not process print response file: {PrintResponseFileName}", fileName);
                 }
             }
 
@@ -91,7 +91,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             if (receipt?.Batch == null || receipt.Batch.BatchDate == DateTime.MinValue)
             {
                 fileInfo.InvalidFileContent = fileInfo.FileContent;
-                throw new FileFormatValidationException($"Could not process print response file [{fileInfo.FileName}] due to invalid file format");
+                throw new FileFormatValidationException($"Could not process print response file: {fileInfo.FileName} due to invalid file format");
             }
 
             var batch = await _batchService.Get(receipt.Batch.BatchNumber);
@@ -99,7 +99,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             if (batch == null)
             {
                 fileInfo.InvalidFileContent = fileInfo.FileContent;
-                throw new FileFormatValidationException($"Could not process print response file [{fileInfo.FileName}] due to non matching Batch Number [{receipt.Batch.BatchNumber}]");
+                throw new FileFormatValidationException($"Could not process print response file: {fileInfo.FileName} due to non matching batch number: {receipt.Batch.BatchNumber}");
             }
 
             batch.BatchCreated = receipt.Batch.BatchDate;

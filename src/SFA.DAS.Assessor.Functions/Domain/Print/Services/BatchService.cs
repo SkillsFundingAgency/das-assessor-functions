@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
@@ -67,7 +68,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                         nextBatchNumberReadyToPrint.Value,
                         maxCertificatesToBeAdded);
 
-                    _logger.LogInformation($"Added {addedCount} ready to print certificates to batch {nextBatchNumberReadyToPrint.Value}");
+                    _logger.LogInformation("Added {CertificatesAddedCount} ready to print certificates to batch {NextBatchNumberReadyToPrint}", 
+                        addedCount, nextBatchNumberReadyToPrint.Value);
                 }
                 while (await ReadyToPrintCertificatesNotInBatch());
             }
@@ -82,16 +84,15 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return null;
         }
 
-        public async Task<List<Certificate>> GetCertificatesForBatchNumber(int batchNumber)
+        public async Task<List<CertificatePrintSummaryBase>> GetCertificatesForBatchNumber(int batchNumber)
         {
             var response = await _assessorServiceApiClient.GetCertificatesForBatchNumber(batchNumber);
             if (response == null)
             {
-                throw new Exception($"Unable to get the certificates for batch number {batchNumber}");
+                throw new PrintRequestException($"Unable to get the certificates for batch number {batchNumber}");
             }
 
-            return response.Certificates?.Select(c => Certificate.FromCertificatePrintSummary(c))
-                                         .ToList();
+            return response.Certificates;
         }
 
         public async Task<List<CertificatePrintStatusUpdateMessage>> Update(Batch batch)
@@ -100,7 +101,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             if (batch.Status == CertificateStatus.SentToPrinter)
             {
-                _logger.LogInformation($"Batch log {batch.BatchNumber} will be updated as sent to printer");
+                _logger.LogInformation("Batch log {BatchNumber} will be updated as sent to printer", batch.BatchNumber);
 
                 var updateRequest = new UpdateBatchLogSentToPrinterRequest()
                 {
@@ -121,7 +122,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             }
             else if (batch.Status == CertificateStatus.Printed)
             {
-                _logger.LogInformation($"Batch log {batch.BatchNumber} will be updated as printed");
+                _logger.LogInformation("Batch log {BatchNumber} will be updated as printed", batch.BatchNumber);
 
                 var updateRequest = new UpdateBatchLogPrintedRequest()
                 {
@@ -142,7 +143,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
             if (printStatusUpdateMessages.Count > 0)
             {
-                _logger.LogInformation($"Batch log {batch.BatchNumber} contained {batch.Certificates.Count} certificates, for which {printStatusUpdateMessages.Count} messages will be queued");
+                _logger.LogInformation("Batch log {BatchNumber} contained {CertificatesCount} certificates, for which {PrintStatusUpdateMessagesCount} messages will be queued", 
+                    batch.BatchNumber, batch.Certificates.Count, printStatusUpdateMessages.Count);
             }
 
             return printStatusUpdateMessages;
@@ -168,7 +170,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return response.BatchNumber;
         }
 
-        private List<CertificatePrintStatusUpdateMessage> BuildCertificatePrintStatusUpdateMessages(int batchNumber, List<Certificate> certificates, string status, DateTime statusAt)
+        private List<CertificatePrintStatusUpdateMessage> BuildCertificatePrintStatusUpdateMessages(int batchNumber, List<CertificatePrintSummaryBase> certificates, string status, DateTime statusAt)
         {
             var messages = new List<CertificatePrintStatusUpdateMessage>();
 
