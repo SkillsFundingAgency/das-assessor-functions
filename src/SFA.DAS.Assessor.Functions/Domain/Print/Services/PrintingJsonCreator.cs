@@ -85,11 +85,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                 g.ToList().ForEach(c =>
                 {
-                    var learnerName =
-                        !string.IsNullOrEmpty(c.FullName)
-                            ? c.FullName
-                            : $"{c.LearnerGivenNames} {c.LearnerFamilyName}";
-
                     var gradeText = string.Empty;
                     var grade = string.Empty;
 
@@ -102,7 +97,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                     printData.Certificates.Add(new StandardPrintCertificate
                     {
                         CertificateNumber = c.CertificateReference,
-                        ApprenticeName = learnerName,
+                        ApprenticeName = $"{c.LearnerGivenNames} {c.LearnerFamilyName}",
                         LearningDetails = new StandardLearningDetails()
                         {
                             StandardTitle = c.StandardName,
