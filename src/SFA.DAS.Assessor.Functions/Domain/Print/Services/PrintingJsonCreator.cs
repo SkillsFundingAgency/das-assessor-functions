@@ -63,6 +63,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                 var printData = new PrintData
                 {
+                    Type = "Standard",
                     PostalContact = new PostalContact
                     {
                         Name = contactName,
@@ -139,6 +140,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 
                 var printData = new PrintData
                 {
+                    Type = "Framework",
                     PostalContact = new PostalContact
                     {
                         Name = contactName,
