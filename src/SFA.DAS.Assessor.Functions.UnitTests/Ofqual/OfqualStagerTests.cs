@@ -5,7 +5,6 @@ using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
-using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
 using SFA.DAS.Assessor.Functions.Functions.Ofqual;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Ofqual
@@ -16,11 +15,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ofqual
         public async Task OrganisationsStager_InsertDataIntoStagingTable_ClearsOrganisationsStagingTable()
         {
             var assessorServiceRepositoryMock = new Mock<IAssessorServiceRepository>();
-            var logger = new Mock<ILogger>();
+            var logger = new Mock<ILogger<OrganisationsStager>>();
 
-            var sut = new OrganisationsStager(assessorServiceRepositoryMock.Object);
+            var sut = new OrganisationsStager(assessorServiceRepositoryMock.Object, logger.Object);
 
-            await sut.InsertDataIntoStagingTable(new List<OfqualOrganisation>(), logger.Object);
+            await sut.InsertDataIntoStagingTable(new List<OfqualOrganisation>());
 
             assessorServiceRepositoryMock.Verify(a => a.ClearOfqualStagingTable(OfqualDataType.Organisations), Times.Once());
         }
@@ -29,11 +28,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ofqual
         public async Task QualificationsStager_InsertDataIntoStagingTable_ClearsQualificationsStagingTable()
         {
             var assessorServiceRepositoryMock = new Mock<IAssessorServiceRepository>();
-            var logger = new Mock<ILogger>();
+            var logger = new Mock<ILogger<QualificationsStager>>();
 
-            var sut = new QualificationsStager(assessorServiceRepositoryMock.Object);
+            var sut = new QualificationsStager(assessorServiceRepositoryMock.Object, logger.Object);
 
-            await sut.InsertDataIntoStagingTable(new List<OfqualStandard>(), logger.Object);
+            await sut.InsertDataIntoStagingTable(new List<OfqualStandard>());
 
             assessorServiceRepositoryMock.Verify(a => a.ClearOfqualStagingTable(OfqualDataType.Qualifications), Times.Once());
         }
