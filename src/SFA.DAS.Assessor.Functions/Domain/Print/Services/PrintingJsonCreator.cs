@@ -168,8 +168,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                         LearningDetails = new FrameworkLearningDetails()
                         {
                             FrameworkName = c.FrameworkName,
-                            PathwayName = c.PathwayName,
-                            LevelName = c.FrameworkLevelName,
+                            PathwayName = !c.PathwayName.Equals(c.FrameworkName, StringComparison.OrdinalIgnoreCase) ? c.PathwayName : string.Empty,
+                            LevelName = $"{c.FrameworkLevelName} Level",
                             FrameworkCertificateNumber = c.FrameworkCertificateNumber,
                             AchievementDate = !c.AchievementDate.HasValue ? string.Empty : $"{c.AchievementDate.Value:dd MMMM yyyy}",
                         }

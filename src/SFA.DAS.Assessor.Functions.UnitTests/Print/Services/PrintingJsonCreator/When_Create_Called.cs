@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -31,8 +33,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
             _sut = new Domain.Print.Services.PrintingJsonCreator(_mockOptions.Object);
         }
 
-        [Test]
-        public void Create_Should_Return_One_Standard_PrintData_For_Single_Certificate()
+        [TestCase("Standard Title A", 1, "Option 1", "Standard Title A", "LEVEL 1", "(Option 1):")]
+        [TestCase("Standard Title B", 2, "Option 2", "Standard Title B", "LEVEL 2", "(Option 2):")]
+        [TestCase("Standard Title C", 3, "Option 3", "Standard Title C", "LEVEL 3", "(Option 3):")]
+        public void Create_Should_Return_One_Standard_PrintData_For_Single_Certificate(string standardTitle, int level, string courseOption, string expectedStandardTitle, string expectedLevel, string expectedCourseOption)
         {
             var certificates = new List<CertificatePrintSummaryBase>
             {
@@ -44,8 +48,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
                     ContactPostCode = "AA1 1AA",
                     LearnerGivenNames = "Alice",
                     LearnerFamilyName = "Anderson",
-                    StandardName = "Standard A",
-                    StandardLevel = 2,
+                    StandardName = standardTitle,
+                    StandardLevel = level,
+                    CourseOption = courseOption,
                     OverallGrade = "Pass",
                     AchievementDate = DateTime.UtcNow
                 }
@@ -58,13 +63,34 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
             var certificatePrintSummary = certificates[0] as CertificatePrintSummary;
 
             result.PrintData[0].Type.Should().Be("Standard");
-            result.PrintData[0].PostalContact.Should().BeEquivalentTo(CreatePostalContact(certificatePrintSummary));
-            result.PrintData[0].Certificates.Should().BeEquivalentTo(CreatePrintCertificates(certificatePrintSummary));
+            
+            result.PrintData[0].PostalContact.Should().BeEquivalentTo(CreatePostalContact(certificatePrintSummary), options => options
+                .RespectingRuntimeTypes()
+                .WithTracing()
+            );
+
+            var printCertificate = result.PrintData[0].Certificates[0] as StandardPrintCertificate;
+            printCertificate.Should().NotBeNull();
+
+            printCertificate.ApprenticeName.Should().Be($"{certificatePrintSummary.LearnerGivenNames} {certificatePrintSummary.LearnerFamilyName}");
+            printCertificate.CertificateNumber.Should().Be(certificatePrintSummary.CertificateReference);
+
+            printCertificate.LearningDetails.StandardTitle.Should().Be(expectedStandardTitle);
+            printCertificate.LearningDetails.Level.Should().Be(expectedLevel);
+            printCertificate.LearningDetails.CoronationEmblem.Should().Be(certificatePrintSummary.CoronationEmblem);
+            printCertificate.LearningDetails.Option.Should().Be(expectedCourseOption);
+            printCertificate.LearningDetails.Grade.Should().Be(certificatePrintSummary.OverallGrade);
+            printCertificate.LearningDetails.AchievementDate.Should().Be($"{certificatePrintSummary.AchievementDate.Value:dd MMMM yyyy}");
+            printCertificate.LearningDetails.GradeText.Should().Be("Achieved grade ");
+
             result.PrintData[0].PostalContact.CertificateCount.Should().Be(1);
         }
 
-        [Test]
-        public void Create_Should_Return_One_Framework_PrintData_For_Single_Certificate()
+        [TestCase("Framework A", "Pathway A", "Intermediate", "Framework A", "Pathway A", "Intermediate Level")]
+        [TestCase("Framework B", "Pathway B", "Higher", "Framework B", "Pathway B", "Higher Level")]
+        [TestCase("Framework C", "Framework C", "Advanced", "Framework C", "", "Advanced Level")]
+        public void Create_Should_Return_One_Framework_PrintData_For_Single_Certificate(string frameworkName, string pathwayName, string levelName,
+            string expectedFrameworkName, string expectedPathwayName, string expectedLevelName)
         {
             var certificates = new List<CertificatePrintSummaryBase>
             {
@@ -74,9 +100,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
                     ContactAddLine1 = "Address 2",
                     ContactPostCode = "BB1 2BB",
                     FullName = "Bob Brown",
-                    FrameworkName = "Framework B",
-                    PathwayName = "Pathway B",
-                    FrameworkLevelName = "Level 3",
+                    FrameworkName = frameworkName,
+                    PathwayName = pathwayName,
+                    FrameworkLevelName = levelName,
                     FrameworkCertificateNumber = "F123",
                     AchievementDate = DateTime.UtcNow
                 }
@@ -89,8 +115,22 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
             var frameworkCertificatePrintSummary = certificates[0] as FrameworkCertificatePrintSummary;
 
             result.PrintData[0].Type.Should().Be("Framework");
-            result.PrintData[0].PostalContact.Should().BeEquivalentTo(CreatePostalContact(frameworkCertificatePrintSummary));
-            result.PrintData[0].Certificates.Should().BeEquivalentTo(CreatePrintCertificates(frameworkCertificatePrintSummary));
+            
+            result.PrintData[0].PostalContact.Should().BeEquivalentTo(CreatePostalContact(frameworkCertificatePrintSummary), options => options
+                .RespectingRuntimeTypes()
+                .WithTracing()
+            );
+
+            var printCertificate = result.PrintData[0].Certificates[0] as FrameworkPrintCertificate;
+            printCertificate.Should().NotBeNull();
+
+            printCertificate.ApprenticeName.Should().Be(frameworkCertificatePrintSummary.FullName);
+            printCertificate.CertificateNumber.Should().Be(frameworkCertificatePrintSummary.CertificateReference);
+            printCertificate.LearningDetails.FrameworkName.Should().Be(expectedFrameworkName);
+            printCertificate.LearningDetails.PathwayName.Should().Be(expectedPathwayName);
+            printCertificate.LearningDetails.LevelName.Should().Be(expectedLevelName);
+            printCertificate.LearningDetails.AchievementDate.Should().Be($"{frameworkCertificatePrintSummary.AchievementDate.Value:dd MMMM yyyy}");
+            printCertificate.LearningDetails.FrameworkCertificateNumber.Should().Be(frameworkCertificatePrintSummary.FrameworkCertificateNumber);
 
             result.PrintData[0].PostalContact.CertificateCount.Should().Be(1);
         }
@@ -292,7 +332,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
                         Grade = certificatePrintSummary.OverallGrade,
                         AchievementDate = $"{certificatePrintSummary.AchievementDate.Value:dd MMMM yyyy}",
                         GradeText = "Achieved grade ",
-
                     }
                 }
             };
