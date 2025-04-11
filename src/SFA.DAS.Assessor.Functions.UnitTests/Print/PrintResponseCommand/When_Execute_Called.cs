@@ -125,9 +125,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         {
             // Arrange
             var fileName = Guid.NewGuid().ToString();
-            var innerExceptionMessage = $"Could not process print response file [{fileName}] due to invalid file format";
-            var exceptionMessage = $"The print response file [{fileName}] contained invalid entries, an error file has been created";
-            var logMessage = $"PrintResponseCommand - Could not process print response file [{fileName}]";
+            var innerExceptionMessage = $"Could not process print response file: {fileName} due to invalid file format";
+            var exceptionMessage = $"The print response file: {fileName} contained invalid entries, an error file has been created";
+            var logMessage = $"PrintResponseCommand - Could not process print response file: {fileName}";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))
@@ -156,9 +156,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
             // Arrange
             var fileName = Guid.NewGuid().ToString();
 
-            var innerExceptionMessage = $"Could not process print response file [{fileName}] due to non matching Batch Number [{_batchNumber}]";
-            var exceptionMessage = $"The print response file [{fileName}] contained invalid entries, an error file has been created";
-            var logMessage = $"PrintResponseCommand - Could not process print response file [{fileName}]";
+            var innerExceptionMessage = $"Could not process print response file: {fileName} due to non matching batch number: {_batchNumber}";
+            var exceptionMessage = $"The print response file: {fileName} contained invalid entries, an error file has been created";
+            var logMessage = $"PrintResponseCommand - Could not process print response file: {fileName}";
 
             _mockExternalFileTransferClient
                 .Setup(m => m.GetFileNames(It.IsAny<string>(), It.IsAny<string>(), false))

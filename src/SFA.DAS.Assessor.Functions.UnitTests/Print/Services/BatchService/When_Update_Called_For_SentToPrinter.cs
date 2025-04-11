@@ -14,8 +14,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
     public class When_Update_Called_For_SentToPrinter : BatchServiceTestBase
     {
         private Batch _batch;
-        private UpdateBatchLogSentToPrinterRequest _request;
-        private Mock<ICollector<string>> _mockStorageQueue;
 
         [SetUp]
         public override void Arrange()
@@ -25,20 +23,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
 
             _batch = Builder<Batch>.CreateNew().Build();
             _batch.BatchNumber = _batchNumber;
-            _batch.Certificates = Builder<Certificate>.CreateListOfSize(13).All().Build() as List<Certificate>;
+            _batch.Certificates = Builder<CertificatePrintSummaryBase>.CreateListOfSize(13).All().Build() as List<CertificatePrintSummaryBase>;
             _batch.Status = CertificateStatus.SentToPrinter;
-
-            _request = new UpdateBatchLogSentToPrinterRequest()
-            {
-                BatchCreated = _batch.BatchCreated,
-                NumberOfCertificates = _batch.NumberOfCertificates,
-                NumberOfCoverLetters = _batch.NumberOfCoverLetters,
-                CertificatesFileName = _batch.CertificatesFileName,
-                FileUploadStartTime = _batch.FileUploadStartTime,
-                FileUploadEndTime = _batch.FileUploadEndTime,
-            };
-
-            _mockStorageQueue = new Mock<ICollector<string>>();
         }
 
         [Test]
@@ -50,7 +36,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
                 .ReturnsAsync(_validResponse);
 
             // Act
-            var maxCertificatesToUpdate = _batch.Certificates.Count / 2;
             await _sut.Update(_batch);
 
             // Assert

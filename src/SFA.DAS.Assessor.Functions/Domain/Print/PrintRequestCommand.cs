@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Domain.Print.Exceptions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
@@ -65,9 +66,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                 var nextBatchReadyToPrint = await _batchService.BuildPrintBatchReadyToPrint(schedule.RunTime, _options.AddReadyToPrintLimit);
                 if (nextBatchReadyToPrint != null)
                 {
-                    if((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)
+                    if ((nextBatchReadyToPrint.Certificates?.Count ?? 0) == 0)
                     {
-                        _logger.LogInformation($"PrintRequestCommand - There are no certificates in batch number {nextBatchReadyToPrint} ready to print at this time");
+                        _logger.LogInformation("PrintRequestCommand - There are no certificates in batch number {NextBatchReadyToPrint} ready to print at this time", nextBatchReadyToPrint.BatchNumber);
                     }
                     else
                     {
@@ -95,8 +96,8 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         printStatusUpdateMessages = await _batchService.Update(nextBatchReadyToPrint);
 
                         await _notificationService.SendPrintRequest(
-                            nextBatchReadyToPrint.BatchNumber, 
-                            nextBatchReadyToPrint.Certificates, 
+                            nextBatchReadyToPrint.BatchNumber,
+                            nextBatchReadyToPrint.Certificates.Count,
                             nextBatchReadyToPrint.CertificatesFileName);
                     }
                 }
@@ -105,25 +106,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             }
             catch (Exception ex)
             {
-                try
+                if (schedule != null && schedule.Id != Guid.Empty)
                 {
-                    _logger.LogError(ex, "PrintRequestCommand - Unable to send print request");
+                    await _scheduleService.Fail(schedule);
                 }
-                finally
-                {
-                    if (schedule != null && schedule.Id != Guid.Empty)
-                    {
-                        await _scheduleService.Fail(schedule);
-                    }
-                }
-                
-                throw;
+
+                throw new PrintRequestException("PrintRequestCommand - Unable to send print request", ex);
             }
 
             return printStatusUpdateMessages;
         }
 
-        private string GetCertificatesFileName(int batchNumber, DateTime batchCreated)
+        private static string GetCertificatesFileName(int batchNumber, DateTime batchCreated)
         {
             return $"PrintBatch-{batchNumber.ToString().PadLeft(3, '0')}-{batchCreated.UtcToTimeZoneTime():ddMMyyHHmm}.json";
         }

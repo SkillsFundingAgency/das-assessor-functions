@@ -11,7 +11,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
 {
     public class When_BuildPrintBatchReadyToPrint_Called : BatchServiceTestBase
     {
-        DateTime _scheduledDateTime = DateTime.UtcNow;
+        private readonly DateTime _scheduledDateTime = DateTime.UtcNow;
         
         private int _certificateReadyToPrintCount = 0;
         private int _certifictesAddedReadyToPrint = 0;
@@ -31,8 +31,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
                 });
 
             var certificates = certificateReadyToPrintCount > 0
-                ? Builder<CertificatePrintSummary>.CreateListOfSize(certificateReadyToPrintCount).Build() as List<CertificatePrintSummary>
-                : new List<CertificatePrintSummary>();
+                ? Builder<CertificatePrintSummaryBase>.CreateListOfSize(certificateReadyToPrintCount).Build() as List<CertificatePrintSummaryBase>
+                : new List<CertificatePrintSummaryBase>();
 
             _mockAssessorServiceApiClient
                 .Setup(m => m.GetCertificatesForBatchNumber(_batchNumber))

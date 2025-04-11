@@ -4,6 +4,5 @@
     {
         public string CertificateNumber { get; set; }
         public string ApprenticeName { get; set; }
-        public LearningDetails LearningDetails { get; set; }
     }
 }
