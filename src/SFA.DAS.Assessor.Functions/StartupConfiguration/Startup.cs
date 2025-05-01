@@ -26,6 +26,8 @@ using SFA.DAS.Assessor.Functions.Domain.Print.Services;
 using SFA.DAS.Assessor.Functions.Domain.Providers.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
+using SFA.DAS.Assessor.Functions.Domain.Assessments;
+using SFA.DAS.Assessor.Functions.Domain.Assessments.Interfaces;
 using SFA.DAS.Assessor.Functions.Extensions;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi.Config;
@@ -227,8 +229,9 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             builder.Services.AddTransient<IRefreshIlrsDequeueProvidersCommand, RefreshIlrsDequeueProvidersCommand>();
             builder.Services.AddTransient<IRefreshIlrsEnqueueProvidersCommand, RefreshIlrsEnqueueProvidersCommand>();
             builder.Services.AddTransient<IStandardImportCommand, StandardImportCommand>();
-            builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
-            builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
+			builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
+			builder.Services.AddTransient<IAssessmentsSummaryUpdateCommand, AssessmentsSummaryUpdateCommand>();
+			builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
             builder.Services.AddTransient<IOfsImportCommand, OfsImportCommand>();
 
