@@ -229,9 +229,9 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
             builder.Services.AddTransient<IRefreshIlrsDequeueProvidersCommand, RefreshIlrsDequeueProvidersCommand>();
             builder.Services.AddTransient<IRefreshIlrsEnqueueProvidersCommand, RefreshIlrsEnqueueProvidersCommand>();
             builder.Services.AddTransient<IStandardImportCommand, StandardImportCommand>();
-			builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
-			builder.Services.AddTransient<IAssessmentsSummaryUpdateCommand, AssessmentsSummaryUpdateCommand>();
-			builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
+            builder.Services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
+            builder.Services.AddTransient<IAssessmentsSummaryUpdateCommand, AssessmentsSummaryUpdateCommand>();
+            builder.Services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
             builder.Services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();
             builder.Services.AddTransient<IOfsImportCommand, OfsImportCommand>();
 
