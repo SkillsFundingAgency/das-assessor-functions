@@ -207,14 +207,14 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
             }
         }
 
-		public async Task UpdateAssessmentsSummary()
-		{
-			using (var request = new HttpRequestMessage(HttpMethod.Post, "api/ao/assessments/update-assessments-summary"))
-			{
-				// no retry as this should not run more than once a day, this is a background task
-				// which will return 202 immediately as it takes a long time to complete on production data
-				await PostRequestWithoutRetry(request);
-			}
-		}
-	}
+        public async Task UpdateAssessmentsSummary()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, "api/ao/assessments/update-assessments-summary"))
+            {
+                // no retry as this should not run more than once a day, this is a background task
+                // which will return 202 immediately as it takes a long time to complete on production data
+                await PostRequestWithoutRetry(request);
+            }
+        }
+    }
 }
