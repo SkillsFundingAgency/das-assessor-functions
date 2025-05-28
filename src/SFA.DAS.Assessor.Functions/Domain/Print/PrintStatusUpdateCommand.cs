@@ -26,7 +26,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
 
             try
             {
-                _logger.LogDebug($"PrintStatusUpdateCommand - Started for message {message.ToJson()}");
+                _logger.LogInformation($"PrintStatusUpdateCommand - Started for message {message.ToJson()}");
                 
                 var validationResponse = await _certificateService.ProcessCertificatesPrintStatusUpdate(message);
                 if(validationResponse.Errors.Any())
@@ -53,11 +53,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
                         _logger.LogWarning($"PrintStatusUpdateCommand - Processed message {message.ToJson()} with warning: {warningMessage}");
                     }
 
-                    _logger.LogDebug($"PrintStatusUpdateCommand - Completed for message {message.ToJson()} with {errorMessages.Count()} error(s) and {warningMessages.Count()} warning(s)");
+                    _logger.LogInformation($"PrintStatusUpdateCommand - Completed for message {message.ToJson()} with {errorMessages.Count()} error(s) and {warningMessages.Count()} warning(s)");
                 }
                 else
                 {
-                    _logger.LogDebug ($"PrintStatusUpdateCommand - Completed for message {message.ToJson()}");
+                    _logger.LogInformation($"PrintStatusUpdateCommand - Completed for message {message.ToJson()}");
                 }
             }
             catch (Exception ex)

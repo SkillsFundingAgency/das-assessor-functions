@@ -29,12 +29,12 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         {
             try
             {
-                log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has started.");
+                log.LogInformation($"StartLearnersEmployerInfoUpdateFunction has started.");
 
                 _command.StorageQueue = startUpdatingLearnersQueue;
                 await _command.Execute();
 
-                log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has finished.");
+                log.LogInformation($"StartLearnersEmployerInfoUpdateFunction has finished.");
 
                 await Task.CompletedTask;
             }

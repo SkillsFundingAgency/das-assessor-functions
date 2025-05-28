@@ -25,7 +25,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         {
             try
             {
-                log.LogDebug($"CertificatePrintStatusUpdate has started for {message.ToJson()}");
+                log.LogInformation($"CertificatePrintStatusUpdate has started for {message.ToJson()}");
 
                 var validationErrorMessages = await _command.Execute(message);
                 validationErrorMessages?.ForEach(p => storageQueue.Add(p));
@@ -36,7 +36,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
                 }
                 else
                 {
-                    log.LogDebug($"CertificatePrintStatusUpdate has completed for {message.ToJson()}");
+                    log.LogInformation($"CertificatePrintStatusUpdate has completed for {message.ToJson()}");
                 }
             }
             catch (Exception ex)

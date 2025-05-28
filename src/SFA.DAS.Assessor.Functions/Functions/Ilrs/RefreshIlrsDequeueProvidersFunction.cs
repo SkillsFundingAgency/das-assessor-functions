@@ -24,12 +24,12 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
         {
             try
             {
-                log.LogDebug($"RefreshIlrsDequeueProviders has started for {message}");
+                log.LogInformation($"RefreshIlrsDequeueProviders has started for {message}");
 
                 _command.StorageQueue = refreshIlrsQueue;
                 await _command.Execute(message);
 
-                log.LogDebug($"RefreshIlrsDequeueProviders has finished for {message}");
+                log.LogInformation($"RefreshIlrsDequeueProviders has finished for {message}");
             }
             catch (Exception ex)
             {

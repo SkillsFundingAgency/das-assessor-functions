@@ -29,12 +29,12 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         {
             try
             {
-                log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has started.");
+                log.LogInformation($"EnqueueExternalApiLearnersEmployerInfo has started.");
 
                 _command.StorageQueue = updateLearnersQueue;
                 await _command.Execute(message);
 
-                log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has finished.");
+                log.LogInformation($"EnqueueExternalApiLearnersEmployerInfo has finished.");
             }
             catch (Exception ex)
             {
