@@ -93,7 +93,7 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
 
                 options.AddFilter("Microsoft", LogLevel.Warning);
                 options.AddFilter("System", LogLevel.Warning);
-                options.AddFilter("SFA.DAS.RequestApprenticeTraining.Jobs", LogLevel.Information);
+                options.AddFilter("SFA.DAS.Assessor.Functions", LogLevel.Information);
             });
 
             builder.Services.AddOptions();

@@ -20,7 +20,6 @@
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SFA.DAS.Assessor.Domain\SFA.DAS.Assessor.Functions.Domain.csproj" />
