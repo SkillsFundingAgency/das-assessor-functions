@@ -14,7 +14,7 @@
     "fileLoggingMode": "always",
     "logLevel": {
       "default": "Information",
-      "Host.Results": "Error"
+      "Host.Results": "Information"
     },
     "applicationInsights": {
       "samplingSettings": {
