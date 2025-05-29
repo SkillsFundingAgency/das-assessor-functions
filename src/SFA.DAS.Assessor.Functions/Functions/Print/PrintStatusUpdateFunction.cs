@@ -32,10 +32,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
                 {
                     log.LogWarning($"CertificatePrintStatusUpdate has completed for {message.ToJson()} with {validationErrorMessages.Count} error(s)");
                 }
-                else
-                {
-                    log.LogInformation($"CertificatePrintStatusUpdate has completed for {message.ToJson()}");
-                }
             }
             catch (Exception ex)
             {

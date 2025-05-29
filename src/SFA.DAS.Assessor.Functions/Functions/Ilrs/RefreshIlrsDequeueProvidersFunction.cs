@@ -26,8 +26,6 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
             {
                 _command.StorageQueue = refreshIlrsQueue;
                 await _command.Execute(message);
-
-                log.LogInformation($"RefreshIlrsDequeueProviders has finished for {message}");
             }
             catch (Exception ex)
             {

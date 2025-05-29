@@ -31,8 +31,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             {
                 _command.StorageQueue = updateLearnersQueue;
                 await _command.Execute(message);
-
-                log.LogInformation($"EnqueueExternalApiLearnersEmployerInfo has finished.");
             }
             catch (Exception ex)
             {

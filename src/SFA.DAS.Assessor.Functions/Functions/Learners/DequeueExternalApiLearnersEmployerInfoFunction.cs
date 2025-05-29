@@ -22,8 +22,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             try
             {
                 await _command.Execute(message);
-
-                log.LogInformation($"DequeueExternalApiLearnersEmployerInfoFunction has finished for {message}");
             }
             catch (Exception ex)
             {
