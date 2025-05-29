@@ -25,8 +25,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         {
             try
             {
-                log.LogInformation($"CertificatePrintStatusUpdate has started for {message.ToJson()}");
-
                 var validationErrorMessages = await _command.Execute(message);
                 validationErrorMessages?.ForEach(p => storageQueue.Add(p));
 

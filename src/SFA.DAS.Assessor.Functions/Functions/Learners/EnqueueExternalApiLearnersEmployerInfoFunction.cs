@@ -29,8 +29,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         {
             try
             {
-                log.LogInformation($"EnqueueExternalApiLearnersEmployerInfo has started.");
-
                 _command.StorageQueue = updateLearnersQueue;
                 await _command.Execute(message);
 

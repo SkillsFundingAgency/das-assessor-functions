@@ -18,14 +18,12 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
 
         [FunctionName("RefreshIlrsDequeueProviders")]
         public async Task Run(
-            [QueueTrigger(QueueNames.RefreshIlrs)]string message,
+            [QueueTrigger(QueueNames.RefreshIlrs)] string message,
             [Queue(QueueNames.RefreshIlrs)] ICollector<string> refreshIlrsQueue,
             ILogger log)
         {
             try
             {
-                log.LogInformation($"RefreshIlrsDequeueProviders has started for {message}");
-
                 _command.StorageQueue = refreshIlrsQueue;
                 await _command.Execute(message);
 
