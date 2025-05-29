@@ -89,7 +89,7 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
 
             builder.Services.AddLogging(options =>
             {
-                options.SetMinimumLevel(LogLevel.Trace);
+                options.SetMinimumLevel(LogLevel.Information);
 
                 options.AddFilter("Microsoft", LogLevel.Warning);
                 options.AddFilter("System", LogLevel.Warning);
