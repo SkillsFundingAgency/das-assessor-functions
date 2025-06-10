@@ -125,7 +125,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
                 await blobClient.DeleteIfExistsAsync();
 
-                _logger.LogDebug($"Deleted {path} from blob storage {_blobContainerClient.Name}");
             }
             catch (Exception ex)
             {
