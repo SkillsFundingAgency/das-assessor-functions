@@ -65,7 +65,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
         {
             try
             {
-                _logger.LogDebug($"Uploading {path} to blob storage {ContainerName}");
+                _logger.LogInformation($"Uploading {path} to blob storage {ContainerName}");
 
                 BlobClient blobClient = _blobContainerClient.GetBlobClient(GetFullBlobName(path));
                 byte[] array = Encoding.UTF8.GetBytes(fileContents);
@@ -75,7 +75,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                     await blobClient.UploadAsync(stream, overwrite: true);
                 }
 
-                _logger.LogDebug($"Uploaded {path} to blob storage {ContainerName}");
+                _logger.LogInformation($"Uploaded {path} to blob storage {ContainerName}");
             }
             catch (Exception ex)
             {
@@ -90,7 +90,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 
             try
             {
-                _logger.LogDebug($"Downloading {path} from blob storage {_blobContainerClient.Name}");
+                _logger.LogInformation($"Downloading {path} from blob storage {_blobContainerClient.Name}");
 
                 BlobClient blobClient = _blobContainerClient.GetBlobClient(GetFullBlobName(path));
 
@@ -100,7 +100,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                     fileContent = Encoding.UTF8.GetString(memoryStream.ToArray());
                 }
 
-                _logger.LogDebug($"Downloaded {path} from blob storage {_blobContainerClient.Name}");
+                _logger.LogInformation($"Downloaded {path} from blob storage {_blobContainerClient.Name}");
 
             }
             catch (Exception ex)
@@ -120,7 +120,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 string blobName = GetBlobFileName(path);
                 string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
 
-                _logger.LogDebug($"Deleting {path} from blob storage {_blobContainerClient.Name}");
+                _logger.LogInformation($"Deleting {path} from blob storage {_blobContainerClient.Name}");
 
                 BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
                 await blobClient.DeleteIfExistsAsync();
@@ -146,7 +146,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
                 exists = await blobClient.ExistsAsync();
 
-                _logger.LogDebug($"Checked if {path} exists in blob storage {_blobContainerClient.Name}: {exists}");
+                _logger.LogInformation($"Checked if {path} exists in blob storage {_blobContainerClient.Name}: {exists}");
 
             }
             catch (Exception ex)

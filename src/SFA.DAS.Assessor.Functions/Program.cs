@@ -23,13 +23,10 @@ namespace SFA.DAS.Assessor.Functions
                     services.ConfigureFunctionsApplicationInsights();
                     services.AddAllServices(context.Configuration);
                 })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    logging.AddLogging();
-                })
+
                 .Build();
 
-                await host.RunAsync();
+            await host.RunAsync();
         }
     }
 }

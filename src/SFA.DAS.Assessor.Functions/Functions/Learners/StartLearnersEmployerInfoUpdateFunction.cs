@@ -22,11 +22,11 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         {
             try
             {
-                _logger.LogDebug($"StartLearnersEmployerInfoUpdateFunction has started.");
+                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has started.");
 
                 await _command.Execute();
 
-                _logger.LogDebug($"StartLearnersEmployerInfoUpdateFunction has finished.");
+                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has finished.");
 
                 await Task.CompletedTask;
             }

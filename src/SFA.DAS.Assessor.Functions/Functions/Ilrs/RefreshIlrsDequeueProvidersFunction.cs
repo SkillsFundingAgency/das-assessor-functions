@@ -2,7 +2,6 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 
 namespace SFA.DAS.Assessor.Functions.Ilrs
 {
@@ -25,11 +24,7 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
         {
             try
             {
-                _logger.LogDebug($"RefreshIlrsDequeueProviders has started for {message}");
-
                 await _command.Execute(message);
-
-                _logger.LogDebug($"RefreshIlrsDequeueProviders has finished for {message}");
             }
             catch (Exception ex)
             {

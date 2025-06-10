@@ -25,18 +25,13 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         {
             try
             {
-                _logger.LogDebug($"CertificatePrintStatusUpdate has started for {message.ToJson()}");
-
                 var validationErrorMessages = await _command.Execute(message);
 
                 if ((validationErrorMessages?.Count ?? 0) > 0)
                 {
                     _logger.LogWarning($"CertificatePrintStatusUpdate has completed for {message.ToJson()} with {validationErrorMessages.Count} error(s)");
                 }
-                else
-                {
-                    _logger.LogDebug($"CertificatePrintStatusUpdate has completed for {message.ToJson()}");
-                }
+
                 return validationErrorMessages;
             }
             catch (Exception ex)

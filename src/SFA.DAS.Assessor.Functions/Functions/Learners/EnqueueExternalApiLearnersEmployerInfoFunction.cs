@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 using Microsoft.Azure.Functions.Worker;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
@@ -22,9 +21,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         {
             try
             {
-                _logger.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has started.");
-                _logger.LogDebug($"EnqueueExternalApiLearnersEmployerInfo triggered for MESSAGE = {message}");
-
                 if (string.IsNullOrEmpty(message))
                 {
                     _logger.LogWarning("Received a null or empty message.");
@@ -32,8 +28,6 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
                 }
 
                 await _command.Execute(message);
-
-                _logger.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has finished.");
             }
             catch (Exception ex)
             {

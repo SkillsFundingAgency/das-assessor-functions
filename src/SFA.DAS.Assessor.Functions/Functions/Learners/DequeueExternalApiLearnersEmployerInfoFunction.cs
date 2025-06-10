@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
@@ -23,11 +21,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
         {
             try
             {
-                _logger.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has started for {message}");
-
                 await _command.Execute(message);
-
-                _logger.LogDebug($"DequeueExternalApiLearnersEmployerInfoFunction has finished for {message}");
             }
             catch (Exception ex)
             {
