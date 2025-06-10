@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Types
 {
@@ -18,6 +19,6 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Types
         public int NumberOfCoverLetters { get; set; }
         public DateTime? PrintedDate { get; set; }
         public DateTime? DateOfResponse { get; set; }
-        public List<Certificate> Certificates { get; set; }
+        public List<CertificatePrintSummaryBase> Certificates { get; set; }
     }
 }

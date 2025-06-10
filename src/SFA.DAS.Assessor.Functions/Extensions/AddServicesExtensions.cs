@@ -41,6 +41,8 @@ using SFA.DAS.Assessor.Functions.Domain.Print;
 using SFA.DAS.Assessor.Functions.Domain.Providers.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Standards.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Standards;
+using SFA.DAS.Assessor.Functions.Domain.Assessments;
+using SFA.DAS.Assessor.Functions.Domain.Assessments.Interfaces;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.FileTransfer;
 using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
@@ -48,6 +50,8 @@ using SFA.DAS.Assessor.Functions;
 using SFA.DAS.AssessorService.Functions.Data;
 using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace SFA.DAS.RequestApprenticeTraining.Functions.Extensions
 {
@@ -262,6 +266,7 @@ namespace SFA.DAS.RequestApprenticeTraining.Functions.Extensions
 
             services.AddTransient<IStandardImportCommand, StandardImportCommand>();
             services.AddTransient<IStandardSummaryUpdateCommand, StandardSummaryUpdateCommand>();
+            services.AddTransient<IAssessmentsSummaryUpdateCommand, AssessmentsSummaryUpdateCommand>();
 
             services.AddTransient<IImportLearnersCommand, ImportLearnersCommand>();
             services.AddTransient<IRefreshProvidersCommand, RefreshProvidersCommand>();

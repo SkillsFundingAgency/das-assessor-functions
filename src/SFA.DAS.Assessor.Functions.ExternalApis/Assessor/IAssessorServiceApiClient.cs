@@ -8,6 +8,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Assessor
     {
         Task UpdateStandards();
         Task UpdateStandardSummary();
+        Task UpdateAssessmentsSummary();
         Task SetAssessorSetting(string name, string value);
         Task<string> GetAssessorSetting(string name);
         

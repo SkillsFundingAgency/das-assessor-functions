@@ -1,14 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
 {
@@ -17,9 +15,9 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
         private readonly ILogger<NotificationService> _logger;
         private readonly IAssessorServiceApiClient _assessorServiceApi;
 
-        private string _printRequestDirectory;
-        private string _printResponseDirectory;
-        private string _deliveryNotificationDirectory;
+        private readonly string _printRequestDirectory;
+        private readonly string _printResponseDirectory;
+        private readonly string _deliveryNotificationDirectory;
 
         public NotificationService(
             ILogger<NotificationService> logger,
@@ -36,31 +34,29 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             _deliveryNotificationDirectory = deliveryNotificationOptions.Value.Directory;
         }
 
-        public async Task SendPrintRequest(int batchNumber, List<Certificate> certificates, string certificatesFileName)
+        public async Task SendPrintRequest(int batchNumber, int certificatesCount, string certificatesFileName)
         {
-            _logger.Log(LogLevel.Information, $"SendPrintRequest CertificatesFileName({certificatesFileName}),  CertificatesCount({certificates.Count()}) Email");
+            _logger.Log(LogLevel.Information, "Sending SendPrintRequest Email for CertificatesFileName: {CertificatesFileName}, CertificatesCount: {CertificatesCount}", certificatesFileName, certificatesCount);
 
             var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintAssessorCoverLetters);
             
-            var personalisationTokens = CreatePrintRequestPersonalisationTokens(certificates, certificatesFileName);
-
-            _logger.Log(LogLevel.Information, "NotificationService::SendPrintRequest Email");
+            var personalisationTokens = CreatePrintRequestPersonalisationTokens(certificatesCount, certificatesFileName);
 
             await _assessorServiceApi.SendEmailWithTemplate(new SendEmailRequest(string.Empty, emailTemplateSummary, personalisationTokens));
         }
 
-        public async Task SendSasToken(string secureMessageUri)
+        public async Task SendSasToken(string message)
         {
-            _logger.Log(LogLevel.Information, "SendSasToken Email");
+            _logger.Log(LogLevel.Information, "Sending SendSasToken Email");
 
             var emailTemplateSummary = await _assessorServiceApi.GetEmailTemplate(EMailTemplateNames.PrintSasToken);
 
-            var personalisationTokens = CreateSasTokenPersonalisationTokens(secureMessageUri);
+            var personalisationTokens = CreateSasTokenPersonalisationTokens(message);
 
             await _assessorServiceApi.SendEmailWithTemplate(new SendEmailRequest(string.Empty, emailTemplateSummary, personalisationTokens));
         }
 
-        private Dictionary<string, string> CreateSasTokenPersonalisationTokens(string secureMessageUri)
+        private static Dictionary<string, string> CreateSasTokenPersonalisationTokens(string secureMessageUri)
         {
             var personalisation = new Dictionary<string, string>
             {
@@ -70,7 +66,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
             return personalisation;
         }
 
-        private Dictionary<string, string> CreatePrintRequestPersonalisationTokens(List<Certificate> certificates, string certificatesFileName)
+        private Dictionary<string, string> CreatePrintRequestPersonalisationTokens(int certificatesCount, string certificatesFileName)
         {
             // TODO: The template which is sent need to be re-worked as the parameters below should not refer to Sftp
             var personalisation = new Dictionary<string, string>
@@ -78,7 +74,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print.Services
                 {"fileName", $"{certificatesFileName}"},
                 {
                     "numberOfCertificatesToBePrinted",
-                    $"{certificates.Count}"
+                    $"{certificatesCount}"
                 }
             };
 
