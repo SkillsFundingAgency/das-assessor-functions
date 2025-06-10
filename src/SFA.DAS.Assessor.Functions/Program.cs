@@ -2,6 +2,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Extensions;
 using SFA.DAS.RequestApprenticeTraining.Functions.Extensions;
 
@@ -19,9 +20,16 @@ namespace SFA.DAS.Assessor.Functions
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddApplicationInsightsTelemetryWorkerService();
-                    services.ConfigureFunctionsApplicationInsights();
+                    services.AddOpenTelemetryRegistration(context.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]!);
                     services.AddAllServices(context.Configuration);
+                })
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Information);
+
+                    logging.AddFilter("Microsoft", LogLevel.Warning);
+                    logging.AddFilter("System", LogLevel.Warning);
+                    logging.AddFilter("SFA.DAS.Assessor.Functions", LogLevel.Information);
                 })
 
                 .Build();

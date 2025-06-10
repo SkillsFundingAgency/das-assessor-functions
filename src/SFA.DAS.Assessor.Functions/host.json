@@ -10,11 +10,17 @@
 			"newBatchThreshold": 1
 		}
 	},
-	"logging": {
-		"fileLoggingMode": "always",
-		"logLevel": {
-			"default": "Information",
-			"Host.Results": "Error"
-		}
-	}
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "maxTelemetryItemsPerSecond": 5
+      }
+    },
+    "fileLoggingMode": "always",
+    "logLevel": {
+      "default": "Information",
+      "Host.Results": "Error"
+    }
+  }
 }
