@@ -50,8 +50,6 @@ using SFA.DAS.Assessor.Functions;
 using SFA.DAS.AssessorService.Functions.Data;
 using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
-using System.Data;
-using System.Data.SqlClient;
 
 namespace SFA.DAS.RequestApprenticeTraining.Functions.Extensions
 {
