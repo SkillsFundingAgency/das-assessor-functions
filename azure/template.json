@@ -56,6 +56,9 @@
     "databaseMaintenanceTimerSchedule": {
       "type": "string"
     },
+    "assessmentsSummaryUpdateSchedule": {
+      "type": "string"
+    },
     "rebuildExternalApiSandboxTimerSchedule": {
       "type": "string"
     },
@@ -318,6 +321,10 @@
                 {
                   "name": "DatabaseMaintenanceTimerSchedule",
                   "value": "[parameters('databaseMaintenanceTimerSchedule')]"
+                },
+                {
+                  "name": "AssessmentsSummaryUpdateSchedule",
+                  "value": "[parameters('assessmentsSummaryUpdateSchedule')]"
                 },
                 {
                   "name": "RebuildExternalApiSandboxTimerSchedule",
