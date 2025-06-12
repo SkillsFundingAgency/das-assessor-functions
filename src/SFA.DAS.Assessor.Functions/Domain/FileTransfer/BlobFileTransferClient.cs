@@ -1,40 +1,32 @@
-﻿using Azure;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Sas;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using SFA.DAS.Assessor.Functions.Domain.OfqualImport.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 {
     public class BlobFileTransferClient : IExternalBlobFileTransferClient, IInternalBlobFileTransferClient, IOfqualDownloadsBlobFileTransferClient
     {
         private readonly ILogger<BlobFileTransferClient> _logger;
-        private BlobContainerClient _blobContainerClient;
+        private string _connectionString { get; }
+        private string _containerName { get; set; }
 
         public BlobFileTransferClient(ILogger<BlobFileTransferClient> logger, string connectionString, string containerName)
         {
             _logger = logger;
-
-            var blobServiceClient = new BlobServiceClient(connectionString);
-            _blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
-            try
-            {
-                _blobContainerClient.CreateIfNotExists();
-                _logger.LogInformation($"Blob container '{containerName}' ensured to exist.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error while creating/accessing blob container '{containerName}'.");
-                throw; 
-            }
+            _connectionString = connectionString;
+            _containerName = containerName;
         }
 
-        public string ContainerName => _blobContainerClient.Name;
+        public string ContainerName => _containerName;
 
         public async Task<List<string>> GetFileNames(string directory, string pattern, bool recursive)
         {
@@ -48,8 +40,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 
             try
             {
-                string prefix = GetBlobDirectoryName(directory);
-                var blobs = await GetBlobsHierarchicalListingAsync(prefix, recursive);
+                var blobs = await GetBlobsHierarchicalListingAsync(await GetCloudBlobDirectory(directory), recursive);
                 fileNames.AddRange(blobs.ConvertAll(p => GetBlobFileName(p.Name)));
             }
             catch (Exception ex)
@@ -65,17 +56,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
         {
             try
             {
-                _logger.LogInformation($"Uploading {path} to blob storage {ContainerName}");
+                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(GetFullBlobName(path));
+                _logger.LogDebug($"Uploading {path} to blob storage {_containerName}");
+
                 byte[] array = Encoding.UTF8.GetBytes(fileContents);
-
                 using (var stream = new MemoryStream(array))
                 {
-                    await blobClient.UploadAsync(stream, overwrite: true);
+                    await blob.UploadFromStreamAsync(stream);
                 }
 
-                _logger.LogInformation($"Uploaded {path} to blob storage {ContainerName}");
+                _logger.LogDebug($"Uploaded {path} to blob storage {_containerName}");
             }
             catch (Exception ex)
             {
@@ -90,22 +82,22 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 
             try
             {
-                _logger.LogInformation($"Downloading {path} from blob storage {_blobContainerClient.Name}");
+                _logger.LogDebug($"Downloading {path} from blob storage {_containerName}");
 
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(GetFullBlobName(path));
-
-                using (var memoryStream = new MemoryStream())
+                using (var stream = new MemoryStream())
                 {
-                    await blobClient.DownloadToAsync(memoryStream);
-                    fileContent = Encoding.UTF8.GetString(memoryStream.ToArray());
+                    await Download(path, stream);
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        fileContent = reader.ReadToEnd();
+                    }
                 }
 
-                _logger.LogInformation($"Downloaded {path} from blob storage {_blobContainerClient.Name}");
-
+                _logger.LogDebug($"Downloaded {path} from blob storage {_containerName}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error downloading {path} from blob storage {_blobContainerClient.Name}");
+                _logger.LogError(ex, $"Error downloading {path} from blob storage {_containerName}");
                 throw;
             }
 
@@ -116,19 +108,18 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
         {
             try
             {
-                string directoryName = GetBlobDirectoryName(path);
-                string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
+                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogInformation($"Deleting {path} from blob storage {_blobContainerClient.Name}");
+                _logger.LogDebug($"Deleting {path} from blob storage {_containerName}");
 
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
-                await blobClient.DeleteIfExistsAsync();
+                await blob.DeleteAsync();
 
+                _logger.LogDebug($"Deleted {path} from blob storage {_containerName}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error deleting {path} from blob storage {_blobContainerClient.Name}");
+                _logger.LogError(ex, $"Error deleting {path} from blob storage {_containerName}");
                 throw;
             }
         }
@@ -138,23 +129,49 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
             bool? exists = null;
             try
             {
-                string directoryName = GetBlobDirectoryName(path);
-                string blobName = GetBlobFileName(path);
-                string fullBlobName = string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
+                var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
+                var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                BlobClient blobClient = _blobContainerClient.GetBlobClient(fullBlobName);
-                exists = await blobClient.ExistsAsync();
+                _logger.LogDebug($"Checking for {path} exists in blob storage {_containerName}");
 
-                _logger.LogInformation($"Checked if {path} exists in blob storage {_blobContainerClient.Name}: {exists}");
+                exists = await blob.ExistsAsync();
 
+                _logger.LogDebug($"Checked for {path} exists in blob storage {_containerName}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error checking {path} exists in blob storage {_blobContainerClient.Name}");
+                _logger.LogError(ex, $"Error checking {path} exists in blob storage {_containerName}");
                 throw;
             }
 
             return exists;
+        }
+
+        private async Task Download(string path, MemoryStream stream)
+        {
+            var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
+            var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await blob.DownloadToStreamAsync(memoryStream);
+
+                memoryStream.Position = 0;
+                memoryStream.CopyTo(stream);
+                stream.Position = 0;
+            }
+        }
+
+        private async Task<CloudBlobDirectory> GetCloudBlobDirectory(string path)
+        {
+            var account = CloudStorageAccount.Parse(_connectionString);
+            var client = account.CreateCloudBlobClient();
+            var container = client.GetContainerReference(_containerName);
+
+            var directory = container.GetDirectoryReference(GetBlobDirectoryName(path));
+            await container.CreateIfNotExistsAsync();
+
+            return directory;
         }
 
         private static string GetBlobFileName(string path)
@@ -175,78 +192,71 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 : directoryName += '/';
         }
 
-        private static string GetFullBlobName(string path)
+        private async Task<List<CloudBlob>> GetBlobsHierarchicalListingAsync(CloudBlobDirectory directory, bool recursive)
         {
-            string directoryName = GetBlobDirectoryName(path);
-            string blobName = GetBlobFileName(path);
-            return string.IsNullOrEmpty(directoryName) ? blobName : $"{directoryName}{blobName}";
-        }
-
-
-        private async Task<List<BlobItem>> GetBlobsHierarchicalListingAsync(string prefix, bool recursive)
-        {
-            var blobs = new List<BlobItem>();
+            var blobs = new List<CloudBlob>();
 
             try
             {
-                await foreach (BlobHierarchyItem blobItem in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: prefix, delimiter: "/"))
+                BlobContinuationToken continuationToken = null;
+
+                do
                 {
-                    if (blobItem.IsPrefix)
+                    BlobResultSegment resultSegment = await directory.ListBlobsSegmentedAsync(continuationToken);
+
+                    foreach (var blobItem in resultSegment.Results)
                     {
-                        _logger.LogInformation($"Found prefix: {blobItem.Prefix}");
-                        if (recursive)
+                        if (blobItem is CloudBlobDirectory && recursive)
                         {
-                            string newPrefix = blobItem.Prefix.EndsWith("/") ? blobItem.Prefix : $"{blobItem.Prefix}/";
-                            blobs.AddRange(await GetBlobsHierarchicalListingAsync(newPrefix, recursive));
+                            var dir = blobItem as CloudBlobDirectory;
+                            blobs.AddRange(await GetBlobsHierarchicalListingAsync(dir, recursive));
+                        }
+                        else if (blobItem is CloudBlob)
+                        {
+                            blobs.Add(blobItem as CloudBlob);
                         }
                     }
-                    else if (blobItem.IsBlob)
-                    {
-                        _logger.LogInformation($"Found blob: {blobItem.Blob.Name}");
-                        blobs.Add(blobItem.Blob);
-                    }
-                }
+
+                    continuationToken = resultSegment.ContinuationToken;
+
+                } while (continuationToken != null);
             }
-            catch (RequestFailedException ex)
+            catch (StorageException ex)
             {
-                _logger.LogError(ex, $"Error listing files in blob storage {_blobContainerClient.Name} with prefix '{prefix}'");
+                _logger.LogError(ex, $"Error listing file in blob storage {_containerName}");
                 throw;
             }
 
             return blobs;
         }
 
-        public string GetContainerSasUri(string groupPolicyIdentifier, DateTime startTime, DateTime expiryTime, string ipAddress, BlobSasPermissions? permissions = null)
+        public string GetContainerSasUri(string groupPolicyIdentifier, DateTime startTime, DateTime expiryTime, string ipAddress, SharedAccessBlobPermissions? permissions = null)
         {
-            if (permissions == null && string.IsNullOrEmpty(groupPolicyIdentifier))
+            var account = CloudStorageAccount.Parse(_connectionString);
+            var client = account.CreateCloudBlobClient();
+            var container = client.GetContainerReference(_containerName);
+
+            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy()
             {
-                throw new Exception("A Sas token cannot be generated when permissions are not specified unless a group policy is used");
-            }
-            BlobSasBuilder sasBuilder = new BlobSasBuilder
-            {
-                BlobContainerName = _blobContainerClient.Name,
-                Resource = "c", 
-                StartsOn = startTime,
-                ExpiresOn = expiryTime
+                SharedAccessStartTime = startTime,
+                SharedAccessExpiryTime = expiryTime
             };
 
             if (permissions.HasValue)
             {
-                sasBuilder.SetPermissions(permissions.Value);
+                policy.Permissions = permissions.Value;
             }
-
-            if (!string.IsNullOrEmpty(groupPolicyIdentifier))
+            else if (string.IsNullOrEmpty(groupPolicyIdentifier))
             {
-                sasBuilder.Identifier = groupPolicyIdentifier;
+                throw new Exception("A Sas token cannot be generated when permissions are not specified unless a group policy is used");
             }
 
-            if (!string.IsNullOrEmpty(ipAddress))
-            {
-                sasBuilder.IPRange = SasIPRange.Parse(ipAddress);
-            }
+            var ipAddressOrRange = !string.IsNullOrEmpty(ipAddress)
+                ? new IPAddressOrRange(ipAddress)
+                : null;
 
-            Uri sasUri = _blobContainerClient.GenerateSasUri(sasBuilder);
-            return sasUri.ToString();
+            var sasContainerToken = container.GetSharedAccessSignature(policy, groupPolicyIdentifier, null, ipAddressOrRange);
+            return container.Uri + sasContainerToken;
         }
     }
 }

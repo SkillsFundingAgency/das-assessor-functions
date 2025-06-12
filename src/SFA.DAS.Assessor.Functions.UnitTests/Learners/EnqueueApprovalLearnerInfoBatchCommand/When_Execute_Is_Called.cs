@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Data;
-using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerInfoBatchCommand
 {
@@ -79,7 +76,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
         private Mock<IOuterApiClient> _mockOuterApiClient;
         private ILogger<Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand> _logger;
         private Mock<IAssessorServiceRepository> _mockAssessorServiceRepository;
-        public Mock<IQueueService> QueueService;
+        public Mock<IAsyncCollector<ProcessApprovalBatchLearnersCommand>> StorageQueue;
 
         public TestFixture Setup()
         {
@@ -96,9 +93,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
                 .Setup(x => x.GetLearnersWithoutEmployerInfo())
                 .ReturnsAsync(new Dictionary<string, long>());
 
-            QueueService = new Mock<IQueueService>();
+            StorageQueue = new Mock<IAsyncCollector<ProcessApprovalBatchLearnersCommand>>();
 
-            _sut = new Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand(_mockOuterApiClient.Object, _logger, _mockAssessorServiceRepository.Object, QueueService.Object);
+            _sut = new Domain.Learners.EnqueueApprovalLearnerInfoBatchCommand(_mockOuterApiClient.Object, _logger, _mockAssessorServiceRepository.Object);
+
+            _sut.StorageQueue = StorageQueue.Object;
 
             return this;
         }
@@ -128,7 +127,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
 
         public void VerifyMessageAddedToStorageQueue(ProcessApprovalBatchLearnersCommand message)
         {
-            QueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.StartUpdateLearnersInfo, It.Is<ProcessApprovalBatchLearnersCommand>(m => m.BatchNumber == message.BatchNumber)));
+            StorageQueue.Verify(p => p.AddAsync(It.Is<ProcessApprovalBatchLearnersCommand>(m => m.BatchNumber == message.BatchNumber), default));
         }
 
         public void VerifyNoCallToApprovalApi()
@@ -138,7 +137,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueApprovalLearnerIn
 
         public void VerifyNoMessageAddedToStorageQueue()
         {
-            QueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.StartUpdateLearnersInfo, It.IsAny<ProcessApprovalBatchLearnersCommand>()), Times.Never);
+            StorageQueue.Verify(p => p.AddAsync(It.IsAny<ProcessApprovalBatchLearnersCommand>(), default), Times.Never);
         }
     }
 }

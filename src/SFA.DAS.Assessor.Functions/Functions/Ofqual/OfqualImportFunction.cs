@@ -1,47 +1,44 @@
-﻿using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
-using Microsoft.DurableTask.Client;
-using Microsoft.DurableTask;
 using SFA.DAS.Assessor.Functions.Domain.Entities.Ofqual;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
 {
     public class OfqualImportFunction
     {
-        private readonly ILogger<OfqualImportFunction> _logger;
-
-        public OfqualImportFunction(ILogger<OfqualImportFunction> logger)
-        {
-            _logger = logger;
-        }
-
-        [Function("OfqualImport")]
-        public async Task Run(
-            [TimerTrigger("%OfqualImportTimerSchedule%", RunOnStartup = false)] TimerInfo myTimer,
-            [DurableClient] DurableTaskClient starter)
+        [FunctionName("OfqualImport")]
+        public static async Task Run(
+            [TimerTrigger("%FunctionsOptions:OfqualImportOptions:Schedule%", RunOnStartup = false)] TimerInfo myTimer,
+            [DurableClient] IDurableOrchestrationClient starter,
+            ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    _logger.LogInformation("OfqualImport timer trigger has started later than scheduled");
+                    log.LogInformation("OfqualImport timer trigger has started later than scheduled");
                 }
 
-                string instanceId = await starter.ScheduleNewOrchestrationInstanceAsync(nameof(RunOfqualImportOrchestrator), null);
+                // Function input comes from the request content.
+                string instanceId = await starter.StartNewAsync(nameof(RunOfqualImportOrchestrator), null);
 
-                _logger.LogInformation($"Started OfqualImport with ID = '{instanceId}'.");
+                log.LogInformation($"Started OfqualImport with ID = '{instanceId}'.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"OfqualImport failed. Exception message: {ex.Message}");
+                log.LogError(ex, $"OfqualImport failed. Exception message: {ex.Message}");
                 throw;
             }
         }
 
-        [Function(nameof(RunOfqualImportOrchestrator))]
-        public async Task<int> RunOfqualImportOrchestrator([OrchestrationTrigger] TaskOrchestrationContext context)
+        [FunctionName(nameof(RunOfqualImportOrchestrator))]
+        public async Task<int> RunOfqualImportOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
         {
+            ILogger replaySafeLogger = context.CreateReplaySafeLogger(log);
 
             var parallelTasks = new List<Task>
             {
@@ -51,16 +48,16 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
 
             await Task.WhenAll(parallelTasks);
 
-            _logger.LogInformation("Loading Ofqual Standards for Ofqual Organisations using data in staging tables.");
+            replaySafeLogger.LogInformation("Loading Ofqual Standards for Ofqual Organisations using data in staging tables.");
 
             int standardsLoaded = await context.CallActivityAsync<int>(nameof(OfqualStandardsLoader.LoadStandards), null);
 
-            _logger.LogInformation($"Ofqual import complete. {standardsLoaded} Ofqual standards were loaded for Ofqual organisations.");
+            replaySafeLogger.LogInformation($"Ofqual import complete. {standardsLoaded} Ofqual standards were loaded for Ofqual organisations.");
 
             return standardsLoaded;
         }
 
-        private async Task DoOrganisationsTasks(TaskOrchestrationContext context)
+        private async Task DoOrganisationsTasks(IDurableOrchestrationContext context)
         {
             string organisationsDataFilePath = await context.CallActivityAsync<string>(nameof(OrganisationsDownloader.DownloadOrganisationsData), null);
             var ofqualOrganisationData = await context.CallActivityAsync<IEnumerable<OfqualOrganisation>>(nameof(OfqualDataReader.ReadOrganisationsData), organisationsDataFilePath);
@@ -68,7 +65,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Ofqual
             await context.CallActivityAsync(nameof(OfqualFileMover.MoveOfqualFileToProcessed), organisationsDataFilePath);
         }
 
-        private async Task DoQualificationsTasks(TaskOrchestrationContext context)
+        private async Task DoQualificationsTasks(IDurableOrchestrationContext context)
         {
             string qualificationsDataFilePath = await context.CallActivityAsync<string>(nameof(QualificationsDownloader.DownloadQualificationsData), null);
             var ofqualQualificationData = await context.CallActivityAsync<IEnumerable<OfqualStandard>>(nameof(OfqualDataReader.ReadQualificationsData), qualificationsDataFilePath);

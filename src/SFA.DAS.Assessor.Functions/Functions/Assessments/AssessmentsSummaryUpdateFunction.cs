@@ -1,4 +1,4 @@
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Assessments.Interfaces;
 using System.Threading.Tasks;
@@ -14,8 +14,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Assessments
             _command = command;
         }
 
-        [Function("AssessmentsSummaryUpdate")]
-        public async Task Run([TimerTrigger("%AssessmentsSummaryUpdateOptions%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
+        [FunctionName("AssessmentsSummaryUpdate")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:AssessmentsSummaryUpdateOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
             await FunctionHelper.Run("AssessmentsSummaryUpdate", async () => 
             { 

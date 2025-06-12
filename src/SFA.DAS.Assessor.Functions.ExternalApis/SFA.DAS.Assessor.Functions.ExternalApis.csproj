@@ -1,24 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" Version="13.0.1" />
-		<PackageReference Include="Azure.Identity" Version="1.13.1" />
-		<PackageReference Include="MediatR" Version="12.4.1" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-		<PackageReference Include="Polly" Version="8.5.0" />
+		<PackageReference Include="AutoMapper" Version="7.0.1" />
+		<PackageReference Include="Azure.Identity" Version="1.10.4" />
+		<PackageReference Include="MediatR" Version="7.0.0" />
+		<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
+		<PackageReference Include="Polly" Version="6.1.0" />
+		<PackageReference Include="Polly.Extensions.Http" Version="2.0.1" />
 		<PackageReference Include="SFA.DAS.Http" Version="3.2.69" />
 	</ItemGroup>
-  <ItemGroup>
-    <!-- transitive packages due to SFA.DAS.Http-->
-    <!-- deprecated warning for Microsoft.IdentityModel.Clients.ActiveDirectory should be resolved when SFA.DAS.Http is upgraded-->
-    <!-- deprecated warning for NLog.Config should be resolved when SFA.DAS.Http is upgraded-->
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.11" />
-  </ItemGroup>
-  
+	
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.Assessor.Domain\SFA.DAS.Assessor.Functions.Domain.csproj" />
 		<ProjectReference Include="..\SFA.DAS.Assessor.Functions.Infrastructure\SFA.DAS.Assessor.Functions.Infrastructure.csproj" />

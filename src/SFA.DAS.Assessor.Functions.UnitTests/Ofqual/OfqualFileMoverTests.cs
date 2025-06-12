@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -16,8 +17,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ofqual
         {
             var fileTransferClientMock = new Mock<IOfqualDownloadsBlobFileTransferClient>();
 
-            var sut = new OfqualFileMover(fileTransferClientMock.Object, new Mock<ILogger<OfqualFileMover>>().Object); 
-            await sut.MoveOfqualFileToProcessed(testFileName);
+            var contextMock = new Mock<IDurableActivityContext>();
+            contextMock.Setup(c => c.GetInput<string>())
+                       .Returns(testFileName);
+
+            var sut = new OfqualFileMover(fileTransferClientMock.Object); 
+            await sut.MoveOfqualFileToProcessed(contextMock.Object, new Mock<ILogger>().Object);
             
             fileTransferClientMock.Verify(f => f.DownloadFile($"Downloads/{testFileName}"), Times.Once);
         }
@@ -31,8 +36,11 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ofqual
             fileTransferClientMock.Setup(f => f.DownloadFile($"Downloads/{testFileName}"))
                                   .ReturnsAsync(testFileContent);
 
-            var sut = new OfqualFileMover(fileTransferClientMock.Object, new Mock<ILogger<OfqualFileMover>>().Object);
-            await sut.MoveOfqualFileToProcessed(testFileName);
+            var contextMock = new Mock<IDurableActivityContext>();
+            contextMock.Setup(c => c.GetInput<string>()).Returns(testFileName);
+
+            var sut = new OfqualFileMover(fileTransferClientMock.Object);
+            await sut.MoveOfqualFileToProcessed(contextMock.Object, new Mock<ILogger>().Object);
 
             fileTransferClientMock.Verify(f => f.UploadFile(testFileContent, $"Processed/{testFileName}"), Times.Once);
         }
@@ -42,8 +50,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ofqual
         {
             var fileTransferClientMock = new Mock<IOfqualDownloadsBlobFileTransferClient>();
 
-            var sut = new OfqualFileMover(fileTransferClientMock.Object, new Mock<ILogger<OfqualFileMover>>().Object);
-            await sut.MoveOfqualFileToProcessed(testFileName);
+            var contextMock = new Mock<IDurableActivityContext>();
+            contextMock.Setup(c => c.GetInput<string>())
+                       .Returns(testFileName);
+
+            var sut = new OfqualFileMover(fileTransferClientMock.Object);
+            await sut.MoveOfqualFileToProcessed(contextMock.Object, new Mock<ILogger>().Object);
 
             fileTransferClientMock.Verify(f => f.DeleteFile($"Downloads/{testFileName}"), Times.Once);
         }

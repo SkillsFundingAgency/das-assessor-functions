@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -29,6 +29,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.DequeueLearnerInfoComman
         private Domain.Learners.DequeueLearnerInfoCommand _sut;
         private ILogger<Domain.Learners.DequeueLearnerInfoCommand> _logger;
         private Mock<IAssessorServiceRepository> _mockAssessorServiceRepository;
+        public Mock<ICollector<string>> StorageQueue = new Mock<ICollector<string>>();
 
         public TestFixture Setup()
         {

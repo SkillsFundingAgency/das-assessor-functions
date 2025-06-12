@@ -1,5 +1,5 @@
 ﻿using FizzWare.NBuilder;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -7,7 +7,6 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
-using SFA.DAS.Assessor.Functions.UnitTests.Helpers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,13 +16,15 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
     {
         private Functions.Print.PrintRequestFunction _sut;
         
-        private Mock<ILogger<Functions.Print.PrintRequestFunction>> _mockLogger;
+        private Mock<ILogger> _mockLogger;
         private Mock<IPrintRequestCommand> _mockCommand;
+        private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockCollector;
 
         public void Arrange(int certificatesReadyToPrint)
         {
-            _mockLogger = new Mock<ILogger<Functions.Print.PrintRequestFunction>>();
+            _mockLogger = new Mock<ILogger>();
             _mockCommand = new Mock<IPrintRequestCommand>();
+            _mockCollector = new Mock<ICollector<CertificatePrintStatusUpdateMessage>>();
 
             var messages = certificatesReadyToPrint > 0
                 ? Builder<CertificatePrintStatusUpdateMessage>.
@@ -35,7 +36,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
                 .Setup(m => m.Execute())
                 .ReturnsAsync(messages);
 
-            _sut = new Functions.Print.PrintRequestFunction(_mockCommand.Object, _mockLogger.Object);
+            _sut = new Functions.Print.PrintRequestFunction(_mockCommand.Object);
         }
 
         [TestCase(10)]
@@ -45,12 +46,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestFunction
         {
             Arrange(certificatesReadyToPrint);
             
-            // Act
-            TimerInfo timerInfo = TimerInfoFactory.Create();    
-            await _sut.Run(timerInfo);
+            // Act - TimerSchedule is not used so null allowed
+            await _sut.Run(new TimerInfo(default, default, false), _mockCollector.Object, _mockLogger.Object);
 
             // Assert
             _mockCommand.Verify(p => p.Execute(), Times.Once());
+            _mockCollector.Verify(p => p.Add(It.IsAny<CertificatePrintStatusUpdateMessage>()), Times.Exactly(certificatesReadyToPrint));
         }
     }
 }

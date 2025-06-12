@@ -90,7 +90,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs.Services
                     {
                         if((ld.Errors?.Count ?? 0) > 0)
                         {
-                            _logger.LogInformation($"Request to import learner details (Uln:{ld.Uln},StdCode:{ld.StdCode}) failed due to '{ld.Outcome}' '{string.Join(", ", ld?.Errors)}'");
+                            _logger.LogDebug($"Request to import learner details (Uln:{ld.Uln},StdCode:{ld.StdCode}) failed due to '{ld.Outcome}' '{string.Join(", ", ld?.Errors)}'");
                         }
                     });
                 }

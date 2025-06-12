@@ -1,4 +1,6 @@
-using Microsoft.Azure.Functions.Worker;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
@@ -8,27 +10,30 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
     public class RefreshIlrsDequeueProvidersFunction
     {
         private readonly IRefreshIlrsDequeueProvidersCommand _command;
-        private readonly ILogger<RefreshIlrsDequeueProvidersFunction> _logger;
 
-        public RefreshIlrsDequeueProvidersFunction(
-            IRefreshIlrsDequeueProvidersCommand command,
-            ILogger<RefreshIlrsDequeueProvidersFunction> logger)
+        public RefreshIlrsDequeueProvidersFunction(IRefreshIlrsDequeueProvidersCommand command)
         {
-            _command = command; 
-            _logger = logger;
+            _command = command;
         }
 
-        [Function("RefreshIlrsDequeueProviders")]
+        [FunctionName("RefreshIlrsDequeueProviders")]
         public async Task Run(
-            [QueueTrigger(QueueNames.RefreshIlrs)] string message)
+            [QueueTrigger(QueueNames.RefreshIlrs)]string message,
+            [Queue(QueueNames.RefreshIlrs)] ICollector<string> refreshIlrsQueue,
+            ILogger log)
         {
             try
             {
+                log.LogDebug($"RefreshIlrsDequeueProviders has started for {message}");
+
+                _command.StorageQueue = refreshIlrsQueue;
                 await _command.Execute(message);
+
+                log.LogDebug($"RefreshIlrsDequeueProviders has finished for {message}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"RefreshIlrsDequeueProviders has failed for {message}");
+                log.LogError(ex, $"RefreshIlrsDequeueProviders has failed for {message}");
                 throw;
             }
         }

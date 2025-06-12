@@ -1,17 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="31.0.2" />
     <PackageReference Include="CountryData.Bogus" Version="3.36.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- deprecated warning for Microsoft.IdentityModel.Clients.ActiveDirectory should be resolved when SFA.DAS.Http is upgraded-->
-    <!-- deprecated warning for NLog.Config should be resolved when SFA.DAS.Http is upgraded-->
   </ItemGroup>
 
   <ItemGroup>

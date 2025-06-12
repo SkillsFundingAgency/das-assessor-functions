@@ -1,37 +1,44 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using Microsoft.Azure.Functions.Worker;
+using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
     public class EnqueueExternalApiLearnersEmployerInfoFunction
     {
         private readonly IEnqueueLearnerInfoCommand _command;
-        private readonly ILogger<EnqueueExternalApiLearnersEmployerInfoFunction> _logger;
 
-        public EnqueueExternalApiLearnersEmployerInfoFunction(IEnqueueLearnerInfoCommand command, ILogger<EnqueueExternalApiLearnersEmployerInfoFunction> logger)
+        public EnqueueExternalApiLearnersEmployerInfoFunction(IEnqueueLearnerInfoCommand command)
         {
             _command = command;
-            _logger = logger;
         }
 
-        [Function("EnqueueExternalApiLearnersEmployerInfoFunction")]
-        public async Task Run([QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message)
+        [FunctionName("EnqueueExternalApiLearnersEmployerInfoFunction")]
+        public async Task Run([QueueTrigger(QueueNames.StartUpdateLearnersInfo)] string message,
+            [Queue(QueueNames.UpdateLearnersInfo)] IAsyncCollector<UpdateLearnersInfoMessage> updateLearnersQueue,
+            ILogger log)
         {
             try
             {
-                if (string.IsNullOrEmpty(message))
-                {
-                    _logger.LogWarning("Received a null or empty message.");
-                    throw new ArgumentException("Message cannot be null or empty");
-                }
+                log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has started.");
 
+                _command.StorageQueue = updateLearnersQueue;
                 await _command.Execute(message);
+
+                log.LogDebug($"EnqueueExternalApiLearnersEmployerInfo has finished.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"EnqueueExternalApiLearnersEmployerInfo has failed.");
+                log.LogError(ex, $"EnqueueExternalApiLearnersEmployerInfo has failed.");
                 throw;
             }
         }

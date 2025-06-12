@@ -1,5 +1,5 @@
 ﻿using FizzWare.NBuilder;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -23,6 +23,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
         private Mock<IExternalBlobFileTransferClient> _mockExternalFileTransferClient;
         private Mock<IInternalBlobFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<DeliveryNotificationOptions>> _mockOptions;
+        private Mock<ICollector<string>> _mockMessageQueue;
 
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
@@ -36,6 +37,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.DeliveryNotificationCommand
             _mockExternalFileTransferClient = new Mock<IExternalBlobFileTransferClient>();
             _mockInternalFileTransferClient = new Mock<IInternalBlobFileTransferClient>();
             _mockOptions = new Mock<IOptions<DeliveryNotificationOptions>>();
+            _mockMessageQueue = new Mock<ICollector<string>>();
 
             _options = new DeliveryNotificationOptions
             {

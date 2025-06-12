@@ -1,27 +1,26 @@
-﻿using Microsoft.Azure.Functions.Worker;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.DatabaseMaintenance.Interfaces;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.DatabaseMaintenance
 {
     public class DatabaseMaintenanceFunction
     {
         private readonly IDatabaseMaintenanceCommand _command;
-        private readonly ILogger<DatabaseMaintenanceFunction> _logger;
 
-        public DatabaseMaintenanceFunction(IDatabaseMaintenanceCommand command, ILogger<DatabaseMaintenanceFunction> logger)
+        public DatabaseMaintenanceFunction(IDatabaseMaintenanceCommand command)
         {
             _command = command;
-            _logger = logger;
         }
 
-        [Function("DatabaseMaintenance")]
-        public async Task Run([TimerTrigger("%DatabaseMaintenanceTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
+        [FunctionName("DatabaseMaintenance")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:DatabaseMaintenanceOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
             await FunctionHelper.Run("DatabaseMaintenance", async () => 
             { 
                 await _command.Execute(); 
-            }, myTimer, _logger);
+            }, myTimer, log);
         }
     }
 }

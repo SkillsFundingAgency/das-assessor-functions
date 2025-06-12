@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -10,8 +10,6 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 using SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoCommand
 {
@@ -105,7 +103,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
         private Mock<IOuterApiClient> _mockOuterApiClient;
         private ILogger<Domain.Learners.EnqueueLearnerInfoCommand> _logger;
         private Mock<IAssessorServiceRepository> _mockAssessorServiceRepository;
-        public Mock<IQueueService> _mockQueueService = new Mock<IQueueService>();
+        public Mock<IAsyncCollector<UpdateLearnersInfoMessage>> StorageQueue = new Mock<IAsyncCollector<UpdateLearnersInfoMessage>>();
 
         public TestFixture Setup()
         {
@@ -124,8 +122,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
             _sut = new Domain.Learners.EnqueueLearnerInfoCommand(
                 _mockOuterApiClient.Object,
                 _logger,
-                _mockAssessorServiceRepository.Object,
-                _mockQueueService.Object);
+                _mockAssessorServiceRepository.Object);
+
+            _sut.StorageQueue = StorageQueue.Object;
 
             return this;
         }
@@ -155,7 +154,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
         public void VerifyMessageAddedToStorageQueue(UpdateLearnersInfoMessage message)
         {
-            _mockQueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.UpdateLearnersInfo, It.Is<UpdateLearnersInfoMessage>(m => m.Equals(message))));
+            StorageQueue.Verify(p => p.AddAsync(It.Is<UpdateLearnersInfoMessage>(m => MessageEquals(m, message)), default));
         }
 
         public void VerifyNoCallToApprovalApi()
@@ -165,7 +164,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Learners.EnqueueLearnerInfoComman
 
         public void VerifyNoMessageAddedToStorageQueue()
         {
-            _mockQueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.UpdateLearnersInfo, It.IsAny<UpdateLearnersInfoMessage>()), Times.Never);
+            StorageQueue.Verify(p => p.AddAsync(It.IsAny<UpdateLearnersInfoMessage>(), default), Times.Never);
         }
 
         private bool MessageEquals(UpdateLearnersInfoMessage firstMessage, UpdateLearnersInfoMessage secondMessage)

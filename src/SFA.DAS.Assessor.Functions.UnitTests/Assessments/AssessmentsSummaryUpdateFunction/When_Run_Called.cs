@@ -1,10 +1,8 @@
-﻿using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker;
+﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Assessments.Interfaces;
-using SFA.DAS.Assessor.Functions.UnitTests.Helpers;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Assessments.AssessmentSummaryUpdateFlow
@@ -27,9 +25,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Assessments.AssessmentSummaryUpda
         [Test]
         public async Task ThenItShouldExecuteCommand()
         {
-            // Act
-            TimerInfo timerInfo = TimerInfoFactory.Create();
-            await _sut.Run(timerInfo, _logger.Object);
+            // Act - TimerSchedule is not used so null allowed
+            await _sut.Run(new TimerInfo(default, default, false), _logger.Object);
 
             // Assert
             _command.Verify(p => p.Execute(), Times.Once());

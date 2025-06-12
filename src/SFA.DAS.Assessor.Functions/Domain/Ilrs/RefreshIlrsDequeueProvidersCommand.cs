@@ -1,20 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Azure.WebJobs;
+using Newtonsoft.Json;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
 {
     public class RefreshIlrsDequeueProvidersCommand : IRefreshIlrsDequeueProvidersCommand
     {
         private readonly IRefreshIlrsLearnerService _refreshIlrsLearnerService;
-        private readonly IQueueService _queueService;
 
-        public RefreshIlrsDequeueProvidersCommand(IRefreshIlrsLearnerService refreshIlrsLearnerService, IQueueService queueService)
+        public RefreshIlrsDequeueProvidersCommand(IRefreshIlrsLearnerService refreshIlrsLearnerService)
         {
             _refreshIlrsLearnerService = refreshIlrsLearnerService;
-            _queueService = queueService;
         }
 
         public async Task Execute(string message)
@@ -23,8 +21,10 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
             var nextPageProviderMessage = await _refreshIlrsLearnerService.ProcessLearners(providerMessage);
             if (nextPageProviderMessage != null)
             {
-                await _queueService.EnqueueMessageAsync(QueueNames.RefreshIlrs, nextPageProviderMessage);
+                StorageQueue.Add(JsonConvert.SerializeObject(nextPageProviderMessage));
             }
+        }
+
+        public ICollector<string> StorageQueue { get; set; }
     }
-}
 }

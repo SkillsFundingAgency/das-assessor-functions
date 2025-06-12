@@ -1,4 +1,4 @@
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.ExternalApiDataSync.Interfaces;
 using System.Threading.Tasks;
@@ -8,21 +8,19 @@ namespace SFA.DAS.Assessor.Functions.Functions.ExternalApiDataSync
     public class RebuildExternalApiSandboxFunction
     {
         private readonly IRebuildExternalApiSandboxCommand _command;
-        private readonly ILogger<RebuildExternalApiSandboxFunction> _logger;
 
-        public RebuildExternalApiSandboxFunction(IRebuildExternalApiSandboxCommand command, ILogger<RebuildExternalApiSandboxFunction> logger)
+        public RebuildExternalApiSandboxFunction(IRebuildExternalApiSandboxCommand command)
         {
             _command = command;
-            _logger = logger;
         }
-
-        [Function("RebuildExternalApiSandbox")]
-        public async Task Run([TimerTrigger("%RebuildExternalApiSandboxTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
+        
+        [FunctionName("RebuildExternalApiSandbox")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:RebuildExternalApiSandboxOptions:Schedule%", RunOnStartup = false)]TimerInfo myTimer, ILogger log)
         {
             await FunctionHelper.Run("RebuildExternalApiSandbox", async () => 
             { 
                 await _command.Execute(); 
-            }, myTimer, _logger);
+            }, myTimer, log);
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
-using SFA.DAS.Assessor.Functions.Infrastructure;
-using Microsoft.Extensions.Logging;
-using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
+﻿using System.Threading.Tasks;
+using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Infrastructure;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
 {
@@ -11,20 +12,17 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
         private readonly IRefreshIlrsAccessorSettingService _refreshIlrsAccessorSettingService;
         private readonly IRefreshIlrsProviderService _refreshIlrsProviderService;
         private readonly IDateTimeHelper _dateTimeHelper;
-        private readonly IQueueService _queueService;
         private readonly ILogger<RefreshIlrsEnqueueProvidersCommand> _logger;
 
         public RefreshIlrsEnqueueProvidersCommand(
             IRefreshIlrsAccessorSettingService refreshIlrsAccessorSettingService,
             IRefreshIlrsProviderService refreshIlrsProviderService, 
             IDateTimeHelper dateTimeHelper,
-            IQueueService queueService,
             ILogger<RefreshIlrsEnqueueProvidersCommand> logger)
         {
             _refreshIlrsAccessorSettingService = refreshIlrsAccessorSettingService;
             _refreshIlrsProviderService = refreshIlrsProviderService;
             _dateTimeHelper = dateTimeHelper;
-            _queueService = queueService;
             _logger = logger;
         }
 
@@ -38,7 +36,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
             {
                 foreach (var message in output)
                 {
-                    await _queueService.EnqueueMessageAsync(QueueNames.RefreshIlrs, message);
+                    StorageQueue.Add(JsonConvert.SerializeObject(message));
                 }
 
                 // the last run datetime will only be updated when providers have been queued, this
@@ -48,5 +46,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Ilrs
 
             _logger.LogInformation($"Queued {(output?.Count ?? 0)} providers updates between {previousRunDateTime} and {nextRunDateTime}.");
         }
+
+        public ICollector<string> StorageQueue { get; set; }
     }
 }

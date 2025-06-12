@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using CsvHelper.Configuration.Attributes;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
@@ -15,46 +13,43 @@ namespace SFA.DAS.Assessor.Functions.Ilrs
     {
         private readonly IRefreshIlrsEnqueueProvidersCommand _command;
         private readonly RefreshIlrsOptions _settings;
-        private readonly ILogger<RefreshIlrsEnqueueProvidersFunction> _logger;
 
-        public RefreshIlrsEnqueueProvidersFunction(
-            IRefreshIlrsEnqueueProvidersCommand command, 
-            IOptions<RefreshIlrsOptions> options,
-            ILogger<RefreshIlrsEnqueueProvidersFunction> logger)
+        public RefreshIlrsEnqueueProvidersFunction(IRefreshIlrsEnqueueProvidersCommand command, IOptions<RefreshIlrsOptions> options)
         {
             _command = command;
             _settings = options?.Value;
-            _logger = logger;
         }
 
-        [Function("RefreshIlrsEnqueueProviders")]
-        public async Task Run(
-            [TimerTrigger("%EnqueueProvidersTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
+        [FunctionName("RefreshIlrsEnqueueProviders")]
+        public async Task Run([TimerTrigger("%FunctionsOptions:RefreshIlrsOptions:EnqueueProvidersSchedule%", RunOnStartup = false)]TimerInfo myTimer,
+            [Queue(QueueNames.RefreshIlrs)] ICollector<string> refreshIlrsQueue,
+            ILogger log)
         {
             try
             {
                 if (myTimer.IsPastDue)
                 {
-                    _logger.LogInformation("RefreshIlrsEnqueueProviders has started later than scheduled");
+                    log.LogInformation("RefreshIlrsEnqueueProviders has started later than scheduled");
 
                     if (myTimer.ScheduleStatus.Last < DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(_settings.EnqueueProvidersMaxPastDueMinutes)))
                     {
-                        _logger.LogError($"RefreshIlrsEnqueueProviders has exceeded {_settings.EnqueueProvidersMaxPastDueMinutes} minutes past due time and will next run at {myTimer.ScheduleStatus.Next}");
+                        log.LogError($"RefreshIlrsEnqueueProviders has exceeded {_settings.EnqueueProvidersMaxPastDueMinutes} minutes past due time and will next run at {myTimer.Schedule.GetNextOccurrence(DateTime.UtcNow)}");
                         return;
                     }
                 }
                 else
                 {
-                    _logger.LogInformation("RefreshIlrsEnqueueProviders has started");
+                    log.LogInformation("RefreshIlrsEnqueueProviders has started");
                 }
 
+                _command.StorageQueue = refreshIlrsQueue;
                 await _command.Execute();
 
-                _logger.LogInformation("RefreshIlrsEnqueueProviders has finished");
+                log.LogInformation("RefreshIlrsEnqueueProviders has finished");
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex, "RefreshIlrsEnqueueProviders has failed");
+                log.LogError(ex, "RefreshIlrsEnqueueProviders has failed");
             }
         }
     }

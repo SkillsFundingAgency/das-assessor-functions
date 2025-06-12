@@ -1,38 +1,46 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
-using Microsoft.Azure.Functions.Worker;
+using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
     public class StartLearnersEmployerInfoUpdateFunction
     {
         private readonly IEnqueueApprovalLearnerInfoBatchCommand _command;
-        private readonly ILogger<StartLearnersEmployerInfoUpdateFunction> _logger;   
 
-        public StartLearnersEmployerInfoUpdateFunction(IEnqueueApprovalLearnerInfoBatchCommand command, ILogger<StartLearnersEmployerInfoUpdateFunction> logger)
+        public StartLearnersEmployerInfoUpdateFunction(IEnqueueApprovalLearnerInfoBatchCommand command)
         {
             _command = command;
-            _logger = logger;
         }
 
-        [Function("StartLearnersEmployerInfoUpdateFunction")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
+        [FunctionName("StartLearnersEmployerInfoUpdateFunction")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [Queue(QueueNames.StartUpdateLearnersInfo)] IAsyncCollector<ProcessApprovalBatchLearnersCommand> startUpdatingLearnersQueue,
+            ILogger log)
         {
             try
             {
-                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has started.");
+                log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has started.");
 
+                _command.StorageQueue = startUpdatingLearnersQueue;
                 await _command.Execute();
 
-                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has finished.");
+                log.LogDebug($"StartLearnersEmployerInfoUpdateFunction has finished.");
 
                 await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"StartLearnersEmployerInfoUpdateFunction has failed.");
+                log.LogError(ex, $"StartLearnersEmployerInfoUpdateFunction has failed.");
                 throw;
             }
 

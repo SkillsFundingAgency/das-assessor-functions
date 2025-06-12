@@ -1,6 +1,5 @@
 ﻿using FizzWare.NBuilder;
-using FluentAssertions;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -9,12 +8,10 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Extensions;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
-using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Constants;
 using SFA.DAS.Assessor.Functions.ExternalApis.Assessor.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure.Options.PrintCertificates;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
@@ -35,12 +32,10 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
         private readonly int _batchNumberWithCertificates = 1;
         private Guid _batchWithCertificatesId;
         private Batch _batchWithCertificates;
-        private List<CertificatePrintStatusUpdateMessage> _updateMessagesWithCertificates;
 
         private readonly int _batchNumberWithoutCertificates = 2;
         private Guid _batchWithoutCertificatesId;
         private Batch _batchWithoutCertificates;
-        private List<CertificatePrintStatusUpdateMessage> _updateMessagesWithoutCertificates;
 
         private List<CertificatePrintSummaryBase> _certificates;
 
@@ -106,16 +101,9 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
 
             _batchWithCertificatesId = Guid.NewGuid();
             _batchWithCertificates = new Batch { Id = _batchWithCertificatesId, BatchNumber = _batchNumberWithCertificates, Certificates = _certificates };
-            _updateMessagesWithCertificates = _certificates.Select(certificate => new CertificatePrintStatusUpdateMessage
-            {
-                Status = CertificateStatus.SentToPrinter,
-                BatchNumber = _batchWithCertificates.BatchNumber
-            }).ToList();
 
             _batchWithoutCertificatesId = Guid.NewGuid();
-
             _batchWithoutCertificates = new Batch { Id = _batchWithoutCertificatesId, BatchNumber = _batchNumberWithoutCertificates, Certificates = new List<CertificatePrintSummaryBase>() };
-            _updateMessagesWithoutCertificates = new List<CertificatePrintStatusUpdateMessage>();
 
             if (batchWithCertificates)
             {
@@ -128,12 +116,8 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
                     .ReturnsAsync(_batchWithCertificates.Certificates);
 
                 _mockBatchService
-                    .Setup(m => m.BuildPrintBatchReadyToPrint(It.IsAny<DateTime>(), It.IsAny<int>()))
-                    .ReturnsAsync(_batchWithCertificates);
-
-                 _mockBatchService
-                    .Setup(m => m.Update(It.IsAny<Batch>()))
-                    .ReturnsAsync(_updateMessagesWithCertificates);
+                .Setup(m => m.BuildPrintBatchReadyToPrint(It.IsAny<DateTime>(), It.IsAny<int>()))
+                .ReturnsAsync(_batchWithCertificates);
             }
             else
             {
@@ -148,11 +132,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
                 _mockBatchService
                 .Setup(m => m.BuildPrintBatchReadyToPrint(It.IsAny<DateTime>(), It.IsAny<int>()))
                 .ReturnsAsync(_batchWithoutCertificates);
-
-                _mockBatchService
-                    .Setup(m => m.Update(It.IsAny<Batch>()))
-                    .ReturnsAsync(_updateMessagesWithoutCertificates);
-
             }
 
             _sut = new Domain.Print.PrintRequestCommand(
@@ -301,30 +280,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintRequestCommand
             // Assert
             _mockExternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<string>(), It.Is<string>(s => s == $"{_options.Directory}/{fileName}")));
             _mockInternalFileTransferClient.Verify(m => m.UploadFile(It.IsAny<string>(), It.Is<string>(s => s == $"{_options.ArchiveDirectory}/{fileName}")));
-        }
-
-        [Test]
-        public async Task ThenItShouldReturnPrintUpdateMessagesIfThereAreCertificates()
-        {
-            Arrange();
-            
-            // Act
-            var result = await _sut.Execute();
-
-            // Assert
-            result.Should().BeEquivalentTo(_updateMessagesWithCertificates);
-        }
-
-        [Test]
-        public async Task ThenItShouldReturnEmptyListOFPrintUpdateMessagesIfThereAreNoCertificates()
-        {
-            Arrange(false);
-            
-            // Act
-            var result = await _sut.Execute();
-
-            // Assert
-            result.Should().BeNull();
         }
     }
 }
