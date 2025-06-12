@@ -4,7 +4,6 @@ namespace SFA.DAS.Assessor.Functions.Infrastructure.Options.RefreshIlrs
 {
     public class RefreshIlrsOptions
     {
-        public string EnqueueProvidersSchedule { get; set; }
         public int EnqueueProvidersMaxPastDueMinutes { get; set; }
         public int ProviderPageSize { get; set; }
         public DateTime ProviderInitialRunDate { get; set; }

@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Polly;
-using Polly.Extensions.Http;
 using Polly.Retry;
 using SFA.DAS.Assessor.Functions.ExternalApis.Exceptions;
 using System;
@@ -17,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<ApiClientBase> _logger;
-        private readonly RetryPolicy<HttpResponseMessage> _retryPolicy;
+        private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy;
 
         protected readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
         {
@@ -39,7 +38,10 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
 
             _logger = logger;
 
-            _retryPolicy = HttpPolicyExtensions.HandleTransientHttpError().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            _retryPolicy = Policy
+                .Handle<HttpRequestException>()
+                .OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         public string BaseAddress()
@@ -120,13 +122,23 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis
         protected async Task<string> PostPutRequestWithResponse<T>(HttpRequestMessage requestMessage, T model)
         {
             var response = await PostPutRequestWithResponseInternal(requestMessage, model);
-            return await response?.Content.ReadAsStringAsync();
+            if (response == null || response.Content == null)
+            {
+                return null;
+            }
+            return await response.Content.ReadAsStringAsync();
         }
 
         protected async Task<U> PostPutRequestWithResponse<T, U>(HttpRequestMessage requestMessage, T model)
         {
             var response = await PostPutRequestWithResponseInternal(requestMessage, model);
-            var json = await response?.Content.ReadAsStringAsync();
+            if (response == null || response.Content == null)
+            {
+                _logger.LogInformation("HttpRequestException: Response or Content is null");
+                throw new HttpRequestException("Response or Content is null");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
 
             if (response?.StatusCode == HttpStatusCode.OK
                 || response?.StatusCode == HttpStatusCode.Created

@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 
 namespace SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces
 {

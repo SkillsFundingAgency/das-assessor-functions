@@ -1,14 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.5" />
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.33" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="5.2.1" />
-    <PackageReference Include="SFA.DAS.NLog.Targets.Redis" Version="1.2.1" />
+    <Compile Remove="ConfigurationItem.cs" />
+    <Compile Remove="Configuration\AzureTableStorageConfigurationExtensions.cs" />
+    <Compile Remove="Configuration\AzureTableStorageConfigurationProvider.cs" />
+    <Compile Remove="Configuration\AzureTableStorageConfigurationSource.cs" />
+    <Compile Remove="Configuration\JsonConfigurationParser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Data.Tables" Version="12.9.1" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.21.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Transitive references from SFA.DAS.NLog.Targets.Redis can be removed once that nuget package is updated to .net 8-->
+    <!-- deprecated warning for NLog.Config will also be resolved when this package is upgraded -->
+    <PackageReference Include="System.Net.Security" Version="4.3.2" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
   </ItemGroup>
 
 </Project>
