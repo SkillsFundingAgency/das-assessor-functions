@@ -1,62 +1,11 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "appServicePlanInstances": {
-      "type": "int",
-      "defaultValue": 2,
-      "metadata": {
-        "description": "Number of the app service plan instance"
-      }
-    },
-    "appServicePlanSize": {
-      "type": "string",
-      "allowedValues": [
-        "1",
-        "2",
-        "3"
-      ],
-      "defaultValue": "1",
-      "metadata": {
-        "description": "The app service plan size"
-      }
-    },
-    "configurationStorageConnectionString": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Connection string for configuration storage"
-      }
-    },
-    "deployPrivateLinkedScopedResource": {
-      "type": "bool",
-      "metadata": {
-        "description": "Whether to deploy private link scoped resource"
-      }
-    },
     "environmentName": {
       "type": "string",
       "metadata": {
         "description": "Short name of the environment. Used for the reference of the environment in table storage"
-      }
-    },
-    "functionsExtensionVersion": {
-      "type": "string",
-      "defaultValue": "~4",
-      "metadata": {
-        "description": "Azure Functions extension version"
-      }
-    },
-    "loggingRedisConnectionString": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Redis connection string for logging"
-      }
-    },
-    "minimumTlsVersion": {
-      "type": "string",
-      "defaultValue": "TLS1_2",
-      "metadata": {
-        "description": "Minimum TLS version for storage accounts"
       }
     },
     "resourceEnvironmentName": {
@@ -65,54 +14,71 @@
         "description": "Short name of the environment. Used for the naming of azure resources"
       }
     },
-    "resourceGroupLocation": {
-      "type": "string",
-      "metadata": {
-        "description": "Location for the resource group"
-      }
-    },
     "serviceName": {
       "type": "string",
       "metadata": {
         "description": "Short name of the service. Used for the name of resources created"
       }
     },
-    "sharedApimName": {
-      "type": "string",
-      "metadata": {
-        "description": "Shared API Management name"
-      }
-    },
-    "sharedApimResourceGroup": {
-      "type": "string",
-      "metadata": {
-        "description": "Resource group for shared API Management"
-      }
-    },
-    "sharedEnvResourceGroup": {
-      "type": "string",
-      "metadata": {
-        "description": "Resource group for shared environment"
-      }
-    },
-    "sharedEnvVirtualNetworkName": {
-      "type": "string",
-      "metadata": {
-        "description": "Virtual network name for shared environment"
-      }
-    },
-    "sharedSQLServerName": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of the shared SQL Server"
-      }
+    "deployPrivateLinkedScopedResource": {
+      "type": "bool"
     },
     "storageAccountAllowedIPs": {
       "type": "array",
-      "defaultValue": [],
       "metadata": {
         "description": "Allowed IP's"
-      }
+      },
+      "defaultValue": []
+    },
+    "loggingRedisConnectionString": {
+      "type": "securestring"
+    },
+    "configurationStorageConnectionString": {
+      "type": "securestring"
+    },
+    "appServicePlanSize": {
+      "type": "string",
+      "allowedValues": [
+        "1",
+        "2",
+        "3"
+      ],
+      "metadata": {
+        "description": "The app service plan size"
+      },
+      "defaultValue": "1"
+    },
+    "appServicePlanInstances": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of the app service plan instance"
+      },
+      "defaultValue": 2
+    },
+    "functionsExtensionVersion": {
+      "type": "string",
+      "defaultValue": "~4"
+    },
+    "sharedApimResourceGroup": {
+      "type": "string"
+    },
+    "sharedApimName": {
+      "type": "string"
+    },
+    "sharedEnvResourceGroup": {
+      "type": "string"
+    },
+    "sharedEnvVirtualNetworkName": {
+      "type": "string"
+    },
+    "subnetObject": {
+      "type": "object"
+    },
+    "subnetServiceEndpointList": {
+      "type": "array"
+    },
+    "subnetDelegations": {
+      "type": "array"
     },
     "storagePolicyRules": {
       "type": "array",
@@ -121,29 +87,8 @@
         "description": "A list of management policy rules"
       }
     },
-    "subnetDelegations": {
-      "type": "array",
-      "metadata": {
-        "description": "Subnet delegations"
-      }
-    },
-    "subnetObject": {
-      "type": "object",
-      "metadata": {
-        "description": "Subnet object for deployment"
-      }
-    },
-    "subnetServiceEndpointList": {
-      "type": "array",
-      "metadata": {
-        "description": "Service endpoints for subnet"
-      }
-    },
-    "tags": {
-      "type": "object",
-      "metadata": {
-        "description": "Resource tags"
-      }
+    "sharedSQLServerName": {
+      "type": "string"
     },
     "utcNow": {
       "type": "string",
@@ -153,16 +98,16 @@
       }
     },
     "workerAccessRestrictions": {
-      "type": "array",
-      "metadata": {
-        "description": "Access restrictions for function workers"
-      }
+      "type": "array"
+    },
+    "minimumTlsVersion": {
+      "type": "string",
+      "defaultValue": "TLS1_2"
     }
   },
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
     "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
-    "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
     "appServicePlanName": "[concat(variables('resourceNamePrefix'),'-asp')]",
     "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]",
     "storageAccountName": "[concat('das',toLower(parameters('resourceEnvironmentName')),parameters('serviceName'),'str')]",
@@ -171,15 +116,7 @@
   "resources": [
     {
       "apiVersion": "2021-04-01",
-      "name": "[variables('resourceGroupName')]",
-      "type": "Microsoft.Resources/resourceGroups",
-      "location": "[parameters('resourceGroupLocation')]",
-      "tags": "[parameters('tags')]",
-      "properties": {}
-    },
-    {
-      "apiVersion": "2021-04-01",
-      "name": "[concat(variables('functionAppName'), '-apim-subscription-', parameters('utcNow'))]",
+      "name": "[concat(variables('functionAppName'), '-apim-subscription-key-', parameters('utcNow'))]",
       "resourceGroup": "[parameters('sharedApimResourceGroup')]",
       "type": "Microsoft.Resources/deployments",
       "properties": {
@@ -229,10 +166,7 @@
             "value": "[parameters('subnetDelegations')]"
           }
         }
-      },
-      "dependsOn": [
-        "[variables('resourceGroupName')]"
-      ]
+      }
     },
     {
       "apiVersion": "2021-04-01",
@@ -276,10 +210,7 @@
             "value": "[parameters('appServicePlanInstances')]"
           }
         }
-      },
-      "dependsOn": [
-        "[variables('resourceGroupName')]"
-      ]
+      }
     },
     {
       "apiVersion": "2021-04-01",
@@ -299,10 +230,7 @@
             "value": "[variables('functionAppName')]"
           }
         }
-      },
-      "dependsOn": [
-        "[variables('resourceGroupName')]"
-      ]
+      }
     },
     {
       "condition": "[parameters('deployPrivateLinkedScopedResource')]",
@@ -350,7 +278,7 @@
             "value": "[resourceGroup().name]"
           },
           "netFrameworkVersion": {
-            "value": "v8.0"
+            "value": "v6.0"
           },
           "subnetResourceId": {
             "value": "[reference(concat(parameters('subnetObject').name, '-', parameters('utcNow'))).outputs.SubnetResourceId.value]"
@@ -396,6 +324,62 @@
                 {
                   "name": "WEBSITE_RUN_FROM_PACKAGE",
                   "value": "1"
+                },
+                {
+                  "name": "DatabaseMaintenanceTimerSchedule",
+                  "value": "[parameters('databaseMaintenanceTimerSchedule')]"
+                },
+                {
+                  "name": "RebuildExternalApiSandboxTimerSchedule",
+                  "value": "[parameters('rebuildExternalApiSandboxTimerSchedule')]"
+                },
+                {
+                  "name": "EnqueueProvidersTimerSchedule",
+                  "value": "[parameters('enqueueProvidersTimerSchedule')]"
+                },
+                {
+                  "name": "ImportLearnersTimerSchedule",
+                  "value": "[parameters('importLearnersTimerSchedule')]"
+                },
+                {
+                  "name": "OfqualImportTimerSchedule",
+                  "value": "[parameters('ofqualImportTimerSchedule')]"
+                },
+                {
+                  "name": "OfsImportTimerSchedule",
+                  "value": "[parameters('ofsImportTimerSchedule')]"
+                },
+                {
+                  "name": "BlobSasTokenGeneratorTimerSchedule",
+                  "value": "[parameters('blobSasTokenGeneratorTimerSchedule')]"
+                },
+                {
+                  "name": "BlobStorageSamplesTimerSchedule",
+                  "value": "[parameters('blobStorageSamplesTimerSchedule')]"
+                },
+                {
+                  "name": "CertificateDeliveryNotificationTimerSchedule",
+                  "value": "[parameters('certificateDeliveryNotificationTimerSchedule')]"
+                },
+                {
+                  "name": "CertificatePrintRequestTimerSchedule",
+                  "value": "[parameters('certificatePrintRequestTimerSchedule')]"
+                },
+                {
+                  "name": "CertificatePrintResponseTimerSchedule",
+                  "value": "[parameters('certificatePrintResponseTimerSchedule')]"
+                },
+                {
+                  "name": "RefreshProvidersTimerSchedule",
+                  "value": "[parameters('refreshProvidersTimerSchedule')]"
+                },
+                {
+                  "name": "StandardImportTimerSchedule",
+                  "value": "[parameters('standardImportTimerSchedule')]"
+                },
+                {
+                  "name": "StandardSummaryUpdateTimerSchedule",
+                  "value": "[parameters('standardSummaryUpdateTimerSchedule')]"
                 }
               ]
             }
@@ -403,7 +387,6 @@
         }
       },
       "dependsOn": [
-        "[variables('resourceGroupName')]",
         "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]"
       ]
     },
@@ -464,10 +447,6 @@
     }
   ],
   "outputs": {
-    "ResourceGroupName": {
-      "type": "string",
-      "value": "[variables('resourceGroupName')]"
-    },
     "FunctionAppName": {
       "type": "string",
       "value": "[variables('functionAppName')]"

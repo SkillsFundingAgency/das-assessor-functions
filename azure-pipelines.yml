@@ -5,16 +5,14 @@ trigger:
       - "master"
 
 variables:
+- group: RELEASE Management Resources
+- group: RELEASE das-assessor-functions
 - name: SolutionBaseName
   value: SFA.DAS.Assessor.Functions
 - name: BuildConfiguration
   value: release
 - name: BuildPlatform
   value: any cpu
-- group: RELEASE Management Resources
-- group: RELEASE das-assessor-functions
-- name: Deploy
-  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'Manual'), eq(variables['Build.Reason'], 'PullRequest'))]
 
 resources:
   repositories:
@@ -22,7 +20,7 @@ resources:
   - repository: das-platform-building-blocks
     type: github
     name: SkillsFundingAgency/das-platform-building-blocks
-    ref: refs/tags/2.1.28
+    ref: refs/tags/3.0.11
     endpoint: SkillsFundingAgency
   - repository: das-platform-automation
     type: github
