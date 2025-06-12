@@ -294,8 +294,8 @@
                                     "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcNow'))).outputs.storageConnectionString.value]"
                                 },
                                 {
-                                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))).outputs.InstrumentationKey.value]"
+                                    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                                    "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcNow'))).outputs.ConnectionString.value]"
                                 },
                                 {
                                     "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -324,6 +324,62 @@
                                 {
                                     "name": "WEBSITE_RUN_FROM_PACKAGE",
                                     "value": "1"
+                                },
+                                {
+                                  "name": "DatabaseMaintenanceTimerSchedule",
+                                  "value": "[parameters('databaseMaintenanceTimerSchedule')]"
+                                },
+                                {
+                                  "name": "RebuildExternalApiSandboxTimerSchedule",
+                                  "value": "[parameters('rebuildExternalApiSandboxTimerSchedule')]"
+                                },
+                                {
+                                  "name": "EnqueueProvidersTimerSchedule",
+                                  "value": "[parameters('enqueueProvidersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "ImportLearnersTimerSchedule",
+                                  "value": "[parameters('importLearnersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "OfqualImportTimerSchedule",
+                                  "value": "[parameters('ofqualImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "OfsImportTimerSchedule",
+                                  "value": "[parameters('ofsImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "BlobSasTokenGeneratorTimerSchedule",
+                                  "value": "[parameters('blobSasTokenGeneratorTimerSchedule')]"
+                                },
+                                {
+                                  "name": "BlobStorageSamplesTimerSchedule",
+                                  "value": "[parameters('blobStorageSamplesTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificateDeliveryNotificationTimerSchedule",
+                                  "value": "[parameters('certificateDeliveryNotificationTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificatePrintRequestTimerSchedule",
+                                  "value": "[parameters('certificatePrintRequestTimerSchedule')]"
+                                },
+                                {
+                                  "name": "CertificatePrintResponseTimerSchedule",
+                                  "value": "[parameters('certificatePrintResponseTimerSchedule')]"
+                                },
+                                {
+                                  "name": "RefreshProvidersTimerSchedule",
+                                  "value": "[parameters('refreshProvidersTimerSchedule')]"
+                                },
+                                {
+                                  "name": "StandardImportTimerSchedule",
+                                  "value": "[parameters('standardImportTimerSchedule')]"
+                                },
+                                {
+                                  "name": "StandardSummaryUpdateTimerSchedule",
+                                  "value": "[parameters('standardSummaryUpdateTimerSchedule')]"
                                 }
                             ]
                         }
