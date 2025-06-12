@@ -11,7 +11,11 @@
     },
     "appServicePlanSize": {
       "type": "string",
-      "allowedValues": ["1", "2", "3"],
+      "allowedValues": [
+        "1",
+        "2",
+        "3"
+      ],
       "defaultValue": "1",
       "metadata": {
         "description": "The app service plan size"
@@ -225,7 +229,10 @@
             "value": "[parameters('subnetDelegations')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
       "apiVersion": "2021-04-01",
@@ -269,7 +276,10 @@
             "value": "[parameters('appServicePlanInstances')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
       "apiVersion": "2021-04-01",
@@ -289,7 +299,10 @@
             "value": "[variables('functionAppName')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
       "condition": "[parameters('deployPrivateLinkedScopedResource')]",
@@ -390,6 +403,7 @@
         }
       },
       "dependsOn": [
+        "[variables('resourceGroupName')]",
         "[concat(variables('appServicePlanName'), '-', parameters('utcNow'))]"
       ]
     },
