@@ -16,7 +16,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Assessments
         }
 
         [Function("AssessmentsSummaryUpdate")]
-        public async Task Run([TimerTrigger("%AssessmentsSummaryUpdateSchedule%", RunOnStartup = true)]TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%AssessmentsSummaryUpdateSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             await FunctionHelper.Run("AssessmentsSummaryUpdate", async () => 
             { 

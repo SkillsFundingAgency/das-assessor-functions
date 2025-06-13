@@ -18,7 +18,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Print
         }
 
         [Function("BlobStorageSamples")]
-        public async Task Run([TimerTrigger("%BlobStorageSamplesTimerSchedule%", RunOnStartup = true)]TimerInfo myTimer)
+        public async Task Run([TimerTrigger("%BlobStorageSamplesTimerSchedule%", RunOnStartup = false)]TimerInfo myTimer)
         {
             try
             {
