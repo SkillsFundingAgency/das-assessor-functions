@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLog.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Data;
 using SFA.DAS.Assessor.Functions.Domain.Assessors;
 using SFA.DAS.Assessor.Functions.Domain.Assessors.Interfaces;
@@ -67,37 +66,35 @@ namespace SFA.DAS.Assessor.Functions.StartupConfiguration
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            var nLogConfiguration = new NLogConfiguration();
-
-            builder.Services.AddLogging((options) =>
-            {
-                options.SetMinimumLevel(LogLevel.Trace);
-                options.SetMinimumLevel(LogLevel.Trace);
-                options.AddNLog(new NLogProviderOptions
-                {
-                    CaptureMessageTemplates = true,
-                    CaptureMessageProperties = true
-                });
-                options.AddConsole();
-
-                nLogConfiguration.ConfigureNLog();
-            });
-
             builder.AddConfiguration((configBuilder) =>
-            {
-                var configuration = configBuilder
-                    .AddConfiguration(builder.GetCurrentConfiguration())
-                    .AddAzureTableStorageConfiguration(
-                        Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
-                        "SFA.DAS.AssessorFunctions",
-                        Environment.GetEnvironmentVariable("EnvironmentName"),
-                        "1.0")
-                    .Build();
+                     {
+                         var configuration = configBuilder
+                             .AddConfiguration(builder.GetCurrentConfiguration())
+                             .AddAzureTableStorageConfiguration(
+                                 Environment.GetEnvironmentVariable("ConfigurationStorageConnectionString"),
+                                 "SFA.DAS.AssessorFunctions",
+                                 Environment.GetEnvironmentVariable("EnvironmentName"),
+                                 "1.0")
+                             .Build();
 
-                return configuration;
-            });
+                         return configuration;
+                     });
 
             var config = builder.GetCurrentConfiguration();
+
+            builder.Services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.ConnectionString = config["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+            });
+
+            builder.Services.AddLogging(options =>
+            {
+                options.SetMinimumLevel(LogLevel.Information);
+
+                options.AddFilter("Microsoft", LogLevel.Warning);
+                options.AddFilter("System", LogLevel.Warning);
+                options.AddFilter("SFA.DAS.Assessor.Functions", LogLevel.Information);
+            });
 
             builder.Services.AddOptions();
 

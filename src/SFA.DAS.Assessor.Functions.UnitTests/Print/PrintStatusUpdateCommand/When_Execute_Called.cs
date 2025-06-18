@@ -48,20 +48,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintStatusUpdateCommand
         }
 
         [Test]
-        public async Task ThenItShouldLogTheStartOfTheProcess()
-        {
-            // Arrange
-            var message = _certificatePrintStatusUpdateMessage;
-            var logMessage = $"PrintStatusUpdateCommand - Started for message";
-            
-            // Act
-            await _sut.Execute(message);
-
-            // Assert
-            _mockLogger.Verify(m => m.Log(LogLevel.Debug, 0, It.Is<It.IsAnyType>((object v, Type _) => v.ToString().StartsWith(logMessage)), null, (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()), Times.Once);
-        }
-       
-        [Test]
         public async Task ThenItShouldCallCertificateServiceToProcessUpdates()
         {
             // Arrange

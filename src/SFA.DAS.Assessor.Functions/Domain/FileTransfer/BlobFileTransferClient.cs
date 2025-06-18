@@ -59,7 +59,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogDebug($"Uploading {path} to blob storage {_containerName}");
+                _logger.LogInformation($"Uploading {path} to blob storage {_containerName}");
 
                 byte[] array = Encoding.UTF8.GetBytes(fileContents);
                 using (var stream = new MemoryStream(array))
@@ -67,7 +67,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                     await blob.UploadFromStreamAsync(stream);
                 }
 
-                _logger.LogDebug($"Uploaded {path} to blob storage {_containerName}");
+                _logger.LogInformation($"Uploaded {path} to blob storage {_containerName}");
             }
             catch (Exception ex)
             {
@@ -82,7 +82,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
 
             try
             {
-                _logger.LogDebug($"Downloading {path} from blob storage {_containerName}");
+                _logger.LogInformation($"Downloading {path} from blob storage {_containerName}");
 
                 using (var stream = new MemoryStream())
                 {
@@ -93,7 +93,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                     }
                 }
 
-                _logger.LogDebug($"Downloaded {path} from blob storage {_containerName}");
+                _logger.LogInformation($"Downloaded {path} from blob storage {_containerName}");
             }
             catch (Exception ex)
             {
@@ -111,11 +111,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogDebug($"Deleting {path} from blob storage {_containerName}");
+                _logger.LogInformation($"Deleting {path} from blob storage {_containerName}");
 
                 await blob.DeleteAsync();
 
-                _logger.LogDebug($"Deleted {path} from blob storage {_containerName}");
+                _logger.LogInformation($"Deleted {path} from blob storage {_containerName}");
             }
             catch (Exception ex)
             {
@@ -132,11 +132,11 @@ namespace SFA.DAS.Assessor.Functions.Domain.FileTransfer
                 var directory = await GetCloudBlobDirectory(GetBlobDirectoryName(path));
                 var blob = directory.GetBlockBlobReference(GetBlobFileName(path));
 
-                _logger.LogDebug($"Checking for {path} exists in blob storage {_containerName}");
+                _logger.LogInformation($"Checking for {path} exists in blob storage {_containerName}");
 
                 exists = await blob.ExistsAsync();
 
-                _logger.LogDebug($"Checked for {path} exists in blob storage {_containerName}");
+                _logger.LogInformation($"Checked for {path} exists in blob storage {_containerName}");
             }
             catch (Exception ex)
             {
