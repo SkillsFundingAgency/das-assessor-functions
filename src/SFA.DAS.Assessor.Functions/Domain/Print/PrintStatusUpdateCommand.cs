@@ -9,7 +9,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
     {
         private readonly ILogger<PrintStatusUpdateCommand> _logger;
         private readonly ICertificateService _certificateService;
-        
+
         public PrintStatusUpdateCommand(ILogger<PrintStatusUpdateCommand> logger, ICertificateService certificateService)
         {
             _logger = logger;
@@ -23,7 +23,7 @@ namespace SFA.DAS.Assessor.Functions.Domain.Print
             try
             {
                 var validationResponse = await _certificateService.ProcessCertificatesPrintStatusUpdate(message);
-                if(validationResponse.Errors.Any())
+                if (validationResponse.Errors.Any())
                 {
                     var errorMessages = validationResponse.Errors.
                         Where(p => p.ValidationStatusCode != ValidationStatusCode.Warning).
