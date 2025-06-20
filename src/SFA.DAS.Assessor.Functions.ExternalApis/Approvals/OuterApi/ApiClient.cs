@@ -33,27 +33,72 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.Approvals.OuterApi
         public async Task<TResponse> Get<TResponse>(IGetApiRequest request)
         {
             var requestUrl = new Uri(new Uri(_config.Value.BaseUrl), request.GetUrl);
-
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+
             httpRequest.Headers.Add(SubscriptionKeyRequestHeaderKey, _config.Value.Key);
             httpRequest.Headers.Add(VersionRequestHeaderKey, "1");
 
-            var response = await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
-
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound))
+            try
             {
-                _logger.LogWarning($"Page {requestUrl} cannot be found");
-                return Activator.CreateInstance<TResponse>();
-            }
+                var response = await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
 
-            if (response.IsSuccessStatusCode)
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    _logger.LogWarning($"Resource not found: {requestUrl}");
+                    return default;
+                }
+                else if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    _logger.LogError($"Unauthorized access: {requestUrl}");
+                    throw new UnauthorizedAccessException("Unauthorized access to API.");
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    _logger.LogError($"Forbidden access: {requestUrl}");
+                    throw new AccessViolationException("Forbidden access to API.");
+                }
+                else if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    _logger.LogError($"Rate limit exceeded: {requestUrl}");
+
+                    throw new HttpRequestException("Rate limit exceeded.");
+                }
+                else if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+
+                    _logger.LogError($"API request failed: {requestUrl} - Status Code: {response.StatusCode} - Content: {errorContent}");
+                    throw new HttpRequestException($"API request failed with status code {response.StatusCode}.  Details: {errorContent}");
+                }
+
+                var json = string.Empty;
+                try
+                {
+                    json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<TResponse>(json);
+                }
+                catch (JsonReaderException ex)
+                {
+                    _logger.LogError(ex, $"Error deserializing JSON: {requestUrl} - JSON: {json}");
+                    throw new JsonReaderException("Error deserializing API response.", ex);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error deserializing JSON: {requestUrl}");
+                    throw new Exception("Error during deserialization of API response", ex);
+                }
+
+            }
+            catch (HttpRequestException ex)
             {
-                var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                return JsonConvert.DeserializeObject<TResponse>(json);
+                _logger.LogError(ex, $"HTTP request error: {requestUrl}");
+                throw new HttpRequestException($"Error making API request to {requestUrl}", ex);
             }
-
-            response.EnsureSuccessStatusCode();
-            return default;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unexpected error in Get request: {requestUrl}");
+                throw;
+            }
         }
     }
 }

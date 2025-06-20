@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -6,6 +6,7 @@ using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Ilrs.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
+using SFA.DAS.Assessor.Functions.Infrastructure.Queues;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -135,7 +136,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
         {
             public Mock<IRefreshIlrsAccessorSettingService> RefreshIlrsAccessorSettingService = new Mock<IRefreshIlrsAccessorSettingService>();
             public Mock<IRefreshIlrsProviderService> RefreshIlrsProviderService = new Mock<IRefreshIlrsProviderService>();
-            public Mock<ICollector<string>> StorageQueue = new Mock<ICollector<string>>();
+            public Mock<IQueueService> QueueService = new Mock<IQueueService>();
             public Mock<IDateTimeHelper> DateTimeHelper = new Mock<IDateTimeHelper>();
             public Mock<ILogger<Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand>> Logger = new Mock<ILogger<Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand>>();
 
@@ -145,10 +146,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
             {
                 Sut = new Domain.Ilrs.RefreshIlrsEnqueueProvidersCommand(
                     RefreshIlrsAccessorSettingService.Object, RefreshIlrsProviderService.Object, 
-                    DateTimeHelper.Object, Logger.Object)
-                {
-                    StorageQueue = StorageQueue.Object
-                };
+                    DateTimeHelper.Object, QueueService.Object, Logger.Object );
 
                 return this;
             }
@@ -189,20 +187,12 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Ilrs.RefreshIlrsEnqueueProvidersC
 
             public void VerifyProviderAddedToStorageQueue(RefreshIlrsProviderMessage provider)
             {
-                StorageQueue.Verify(p => p.Add(It.Is<string>(m => MessageEquals(m, JsonConvert.SerializeObject(provider)))));
+                QueueService.Verify(p => p.EnqueueMessageAsync(QueueNames.RefreshIlrs, It.Is<RefreshIlrsProviderMessage>(m => m.Equals(provider))));
             }
 
             public void VerifyProcessProviderCalled()
             {
                 RefreshIlrsProviderService.Verify(p => p.ProcessProviders(It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once());
-            }
-
-            private bool MessageEquals(string first, string second)
-            {
-                var firstMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(first);
-                var secondMessage = JsonConvert.DeserializeObject<RefreshIlrsProviderMessage>(second);
-
-                return firstMessage.Equals(secondMessage);
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿using FizzWare.NBuilder;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -25,8 +25,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
         private Mock<IInternalBlobFileTransferClient> _mockInternalFileTransferClient;
         private Mock<IOptions<PrintResponseOptions>> _mockOptions;
 
-        private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockMessageQueue;
-
         private int _batchNumber = 1;
         private List<string> _downloadedFiles;
         private PrintResponseOptions _options;
@@ -39,7 +37,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseCommand
             _mockExternalFileTransferClient = new Mock<IExternalBlobFileTransferClient>();
             _mockInternalFileTransferClient = new Mock<IInternalBlobFileTransferClient>();
             _mockOptions = new Mock<IOptions<PrintResponseOptions>>();
-            _mockMessageQueue = new Mock<ICollector<CertificatePrintStatusUpdateMessage>>();
 
             _options = new PrintResponseOptions {
                 Directory = "MockPrintResponseDirectory",

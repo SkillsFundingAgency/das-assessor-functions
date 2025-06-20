@@ -1,6 +1,6 @@
 ﻿using FizzWare.NBuilder;
 using FluentAssertions;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
