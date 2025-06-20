@@ -295,7 +295,7 @@
                   "value": "[reference(concat(variables('storageAccountName'), '-', parameters('utcValue'))).outputs.storageConnectionString.value]"
                 },
                 {
-                  "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                  "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
                   "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.InstrumentationKey.value]"
                 },
                 {
