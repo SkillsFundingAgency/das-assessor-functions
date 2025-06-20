@@ -296,7 +296,7 @@
                 },
                 {
                   "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                  "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.InstrumentationKey.value]"
+                  "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.ConnectionString.value]"
                 },
                 {
                   "name": "FUNCTIONS_EXTENSION_VERSION",
