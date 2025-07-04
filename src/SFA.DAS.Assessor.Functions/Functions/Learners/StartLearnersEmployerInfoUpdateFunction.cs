@@ -16,27 +16,30 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             _command = command;
             _logger = logger;
         }
-        // This function has been commented as it's currently not in use.We may need it sometime soon for the digital certificates.
-        //[Function("StartLearnersEmployerInfoUpdateFunction")]
-        //public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
-        //{
-        //    try
-        //    {
-        //        _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has started.");
 
-        //        await _command.Execute();
+        /*
+        This function has been commented as it's currently not in use.We may need it sometime soon for the digital certificates.
+        [Function("StartLearnersEmployerInfoUpdateFunction")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
+        {
+            try
+            {
+                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has started.");
 
-        //        _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has finished.");
+                await _command.Execute();
 
-        //        await Task.CompletedTask;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, $"StartLearnersEmployerInfoUpdateFunction has failed.");
-        //        throw;
-        //    }
+                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has finished.");
 
-        //    return new OkObjectResult("Start Learners EmployerInfo Update Function finished");
-        //}
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"StartLearnersEmployerInfoUpdateFunction has failed.");
+                throw;
+            }
+
+            return new OkObjectResult("Start Learners EmployerInfo Update Function finished");
+            }
+        */
     }
 }
