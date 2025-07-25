@@ -1,9 +1,10 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
+using SFA.DAS.Assessor.Functions.UnitTests.Helpers;
 using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseFunction
@@ -12,25 +13,24 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.PrintResponseFunction
     {
         private Functions.Print.PrintResponseFunction _sut;
         
-        private Mock<ILogger> _mockLogger;
+        private Mock<ILogger<Functions.Print.PrintResponseFunction>> _mockLogger;
         private Mock<IPrintResponseCommand> _mockCommand;
-        private Mock<ICollector<CertificatePrintStatusUpdateMessage>> _mockCollector;
 
         [SetUp]
         public void Arrange()
         {
-            _mockLogger = new Mock<ILogger>();
+            _mockLogger = new Mock<ILogger<Functions.Print.PrintResponseFunction>>();
             _mockCommand = new Mock<IPrintResponseCommand>();
-            _mockCollector = new Mock<ICollector<CertificatePrintStatusUpdateMessage>>();
 
-            _sut = new Functions.Print.PrintResponseFunction(_mockCommand.Object);
+            _sut = new Functions.Print.PrintResponseFunction(_mockCommand.Object, _mockLogger.Object);
         }
 
         [Test]
         public async Task ThenItShouldExecuteCommand()
         {
-            // Act - TimerSchedule is not used so null allowed
-            await _sut.Run(new TimerInfo(default, default, false), _mockCollector.Object, _mockLogger.Object);
+            // Act
+            TimerInfo timerInfo = TimerInfoFactory.Create();
+            await _sut.Run(timerInfo);
 
             // Assert
             _mockCommand.Verify(p => p.Execute(), Times.Once());

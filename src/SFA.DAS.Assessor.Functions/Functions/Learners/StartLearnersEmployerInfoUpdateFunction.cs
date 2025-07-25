@@ -1,50 +1,45 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using SFA.DAS.Assessor.Functions.Infrastructure;
 using SFA.DAS.Assessor.Functions.Domain.Learners.Interfaces;
-using SFA.DAS.Assessor.Functions.Domain.Learners.Types;
+using Microsoft.Azure.Functions.Worker;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Learners
 {
     public class StartLearnersEmployerInfoUpdateFunction
     {
         private readonly IEnqueueApprovalLearnerInfoBatchCommand _command;
+        private readonly ILogger<StartLearnersEmployerInfoUpdateFunction> _logger;
 
-        public StartLearnersEmployerInfoUpdateFunction(IEnqueueApprovalLearnerInfoBatchCommand command)
+        public StartLearnersEmployerInfoUpdateFunction(IEnqueueApprovalLearnerInfoBatchCommand command, ILogger<StartLearnersEmployerInfoUpdateFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
-        [FunctionName("StartLearnersEmployerInfoUpdateFunction")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            [Queue(QueueNames.StartUpdateLearnersInfo)] IAsyncCollector<ProcessApprovalBatchLearnersCommand> startUpdatingLearnersQueue,
-            ILogger log)
+        /*
+        This function has been commented as it's currently not in use.We may need it sometime soon for the digital certificates.
+        [Function("StartLearnersEmployerInfoUpdateFunction")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
             try
             {
-                log.LogInformation($"StartLearnersEmployerInfoUpdateFunction has started.");
+                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has started.");
 
-                _command.StorageQueue = startUpdatingLearnersQueue;
                 await _command.Execute();
 
-                log.LogInformation($"StartLearnersEmployerInfoUpdateFunction has finished.");
+                _logger.LogInformation($"StartLearnersEmployerInfoUpdateFunction has finished.");
 
                 await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                log.LogError(ex, $"StartLearnersEmployerInfoUpdateFunction has failed.");
+                _logger.LogError(ex, $"StartLearnersEmployerInfoUpdateFunction has failed.");
                 throw;
             }
 
             return new OkObjectResult("Start Learners EmployerInfo Update Function finished");
-        }
+            }
+        */
     }
 }

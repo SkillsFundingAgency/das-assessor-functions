@@ -19,7 +19,8 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.DataCollection
         public DataCollectionServiceApiClient(HttpClient httpClient, IDataCollectionTokenService tokenService, IOptions<DataCollectionApiAuthentication> options, ILogger<DataCollectionServiceApiClient> logger)
             : base(httpClient, new Uri(options?.Value.ApiBaseAddress), logger)
         {
-            ApiVersion = options.Value?.Version;
+            ApiVersion = options?.Value?.Version ?? 
+                throw new ArgumentNullException(nameof(options.Value.Version));
         }
 
         public async Task<List<string>> GetAcademicYears(DateTime dateTimeUtc)

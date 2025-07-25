@@ -1,41 +1,42 @@
-﻿using Microsoft.Azure.WebJobs;
+﻿using CsvHelper.Configuration.Attributes;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Assessor.Functions.Domain.Print.Interfaces;
 using SFA.DAS.Assessor.Functions.Domain.Print.Types;
 using SFA.DAS.Assessor.Functions.Infrastructure;
-using System;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.Assessor.Functions.Functions.Print
 {
     public class PrintStatusUpdateFunction
-
     {
         private readonly IPrintStatusUpdateCommand _command;
+        private readonly ILogger<PrintStatusUpdateFunction> _logger;
 
-        public PrintStatusUpdateFunction(IPrintStatusUpdateCommand command)
+        public PrintStatusUpdateFunction(IPrintStatusUpdateCommand command, ILogger<PrintStatusUpdateFunction> logger)
         {
             _command = command;
+            _logger = logger;
         }
 
-        [FunctionName("CertificatePrintStatusUpdate")]
-        public async Task Run([QueueTrigger(QueueNames.CertificatePrintStatusUpdate)] CertificatePrintStatusUpdateMessage message,
-            [Queue(QueueNames.CertificatePrintStatusUpdateErrors)] ICollector<CertificatePrintStatusUpdateErrorMessage> storageQueue,
-            ILogger log)
+        [Function("CertificatePrintStatusUpdate")]
+        [QueueOutput(QueueNames.CertificatePrintStatusUpdateErrors)]
+        public async Task<List<CertificatePrintStatusUpdateErrorMessage>> Run(
+            [QueueTrigger(QueueNames.CertificatePrintStatusUpdate)] CertificatePrintStatusUpdateMessage message)
         {
             try
             {
                 var validationErrorMessages = await _command.Execute(message);
-                validationErrorMessages?.ForEach(p => storageQueue.Add(p));
 
                 if ((validationErrorMessages?.Count ?? 0) > 0)
                 {
-                    log.LogWarning($"CertificatePrintStatusUpdate has completed for {message.ToJson()} with {validationErrorMessages.Count} error(s)");
+                    _logger.LogWarning($"CertificatePrintStatusUpdate has completed for {message.ToJson()} with {validationErrorMessages.Count} error(s)");
                 }
+
+                return validationErrorMessages;
             }
             catch (Exception ex)
             {
-                log.LogError(ex, $"CertificatePrintStatusUpdate has failed for {message.ToJson()}");
+                _logger.LogError(ex, $"CertificatePrintStatusUpdate has failed for {message.ToJson()}");
                 throw;
             }
         }
