@@ -9,7 +9,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
     public class StartLearnersEmployerInfoUpdateFunction
     {
         private readonly IEnqueueApprovalLearnerInfoBatchCommand _command;
-        private readonly ILogger<StartLearnersEmployerInfoUpdateFunction> _logger;   
+        private readonly ILogger<StartLearnersEmployerInfoUpdateFunction> _logger;
 
         public StartLearnersEmployerInfoUpdateFunction(IEnqueueApprovalLearnerInfoBatchCommand command, ILogger<StartLearnersEmployerInfoUpdateFunction> logger)
         {
@@ -17,6 +17,8 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             _logger = logger;
         }
 
+        /*
+        This function has been commented as it's currently not in use.We may need it sometime soon for the digital certificates.
         [Function("StartLearnersEmployerInfoUpdateFunction")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
@@ -37,6 +39,7 @@ namespace SFA.DAS.Assessor.Functions.Functions.Learners
             }
 
             return new OkObjectResult("Start Learners EmployerInfo Update Function finished");
-        }
+            }
+        */
     }
 }
