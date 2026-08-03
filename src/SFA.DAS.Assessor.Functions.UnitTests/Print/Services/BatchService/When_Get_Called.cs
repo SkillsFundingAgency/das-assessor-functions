@@ -31,7 +31,7 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.BatchService
 
             // Assert
             _mockAssessorServiceApiClient.Verify(v => v.GetBatchLog(_batchNumber), Times.Once);
-            result.Should().Equals(response);
+            result.Should().BeEquivalentTo(response, options => options.ExcludingMissingMembers());
         }
     }
 }

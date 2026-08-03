@@ -43,7 +43,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
             var result = await _sut.UpdateCertificatesPrintStatus(request);
 
             // Assert
-            result.Should().Equals(validationResponse);
+            result.Should().BeEquivalentTo(validationResponse);
         }
     }
 }

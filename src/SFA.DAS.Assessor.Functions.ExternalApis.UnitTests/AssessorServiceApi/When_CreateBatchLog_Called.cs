@@ -50,7 +50,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
             var result = await _sut.CreateBatchLog(request);
 
             // Assert
-            result.Should().Equals(batchResponse);
+            result.Should().BeEquivalentTo(batchResponse);
         }
     }
 }

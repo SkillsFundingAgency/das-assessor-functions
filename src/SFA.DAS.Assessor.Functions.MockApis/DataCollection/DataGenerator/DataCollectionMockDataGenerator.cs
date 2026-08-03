@@ -1,6 +1,5 @@
 ﻿using Bogus;
 using Bogus.Extensions.UnitedKingdom;
-using CountryData.Bogus;
 using SFA.DAS.Assessor.Functions.ExternalApis.DataCollection;
 using System;
 using System.Collections.Generic;
@@ -57,7 +56,7 @@ namespace SFA.DAS.Assessor.Functions.MockApis.DataCollection.DataGenerator
                 .RuleFor(ld => ld.LearnPlanEndDate, f => f.Date.Between(_endDate.AddMonths(3), _endDate.AddMonths(6)))
                 .RuleFor(ld => ld.FundModel, f => f.PickRandom(fundingModelList))
                 .RuleFor(ld => ld.StdCode, f => aimType != null ? f.PickRandom(stdCodelList) : (new Random().Next(0, 3) == 0 ? null : f.PickRandom(stdCodelList)))
-                .RuleFor(ld => ld.DelLocPostCode, f => f.Country().UnitedKingdom().PostCode() + " " + f.Random.Int(0, 9) + f.Random.Word().Substring(0, 2).ToUpper())
+                .RuleFor(ld => ld.DelLocPostCode, f => new Bogus.DataSets.Address("en_GB").ZipCode() + " " + f.Random.Int(0, 9) + f.Random.Word().Substring(0, 2).ToUpper())
                 .RuleFor(ld => ld.EpaOrgID, f => new Random().Next(0, 3) > 0 ? null : f.PickRandom(epaOrgIDlList))
                 .RuleFor(ld => ld.CompStatus, f => f.PickRandom(compStatusList))
                 .RuleFor(ld => ld.LearnActEndDate, f => otherDataCollectionLearningDelivery.LearnActEndDate)

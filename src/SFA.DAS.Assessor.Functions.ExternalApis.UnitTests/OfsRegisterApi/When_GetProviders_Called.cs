@@ -45,7 +45,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.OfsRegisterApi
             var result = await _sut.GetProviders();
 
             // Assert
-            result.Should().Equals(response);
+            result.Should().BeEquivalentTo(response);
         }
     }
 }

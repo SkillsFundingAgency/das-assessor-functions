@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -65,7 +63,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
             result.PrintData[0].Type.Should().Be("Standard");
             
             result.PrintData[0].PostalContact.Should().BeEquivalentTo(CreatePostalContact(certificatePrintSummary), options => options
-                .RespectingRuntimeTypes()
                 .WithTracing()
             );
 
@@ -117,7 +114,6 @@ namespace SFA.DAS.Assessor.Functions.UnitTests.Print.Services.PrintingJsonCreato
             result.PrintData[0].Type.Should().Be("Framework");
             
             result.PrintData[0].PostalContact.Should().BeEquivalentTo(CreatePostalContact(frameworkCertificatePrintSummary), options => options
-                .RespectingRuntimeTypes()
                 .WithTracing()
             );
 

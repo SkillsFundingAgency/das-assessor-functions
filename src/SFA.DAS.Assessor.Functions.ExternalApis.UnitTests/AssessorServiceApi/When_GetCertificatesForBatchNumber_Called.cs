@@ -44,7 +44,7 @@ namespace SFA.DAS.Assessor.Functions.ExternalApis.UnitTests.AssessorServiceApi
             var result = await _sut.GetCertificatesForBatchNumber(batchNumber);
 
             // Assert
-            result.Should().Equals(response);
+            result.Should().BeEquivalentTo(response);
         }
     }
 }
