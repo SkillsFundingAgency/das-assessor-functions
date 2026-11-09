@@ -20,6 +20,9 @@
     "loggingRedisConnectionString": {
       "type": "securestring"
     },
+    "deployPrivateLinkedScopedResource": {
+      "type": "bool"
+    },
     "tags": {
       "type": "object"
     },
@@ -144,6 +147,7 @@
     "functionAppName": "[concat(variables('resourceNamePrefix'),'-fa')]",
     "appServicePlanName": "[concat(variables('resourceNamePrefix'),'-asp')]",
     "storageAccountName": "[concat('das',toLower(parameters('resourceEnvironmentName')),parameters('serviceName'),'str')]",
+    "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
     "routeTableId": {
       "id": "[resourceId(subscription().subscriptionId, parameters('sharedEnvResourceGroup'), 'Microsoft.Network/routeTables', parameters('SharedRouteTableName'))]"
     },
@@ -244,6 +248,31 @@
       "dependsOn": [
         "[variables('resourceGroupName')]"
       ]
+    },
+    {
+      "condition": "[parameters('deployPrivateLinkedScopedResource')]",
+      "apiVersion": "2021-04-01",
+      "name": "[concat(variables('functionAppName'), '-private-link-scoped-', parameters('utcValue'))]",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'private-linked-scoped-resource.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "privateLinkScopeName": {
+            "value": "[variables('privateLinkScopeName')]"
+          },
+          "scopedResourceName": {
+            "value": "[variables('functionAppName')]"
+          },
+          "scopedResourceId": {
+            "value": "[reference(concat(variables('functionAppName'), '-app-insights-', parameters('utcValue'))).outputs.AppInsightsResourceId.value]"
+          }
+        }
+      }
     },
     {
       "apiVersion": "2021-04-01",
