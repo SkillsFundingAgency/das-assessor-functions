@@ -16,7 +16,7 @@
     <!-- transitive packages due to SFA.DAS.Http-->
     <!-- deprecated warning for Microsoft.IdentityModel.Clients.ActiveDirectory should be resolved when SFA.DAS.Http is upgraded-->
     <!-- deprecated warning for NLog.Config should be resolved when SFA.DAS.Http is upgraded-->
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.34" />
   </ItemGroup>
   
 	<ItemGroup>
